@@ -8,13 +8,52 @@ actor RecipeExtractionService {
 
     /// Extract recipe from a URL using the configured AI provider
     func extractRecipe(from url: URL) async throws -> ExtractedRecipe {
-        // Fetch webpage content
+        // Check if this is a video platform URL
+        let videoService = VideoTranscriptService.shared
+        if await videoService.isVideoURL(url) {
+            return try await extractFromVideo(url: url, videoService: videoService)
+        }
+
+        // Standard webpage extraction
         let content = try await fetchWebContent(from: url)
 
         // Get configured AI provider
         let provider = try await AISettingsManager.shared.createProvider()
 
         // Extract recipe using provider
+        return try await provider.extractRecipe(from: content, url: url)
+    }
+
+    /// Extract recipe from a video transcript
+    private func extractFromVideo(url: URL, videoService: VideoTranscriptService) async throws -> ExtractedRecipe {
+        do {
+            // Try to get transcript
+            let transcript = try await videoService.extractTranscript(from: url)
+
+            // Get configured AI provider
+            let provider = try await AISettingsManager.shared.createProvider()
+
+            // Extract recipe from transcript using specialized prompt
+            return try await provider.extractRecipeFromTranscript(transcript.formattedForAI, url: url)
+        } catch let error as VideoTranscriptError {
+            // For TikTok/Instagram, fall back to HTML scraping if transcript fails
+            let platform = await videoService.detectPlatform(from: url)
+            if platform == .tiktok || platform == .instagram {
+                if case .apiKeyRequired = error {
+                    // Re-throw API key errors - user needs to configure
+                    throw error
+                }
+                // Try HTML fallback for other errors
+                return try await fallbackToHTMLExtraction(url: url)
+            }
+            throw error
+        }
+    }
+
+    /// Fallback to HTML scraping for platforms that might have recipe text on page
+    private func fallbackToHTMLExtraction(url: URL) async throws -> ExtractedRecipe {
+        let content = try await fetchWebContent(from: url)
+        let provider = try await AISettingsManager.shared.createProvider()
         return try await provider.extractRecipe(from: content, url: url)
     }
 

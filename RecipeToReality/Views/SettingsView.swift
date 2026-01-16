@@ -6,7 +6,9 @@ struct SettingsView: View {
     @State private var showingPaywall = false
     @State private var showingCustomerCenter = false
     @State private var showingAPIKeyEntry = false
+    @State private var showingSupadataSettings = false
     @State private var hasAPIKey = false
+    @State private var hasSupadataKey = false
     @State private var isRestoring = false
     @State private var showingRestoreAlert = false
     @State private var restoreMessage = ""
@@ -21,6 +23,9 @@ struct SettingsView: View {
 
                 // API Configuration Section
                 apiConfigurationSection
+
+                // Video Platforms Section
+                videoPlatformsSection
 
                 // About Section
                 aboutSection
@@ -53,6 +58,9 @@ struct SettingsView: View {
             .sheet(isPresented: $showingAPIKeyEntry) {
                 AIProviderSettingsView(hasAPIKey: $hasAPIKey)
             }
+            .sheet(isPresented: $showingSupadataSettings) {
+                SupadataSettingsView(hasSupadataKey: $hasSupadataKey)
+            }
             .alert("Restore Purchases", isPresented: $showingRestoreAlert) {
                 Button("OK") {}
             } message: {
@@ -60,6 +68,7 @@ struct SettingsView: View {
             }
             .onAppear {
                 checkAPIKey()
+                checkSupadataKey()
             }
         }
     }
@@ -153,6 +162,52 @@ struct SettingsView: View {
             Text("Recipe Extraction")
         } footer: {
             Text("Choose OpenAI, Claude, or Gemini to power recipe extraction.")
+        }
+    }
+
+    // MARK: - Video Platforms Section
+
+    private var videoPlatformsSection: some View {
+        Section {
+            // YouTube (always available)
+            HStack {
+                Image(systemName: "play.rectangle.fill")
+                    .foregroundStyle(.red)
+                Text("YouTube")
+                Spacer()
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(.green)
+            }
+
+            // TikTok & Instagram (requires Supadata)
+            Button {
+                showingSupadataSettings = true
+            } label: {
+                HStack {
+                    Image(systemName: "video.fill")
+                        .foregroundStyle(.purple)
+                    VStack(alignment: .leading) {
+                        Text("TikTok & Instagram")
+                        if hasSupadataKey {
+                            Text("Configured")
+                                .font(.caption)
+                                .foregroundStyle(.green)
+                        } else {
+                            Text("Requires Supadata API key")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    Spacer()
+                    Image(systemName: hasSupadataKey ? "checkmark.circle.fill" : "chevron.right")
+                        .foregroundStyle(hasSupadataKey ? .green : .secondary)
+                }
+            }
+            .foregroundStyle(.primary)
+        } header: {
+            Text("Video Platforms")
+        } footer: {
+            Text("YouTube transcripts are free. TikTok and Instagram require a Supadata API key (100 free/month).")
         }
     }
 
@@ -258,6 +313,12 @@ struct SettingsView: View {
             let provider = await AISettingsManager.shared.selectedProvider
             selectedProviderName = provider.displayName
             hasAPIKey = await AISettingsManager.shared.hasAPIKey(for: provider)
+        }
+    }
+
+    private func checkSupadataKey() {
+        Task {
+            hasSupadataKey = await VideoTranscriptService.shared.hasSupadataAPIKey()
         }
     }
 
@@ -384,6 +445,98 @@ struct AIProviderSettingsView: View {
                 errorMessage = error.localizedDescription
                 showingError = true
             }
+        }
+    }
+}
+
+// MARK: - Supadata Settings View
+
+struct SupadataSettingsView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Binding var hasSupadataKey: Bool
+
+    @State private var apiKey = ""
+    @State private var showingError = false
+    @State private var errorMessage = ""
+    @State private var isDeleting = false
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    SecureField("Enter API key...", text: $apiKey)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                } header: {
+                    Text("Supadata API Key")
+                } footer: {
+                    Text("Required for TikTok and Instagram video transcripts. Your key is stored securely in the iOS Keychain.")
+                }
+
+                Section {
+                    Link("Get a Free API Key", destination: URL(string: "https://supadata.ai")!)
+                    Link("View Pricing", destination: URL(string: "https://supadata.ai/pricing")!)
+                } footer: {
+                    Text("Supadata offers 100 free transcript requests per month.")
+                }
+
+                if hasSupadataKey {
+                    Section {
+                        Button(role: .destructive) {
+                            deleteAPIKey()
+                        } label: {
+                            HStack {
+                                Text("Remove API Key")
+                                if isDeleting {
+                                    Spacer()
+                                    ProgressView()
+                                }
+                            }
+                        }
+                        .disabled(isDeleting)
+                    }
+                }
+            }
+            .navigationTitle("Video Platforms")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Save") { saveAPIKey() }
+                        .disabled(apiKey.isEmpty)
+                        .fontWeight(.semibold)
+                }
+            }
+            .alert("Error", isPresented: $showingError) {
+                Button("OK") {}
+            } message: {
+                Text(errorMessage)
+            }
+        }
+    }
+
+    private func saveAPIKey() {
+        Task {
+            do {
+                try await VideoTranscriptService.shared.saveSupadataAPIKey(apiKey)
+                hasSupadataKey = true
+                dismiss()
+            } catch {
+                errorMessage = error.localizedDescription
+                showingError = true
+            }
+        }
+    }
+
+    private func deleteAPIKey() {
+        isDeleting = true
+        Task {
+            await VideoTranscriptService.shared.deleteSupadataAPIKey()
+            hasSupadataKey = false
+            isDeleting = false
+            dismiss()
         }
     }
 }
