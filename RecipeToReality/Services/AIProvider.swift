@@ -6,6 +6,7 @@ protocol AIProvider {
     var name: String { get }
     var requiresAPIKey: Bool { get }
     func extractRecipe(from content: String, url: URL) async throws -> ExtractedRecipe
+    func extractRecipeFromTranscript(_ transcript: String, url: URL) async throws -> ExtractedRecipe
 }
 
 // MARK: - Provider Type
@@ -83,8 +84,54 @@ enum RecipePrompts {
         Only return valid JSON, no other text.
         """
 
+    static let transcriptSystem = """
+        You are a recipe extraction assistant specializing in cooking video transcripts.
+        Extract recipe information from the spoken content of a cooking video.
+
+        The transcript may contain:
+        - Casual spoken language and filler words
+        - Approximate measurements ("a good handful", "about two cups")
+        - Steps described conversationally rather than formally
+        - Comments, tips, and personal stories mixed with recipe instructions
+
+        Your job is to:
+        1. Identify all ingredients mentioned, inferring reasonable quantities if only approximate amounts are given
+        2. Extract clear step-by-step instructions from the conversational content
+        3. Infer prep time and cook time from context if mentioned
+        4. Create a descriptive title if one isn't explicitly stated
+
+        Return a JSON object with the following structure:
+        {
+            "title": "Recipe Title",
+            "servings": 4,
+            "prepTime": "15 minutes",
+            "cookTime": "30 minutes",
+            "ingredients": [
+                {"name": "ingredient name", "quantity": "2", "unit": "cups", "category": "produce"},
+                ...
+            ],
+            "instructions": ["Step 1...", "Step 2...", ...]
+        }
+
+        For ingredient categories, use one of: produce, meat, dairy, bakery, pantry, frozen, beverages, condiments, spices, other
+
+        Convert casual measurements to standard when possible:
+        - "a pinch" → quantity: "1", unit: "pinch"
+        - "a handful" → estimate cups or grams
+        - "some" or "a bit" → use reasonable default amounts
+
+        If the transcript doesn't contain a recipe, return:
+        {"error": "No recipe found"}
+
+        Only return valid JSON, no other text.
+        """
+
     static func user(content: String) -> String {
         "Extract the recipe from this webpage content:\n\n\(content)"
+    }
+
+    static func transcriptUser(transcript: String) -> String {
+        "Extract the recipe from this cooking video transcript:\n\n\(transcript)"
     }
 }
 
@@ -96,11 +143,27 @@ struct OpenAIProvider: AIProvider {
     let apiKey: String
 
     func extractRecipe(from content: String, url: URL) async throws -> ExtractedRecipe {
+        return try await makeRequest(
+            systemPrompt: RecipePrompts.system,
+            userPrompt: RecipePrompts.user(content: content),
+            url: url
+        )
+    }
+
+    func extractRecipeFromTranscript(_ transcript: String, url: URL) async throws -> ExtractedRecipe {
+        return try await makeRequest(
+            systemPrompt: RecipePrompts.transcriptSystem,
+            userPrompt: RecipePrompts.transcriptUser(transcript: transcript),
+            url: url
+        )
+    }
+
+    private func makeRequest(systemPrompt: String, userPrompt: String, url: URL) async throws -> ExtractedRecipe {
         let requestBody: [String: Any] = [
             "model": "gpt-4o-mini",
             "messages": [
-                ["role": "system", "content": RecipePrompts.system],
-                ["role": "user", "content": RecipePrompts.user(content: content)]
+                ["role": "system", "content": systemPrompt],
+                ["role": "user", "content": userPrompt]
             ],
             "temperature": 0.1,
             "response_format": ["type": "json_object"]
@@ -134,12 +197,28 @@ struct AnthropicProvider: AIProvider {
     let apiKey: String
 
     func extractRecipe(from content: String, url: URL) async throws -> ExtractedRecipe {
+        return try await makeRequest(
+            systemPrompt: RecipePrompts.system,
+            userPrompt: RecipePrompts.user(content: content),
+            url: url
+        )
+    }
+
+    func extractRecipeFromTranscript(_ transcript: String, url: URL) async throws -> ExtractedRecipe {
+        return try await makeRequest(
+            systemPrompt: RecipePrompts.transcriptSystem,
+            userPrompt: RecipePrompts.transcriptUser(transcript: transcript),
+            url: url
+        )
+    }
+
+    private func makeRequest(systemPrompt: String, userPrompt: String, url: URL) async throws -> ExtractedRecipe {
         let requestBody: [String: Any] = [
             "model": "claude-3-5-haiku-latest",
             "max_tokens": 4096,
-            "system": RecipePrompts.system,
+            "system": systemPrompt,
             "messages": [
-                ["role": "user", "content": RecipePrompts.user(content: content)]
+                ["role": "user", "content": userPrompt]
             ]
         ]
 
@@ -172,9 +251,25 @@ struct GoogleProvider: AIProvider {
     let apiKey: String
 
     func extractRecipe(from content: String, url: URL) async throws -> ExtractedRecipe {
+        return try await makeRequest(
+            systemPrompt: RecipePrompts.system,
+            userPrompt: RecipePrompts.user(content: content),
+            url: url
+        )
+    }
+
+    func extractRecipeFromTranscript(_ transcript: String, url: URL) async throws -> ExtractedRecipe {
+        return try await makeRequest(
+            systemPrompt: RecipePrompts.transcriptSystem,
+            userPrompt: RecipePrompts.transcriptUser(transcript: transcript),
+            url: url
+        )
+    }
+
+    private func makeRequest(systemPrompt: String, userPrompt: String, url: URL) async throws -> ExtractedRecipe {
         let requestBody: [String: Any] = [
             "contents": [
-                ["parts": [["text": "\(RecipePrompts.system)\n\n\(RecipePrompts.user(content: content))"]]]
+                ["parts": [["text": "\(systemPrompt)\n\n\(userPrompt)"]]]
             ],
             "generationConfig": [
                 "temperature": 0.1,

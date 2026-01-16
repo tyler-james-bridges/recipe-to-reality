@@ -25,6 +25,8 @@
 		A1000010 /* SharedURLManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000E /* SharedURLManager.swift */; };
 		A1000011 /* AIProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000F /* AIProvider.swift */; };
 		A1000012 /* AISettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000010 /* AISettingsManager.swift */; };
+		A1000013 /* VideoTranscriptService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000011 /* VideoTranscriptService.swift */; };
+		A1000014 /* YoutubeTranscript in Frameworks */ = {isa = PBXBuildFile; productRef = A3000004 /* YoutubeTranscript */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,6 +47,7 @@
 		A200000E /* SharedURLManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedURLManager.swift; sourceTree = "<group>"; };
 		A200000F /* AIProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIProvider.swift; sourceTree = "<group>"; };
 		A2000010 /* AISettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AISettingsManager.swift; sourceTree = "<group>"; };
+		A2000011 /* VideoTranscriptService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoTranscriptService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,6 +57,7 @@
 			files = (
 				A100000E /* RevenueCat in Frameworks */,
 				A100000F /* RevenueCatUI in Frameworks */,
+				A1000014 /* YoutubeTranscript in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -119,6 +123,7 @@
 				A200000E /* SharedURLManager.swift */,
 				A200000F /* AIProvider.swift */,
 				A2000010 /* AISettingsManager.swift */,
+				A2000011 /* VideoTranscriptService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -142,6 +147,7 @@
 			packageProductDependencies = (
 				A3000001 /* RevenueCat */,
 				A3000003 /* RevenueCatUI */,
+				A3000004 /* YoutubeTranscript */,
 			);
 			productName = RecipeToReality;
 			productReference = A0000001 /* RecipeToReality.app */;
@@ -173,6 +179,7 @@
 			mainGroup = A5000001;
 			packageReferences = (
 				A3000002 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
+				A3000005 /* XCRemoteSwiftPackageReference "swift-youtube-transcript" */,
 			);
 			productRefGroup = A5000003 /* Products */;
 			projectDirPath = "";
@@ -214,6 +221,7 @@
 				A100000A /* RecipeDetailView.swift in Sources */,
 				A100000B /* GroceryListView.swift in Sources */,
 				A100000C /* SettingsView.swift in Sources */,
+				A1000013 /* VideoTranscriptService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -437,6 +445,14 @@
 				minimumVersion = 5.0.0;
 			};
 		};
+		A3000005 /* XCRemoteSwiftPackageReference "swift-youtube-transcript" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/spaceman1412/swift-youtube-transcript.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -449,6 +465,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A3000002 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
 			productName = RevenueCatUI;
+		};
+		A3000004 /* YoutubeTranscript */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A3000005 /* XCRemoteSwiftPackageReference "swift-youtube-transcript" */;
+			productName = YoutubeTranscript;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

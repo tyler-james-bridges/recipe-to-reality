@@ -11,6 +11,7 @@ struct AddRecipeView: View {
     @State private var error: Error?
     @State private var showingError = false
     @State private var showingManualEntry = false
+    @State private var showingSettings = false
 
     var body: some View {
         NavigationStack {
@@ -89,13 +90,23 @@ struct AddRecipeView: View {
                     }
                 }
             }
-            .alert("Error", isPresented: $showingError) {
-                Button("OK") {}
+            .alert(errorTitle, isPresented: $showingError) {
+                if shouldShowSettingsButton {
+                    Button("Open Settings") {
+                        showingSettings = true
+                    }
+                    Button("Cancel", role: .cancel) {}
+                } else {
+                    Button("OK") {}
+                }
             } message: {
-                Text(error?.localizedDescription ?? "Unknown error")
+                Text(errorMessage)
             }
             .sheet(isPresented: $showingManualEntry) {
                 ManualRecipeEntryView()
+            }
+            .sheet(isPresented: $showingSettings) {
+                SettingsView()
             }
         }
     }
@@ -136,6 +147,50 @@ struct AddRecipeView: View {
             .background(Color.gray.opacity(0.1))
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
+    }
+
+    // MARK: - Error Handling
+
+    private var errorTitle: String {
+        if let videoError = error as? VideoTranscriptError {
+            switch videoError {
+            case .captionsDisabled, .transcriptNotAvailable:
+                return "Transcript Unavailable"
+            case .apiKeyRequired:
+                return "API Key Required"
+            case .rateLimited:
+                return "Rate Limited"
+            default:
+                return "Error"
+            }
+        }
+        return "Error"
+    }
+
+    private var errorMessage: String {
+        if let videoError = error as? VideoTranscriptError {
+            var message = videoError.localizedDescription ?? "Unknown error"
+            if let suggestion = videoError.recoverySuggestion {
+                message += "\n\n\(suggestion)"
+            }
+            return message
+        }
+        return error?.localizedDescription ?? "Unknown error"
+    }
+
+    private var shouldShowSettingsButton: Bool {
+        if let videoError = error as? VideoTranscriptError {
+            switch videoError {
+            case .apiKeyRequired, .invalidAPIKey:
+                return true
+            default:
+                return false
+            }
+        }
+        if error is AISettingsManager.KeychainError {
+            return true
+        }
+        return false
     }
 
     private func extractRecipe() async {
