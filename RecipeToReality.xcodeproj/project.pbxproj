@@ -48,6 +48,7 @@
 		A200000F /* AIProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIProvider.swift; sourceTree = "<group>"; };
 		A2000010 /* AISettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AISettingsManager.swift; sourceTree = "<group>"; };
 		A2000011 /* VideoTranscriptService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoTranscriptService.swift; sourceTree = "<group>"; };
+		A2000012 /* Configuration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Configuration.storekit; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,6 +82,7 @@
 				A5000005 /* Views */,
 				A5000006 /* Services */,
 				A200000D /* Assets.xcassets */,
+				A2000012 /* Configuration.storekit */,
 			);
 			path = RecipeToReality;
 			sourceTree = "<group>";
@@ -373,7 +375,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.RecipeToReality;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tylerjb.recipetoreality;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -405,7 +407,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.RecipeToReality;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tylerjb.recipetoreality;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

@@ -7,7 +7,7 @@ import SwiftUI
 
 enum AppConfiguration {
     /// RevenueCat API Key
-    static let revenueCatAPIKey = "test_LotNVyIpuyniwsEkDEsqOxwybyw"
+    static let revenueCatAPIKey = "appl_BWFgrqnagLyQGJXyCpIhIUZKJKR"
 
     /// Entitlement identifier for premium access
     static let premiumEntitlement = "premium"
