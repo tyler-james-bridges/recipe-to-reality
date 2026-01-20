@@ -160,26 +160,34 @@ struct GroceryListView: View {
     // MARK: - Actions
 
     private func toggleItem(_ item: GroceryItem) {
+        HapticManager.selection()
         withAnimation {
             item.isChecked.toggle()
+        }
+        if item.isChecked {
+            HapticManager.success()
         }
     }
 
     private func deleteItem(_ item: GroceryItem, from list: GroceryList) {
+        HapticManager.warning()
         list.items.removeAll { $0.id == item.id }
     }
 
     private func clearCheckedItems() {
         guard let list = currentList else { return }
+        HapticManager.mediumImpact()
         list.items.removeAll { $0.isChecked }
     }
 
     private func clearAllItems() {
         guard let list = currentList else { return }
+        HapticManager.warning()
         list.items.removeAll()
     }
 
     private func generateFromQueue() {
+        HapticManager.success()
         let list = GroceryList.generate(from: queuedRecipes)
 
         // Replace or create list
@@ -432,6 +440,7 @@ struct GenerateGroceryListSheet: View {
     // MARK: - Actions
 
     private func toggleRecipe(_ id: UUID) {
+        HapticManager.selection()
         if selectedRecipeIds.contains(id) {
             selectedRecipeIds.remove(id)
         } else {
@@ -440,6 +449,7 @@ struct GenerateGroceryListSheet: View {
     }
 
     private func generateList() {
+        HapticManager.success()
         let recipesToUse: [Recipe]
 
         if generateMode == .recipes {
