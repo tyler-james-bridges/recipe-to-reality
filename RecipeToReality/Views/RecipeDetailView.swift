@@ -9,6 +9,9 @@ struct RecipeDetailView: View {
     @State private var showingAddToList = false
     @State private var showingAddToMealPlan = false
     @State private var selectedServings: Int = 0
+    @State private var showingCopiedToast = false
+
+    private let servingPresets = [2, 4, 6, 8]
 
     var body: some View {
         ScrollView {
@@ -48,6 +51,7 @@ struct RecipeDetailView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button {
+                        HapticManager.mediumImpact()
                         recipe.isInQueue.toggle()
                     } label: {
                         Label(
@@ -57,6 +61,7 @@ struct RecipeDetailView: View {
                     }
 
                     Button {
+                        HapticManager.success()
                         recipe.dateCooked = Date()
                     } label: {
                         Label("Mark as Cooked", systemImage: "checkmark.circle")
@@ -66,6 +71,12 @@ struct RecipeDetailView: View {
                         showingAddToMealPlan = true
                     } label: {
                         Label("Add to Meal Plan", systemImage: "calendar.badge.plus")
+                    }
+
+                    Button {
+                        copyIngredients()
+                    } label: {
+                        Label("Copy Ingredients", systemImage: "doc.on.doc")
                     }
 
                     if recipe.sourceURL != nil {
@@ -89,6 +100,31 @@ struct RecipeDetailView: View {
         .sheet(isPresented: $showingAddToMealPlan) {
             AddRecipeToMealPlanSheet(recipe: recipe)
         }
+        .overlay(alignment: .top) {
+            if showingCopiedToast {
+                copiedToastView
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+        .animation(.spring(response: 0.3), value: showingCopiedToast)
+    }
+
+    // MARK: - Copied Toast
+
+    private var copiedToastView: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "checkmark.circle.fill")
+                .foregroundStyle(.green)
+            Text("Ingredients copied to clipboard")
+                .font(.subheadline)
+                .fontWeight(.medium)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(.ultraThinMaterial)
+        .clipShape(Capsule())
+        .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
+        .padding(.top, 8)
     }
 
     // MARK: - Header Section
@@ -96,7 +132,7 @@ struct RecipeDetailView: View {
     private var headerSection: some View {
         Group {
             if let imageURL = recipe.imageURL, let url = URL(string: imageURL) {
-                AsyncImage(url: url) { phase in
+                CachedAsyncImage(url: url) { phase in
                     switch phase {
                     case .success(let image):
                         image
@@ -162,7 +198,11 @@ struct RecipeDetailView: View {
     private var actionButtons: some View {
         HStack(spacing: 12) {
             Button {
+                HapticManager.mediumImpact()
                 recipe.isInQueue.toggle()
+                if recipe.isInQueue {
+                    HapticManager.success()
+                }
             } label: {
                 Label(
                     recipe.isInQueue ? "In Queue" : "Add to Queue",
@@ -176,6 +216,7 @@ struct RecipeDetailView: View {
             }
 
             Button {
+                HapticManager.lightImpact()
                 showingAddToList = true
             } label: {
                 Label("Add to List", systemImage: "cart.badge.plus")
@@ -198,30 +239,18 @@ struct RecipeDetailView: View {
 
                 Spacer()
 
-                // Servings adjuster
-                if recipe.servings != nil {
-                    HStack(spacing: 8) {
-                        Button {
-                            if selectedServings > 1 {
-                                selectedServings -= 1
-                            }
-                        } label: {
-                            Image(systemName: "minus.circle")
-                        }
-
-                        Text("\(selectedServings)")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .frame(minWidth: 20)
-
-                        Button {
-                            selectedServings += 1
-                        } label: {
-                            Image(systemName: "plus.circle")
-                        }
-                    }
-                    .foregroundStyle(.orange)
+                Button {
+                    copyIngredients()
+                } label: {
+                    Image(systemName: "doc.on.doc")
+                        .font(.subheadline)
                 }
+                .foregroundStyle(.secondary)
+            }
+
+            // Serving presets
+            if recipe.servings != nil {
+                servingPresetsView
             }
 
             ForEach(recipe.ingredients) { ingredient in
@@ -246,6 +275,65 @@ struct RecipeDetailView: View {
                 }
             }
         }
+    }
+
+    private var servingPresetsView: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            // Preset buttons
+            HStack(spacing: 8) {
+                ForEach(servingPresets, id: \.self) { preset in
+                    Button {
+                        HapticManager.selection()
+                        selectedServings = preset
+                    } label: {
+                        Text("\(preset)")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .frame(width: 40, height: 32)
+                            .background(selectedServings == preset ? Color.orange : Color.gray.opacity(0.2))
+                            .foregroundStyle(selectedServings == preset ? .white : .primary)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    }
+                }
+
+                Spacer()
+
+                // Fine-tune controls
+                HStack(spacing: 4) {
+                    Button {
+                        if selectedServings > 1 {
+                            HapticManager.selection()
+                            selectedServings -= 1
+                        }
+                    } label: {
+                        Image(systemName: "minus.circle.fill")
+                            .font(.title3)
+                    }
+                    .disabled(selectedServings <= 1)
+
+                    Text("\(selectedServings)")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .frame(minWidth: 24)
+
+                    Button {
+                        HapticManager.selection()
+                        selectedServings += 1
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title3)
+                    }
+                }
+                .foregroundStyle(.orange)
+            }
+
+            if selectedServings != recipe.servings {
+                Text("Scaled from \(recipe.servings ?? 0) servings")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 4)
     }
 
     private func scaledIngredient(_ ingredient: Ingredient) -> String {
@@ -358,6 +446,26 @@ struct RecipeDetailView: View {
         }
     }
 
+    // MARK: - Actions
+
+    private func copyIngredients() {
+        HapticManager.success()
+
+        let ingredientsList = recipe.ingredients.map { scaledIngredient($0) }.joined(separator: "\n")
+        let header = "Ingredients for \(recipe.title) (\(selectedServings) servings):\n\n"
+        UIPasteboard.general.string = header + ingredientsList
+
+        withAnimation {
+            showingCopiedToast = true
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            withAnimation {
+                showingCopiedToast = false
+            }
+        }
+    }
+
     private func shareRecipe() {
         guard let sourceURL = recipe.sourceURL,
               let url = URL(string: sourceURL) else { return }
@@ -393,10 +501,12 @@ struct AddToGroceryListSheet: View {
                 // Select All / None
                 HStack {
                     Button("Select All") {
+                        HapticManager.lightImpact()
                         selectedIngredients = Set(recipe.ingredients.map { $0.id })
                     }
                     Spacer()
                     Button("Select None") {
+                        HapticManager.lightImpact()
                         selectedIngredients.removeAll()
                     }
                 }
@@ -420,6 +530,7 @@ struct AddToGroceryListSheet: View {
                         }
                         .contentShape(Rectangle())
                         .onTapGesture {
+                            HapticManager.selection()
                             toggleIngredient(ingredient.id)
                         }
                     }
@@ -437,6 +548,7 @@ struct AddToGroceryListSheet: View {
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Add") {
+                        HapticManager.success()
                         addToGroceryList()
                     }
                     .disabled(selectedIngredients.isEmpty)
