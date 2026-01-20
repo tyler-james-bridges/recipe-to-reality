@@ -4,7 +4,9 @@ import UniformTypeIdentifiers
 
 class ShareViewController: UIViewController {
 
-    private let appGroupID = "group.com.yourcompany.RecipeToReality"
+    // Must match AppConstants.appGroupID in main app
+    private let appGroupID = "group.com.tylerjb.recipetoreality"
+    // Must match AppConstants.sharedURLKey in main app
     private let sharedURLKey = "SharedRecipeURL"
 
     override func viewDidLoad() {
@@ -142,7 +144,7 @@ class ShareViewController: UIViewController {
 
     private func completeWithError() {
         DispatchQueue.main.async { [weak self] in
-            let error = NSError(domain: "com.yourcompany.RecipeToReality", code: 1, userInfo: [
+            let error = NSError(domain: "com.tylerjb.recipetoreality.shareextension", code: 1, userInfo: [
                 NSLocalizedDescriptionKey: "Could not extract URL from shared content"
             ])
             self?.extensionContext?.cancelRequest(withError: error)

@@ -12,7 +12,6 @@
 		A1000003 /* Recipe.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000003 /* Recipe.swift */; };
 		A1000004 /* GroceryList.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000004 /* GroceryList.swift */; };
 		A1000005 /* RecipeExtractionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000005 /* RecipeExtractionService.swift */; };
-		A1000006 /* APIKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000006 /* APIKeyManager.swift */; };
 		A1000007 /* PurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000007 /* PurchaseManager.swift */; };
 		A1000008 /* RecipeListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000008 /* RecipeListView.swift */; };
 		A1000009 /* AddRecipeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000009 /* AddRecipeView.swift */; };
@@ -27,6 +26,9 @@
 		A1000012 /* AISettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000010 /* AISettingsManager.swift */; };
 		A1000013 /* VideoTranscriptService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000011 /* VideoTranscriptService.swift */; };
 		A1000014 /* YoutubeTranscript in Frameworks */ = {isa = PBXBuildFile; productRef = A3000004 /* YoutubeTranscript */; };
+		A1000015 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000013 /* Secrets.swift */; };
+		A1000016 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000014 /* AppConstants.swift */; };
+		A1000017 /* Secrets.local.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000015 /* Secrets.local.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,7 +38,6 @@
 		A2000003 /* Recipe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recipe.swift; sourceTree = "<group>"; };
 		A2000004 /* GroceryList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroceryList.swift; sourceTree = "<group>"; };
 		A2000005 /* RecipeExtractionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeExtractionService.swift; sourceTree = "<group>"; };
-		A2000006 /* APIKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeyManager.swift; sourceTree = "<group>"; };
 		A2000007 /* PurchaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseManager.swift; sourceTree = "<group>"; };
 		A2000008 /* RecipeListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeListView.swift; sourceTree = "<group>"; };
 		A2000009 /* AddRecipeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddRecipeView.swift; sourceTree = "<group>"; };
@@ -49,6 +50,9 @@
 		A2000010 /* AISettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AISettingsManager.swift; sourceTree = "<group>"; };
 		A2000011 /* VideoTranscriptService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoTranscriptService.swift; sourceTree = "<group>"; };
 		A2000012 /* Configuration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Configuration.storekit; sourceTree = "<group>"; };
+		A2000013 /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
+		A2000014 /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
+		A2000015 /* Secrets.local.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.local.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,10 +85,21 @@
 				A5000004 /* Models */,
 				A5000005 /* Views */,
 				A5000006 /* Services */,
+				A5000007 /* Configuration */,
 				A200000D /* Assets.xcassets */,
 				A2000012 /* Configuration.storekit */,
 			);
 			path = RecipeToReality;
+			sourceTree = "<group>";
+		};
+		A5000007 /* Configuration */ = {
+			isa = PBXGroup;
+			children = (
+				A2000013 /* Secrets.swift */,
+				A2000014 /* AppConstants.swift */,
+				A2000015 /* Secrets.local.swift */,
+			);
+			path = Configuration;
 			sourceTree = "<group>";
 		};
 		A5000003 /* Products */ = {
@@ -120,7 +135,6 @@
 			isa = PBXGroup;
 			children = (
 				A2000005 /* RecipeExtractionService.swift */,
-				A2000006 /* APIKeyManager.swift */,
 				A2000007 /* PurchaseManager.swift */,
 				A200000E /* SharedURLManager.swift */,
 				A200000F /* AIProvider.swift */,
@@ -213,7 +227,6 @@
 				A1000003 /* Recipe.swift in Sources */,
 				A1000004 /* GroceryList.swift in Sources */,
 				A1000005 /* RecipeExtractionService.swift in Sources */,
-				A1000006 /* APIKeyManager.swift in Sources */,
 				A1000007 /* PurchaseManager.swift in Sources */,
 				A1000010 /* SharedURLManager.swift in Sources */,
 				A1000011 /* AIProvider.swift in Sources */,
@@ -224,6 +237,9 @@
 				A100000B /* GroceryListView.swift in Sources */,
 				A100000C /* SettingsView.swift in Sources */,
 				A1000013 /* VideoTranscriptService.swift in Sources */,
+				A1000015 /* Secrets.swift in Sources */,
+				A1000016 /* AppConstants.swift in Sources */,
+				A1000017 /* Secrets.local.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

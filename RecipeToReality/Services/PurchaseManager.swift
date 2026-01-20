@@ -6,8 +6,10 @@ import SwiftUI
 // MARK: - App Configuration
 
 enum AppConfiguration {
-    /// RevenueCat API Key
-    static let revenueCatAPIKey = "appl_BWFgrqnagLyQGJXyCpIhIUZKJKR"
+    /// RevenueCat API Key - loaded securely from Secrets
+    static var revenueCatAPIKey: String {
+        Secrets.revenueCatAPIKey
+    }
 
     /// Entitlement identifier for premium access
     static let premiumEntitlement = "premium"
