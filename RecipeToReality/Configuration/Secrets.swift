@@ -50,10 +50,9 @@ protocol LocalSecretsProvider {
     static var revenueCatAPIKey: String? { get }
 }
 
-/// Default implementation returns nil - override in Secrets.local.swift
+/// Default implementation returns nil - can be overridden in Secrets.local.swift for local development
 enum LocalSecrets: LocalSecretsProvider {
-    #if !DEBUG
-    // In release builds, don't use local secrets
+    // Default implementation returns nil
+    // Create Secrets.local.swift to override with actual keys for local development
     static var revenueCatAPIKey: String? { nil }
-    #endif
 }
