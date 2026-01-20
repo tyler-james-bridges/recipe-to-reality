@@ -9,11 +9,10 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
 
 import { ThemedView, ThemedText } from '@/components/Themed';
 import { usePurchaseStore } from '@/src/stores/purchaseStore';
-import { useSettingsStore } from '@/src/stores/settingsStore';
+import { HapticManager } from '@/src/services/haptics';
 
 interface FeatureRowProps {
   icon: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
@@ -44,7 +43,6 @@ export default function PaywallScreen() {
     fetchOfferings,
     isPremium,
   } = usePurchaseStore();
-  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
   const [selectedPackageIndex, setSelectedPackageIndex] = useState(0);
   const [isPurchasing, setIsPurchasing] = useState(false);
 
@@ -58,12 +56,6 @@ export default function PaywallScreen() {
     }
   }, [isPremium]);
 
-  const triggerHaptic = () => {
-    if (hapticFeedback) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-  };
-
   const currentOffering = offerings?.current;
   const packages = currentOffering?.availablePackages || [];
 
@@ -71,19 +63,15 @@ export default function PaywallScreen() {
     if (packages.length === 0) return;
 
     const selectedPackage = packages[selectedPackageIndex];
-    triggerHaptic();
+    HapticManager.lightImpact();
     setIsPurchasing(true);
 
     try {
       await purchase(selectedPackage);
-      if (hapticFeedback) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      }
+      HapticManager.success();
       router.back();
     } catch (error) {
-      if (hapticFeedback) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      }
+      HapticManager.error();
       Alert.alert('Purchase Failed', (error as Error).message);
     } finally {
       setIsPurchasing(false);
@@ -91,7 +79,7 @@ export default function PaywallScreen() {
   };
 
   const handleRestore = async () => {
-    triggerHaptic();
+    HapticManager.lightImpact();
     setIsPurchasing(true);
 
     try {
@@ -167,7 +155,7 @@ export default function PaywallScreen() {
                 key={pkg.identifier}
                 style={[styles.packageCard, isSelected && styles.packageCardSelected]}
                 onPress={() => {
-                  triggerHaptic();
+                  HapticManager.lightImpact();
                   setSelectedPackageIndex(index);
                 }}
               >

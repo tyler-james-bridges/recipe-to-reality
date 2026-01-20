@@ -6,9 +6,9 @@ import { FREE_EXTRACTION_LIMIT, PREMIUM_ENTITLEMENT } from '../types';
 
 const EXTRACTIONS_KEY = 'recipe_extractions_count';
 
-// RevenueCat API Keys - Replace with your actual keys
-const REVENUECAT_IOS_KEY = 'your_ios_key_here';
-const REVENUECAT_ANDROID_KEY = 'your_android_key_here';
+// RevenueCat API Keys from environment variables
+const REVENUECAT_IOS_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY || '';
+const REVENUECAT_ANDROID_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY || '';
 
 interface PurchaseState {
   customerInfo: CustomerInfo | null;
@@ -54,6 +54,11 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
     try {
       // Configure RevenueCat
       const apiKey = Platform.OS === 'ios' ? REVENUECAT_IOS_KEY : REVENUECAT_ANDROID_KEY;
+
+      if (!apiKey) {
+        console.warn('RevenueCat API key not configured. Set EXPO_PUBLIC_REVENUECAT_IOS_KEY or EXPO_PUBLIC_REVENUECAT_ANDROID_KEY in your .env file.');
+        return;
+      }
 
       await Purchases.configure({ apiKey });
 
