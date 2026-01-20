@@ -7,6 +7,7 @@ struct RecipeDetailView: View {
     @Bindable var recipe: Recipe
 
     @State private var showingAddToList = false
+    @State private var showingAddToMealPlan = false
     @State private var selectedServings: Int = 0
 
     var body: some View {
@@ -61,6 +62,12 @@ struct RecipeDetailView: View {
                         Label("Mark as Cooked", systemImage: "checkmark.circle")
                     }
 
+                    Button {
+                        showingAddToMealPlan = true
+                    } label: {
+                        Label("Add to Meal Plan", systemImage: "calendar.badge.plus")
+                    }
+
                     if recipe.sourceURL != nil {
                         Button {
                             shareRecipe()
@@ -78,6 +85,9 @@ struct RecipeDetailView: View {
         }
         .sheet(isPresented: $showingAddToList) {
             AddToGroceryListSheet(recipe: recipe)
+        }
+        .sheet(isPresented: $showingAddToMealPlan) {
+            AddRecipeToMealPlanSheet(recipe: recipe)
         }
     }
 
@@ -481,6 +491,120 @@ struct AddToGroceryListSheet: View {
     }
 }
 
+// MARK: - Add Recipe to Meal Plan Sheet
+
+struct AddRecipeToMealPlanSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+
+    let recipe: Recipe
+
+    @State private var selectedDate = Date()
+    @State private var selectedMealType: MealPlan.MealType = .dinner
+    @State private var enableReminder = false
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Date & Meal") {
+                    DatePicker(
+                        "Date",
+                        selection: $selectedDate,
+                        displayedComponents: .date
+                    )
+
+                    Picker("Meal", selection: $selectedMealType) {
+                        ForEach(MealPlan.MealType.allCases, id: \.self) { type in
+                            Label(type.rawValue, systemImage: type.icon)
+                                .tag(type)
+                        }
+                    }
+                }
+
+                Section {
+                    Toggle("Set Reminder", isOn: $enableReminder)
+                } footer: {
+                    Text("Get notified when it's time to start cooking.")
+                }
+
+                Section("Recipe") {
+                    HStack(spacing: 12) {
+                        AsyncImage(url: URL(string: recipe.imageURL ?? "")) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image.resizable().aspectRatio(contentMode: .fill)
+                            default:
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(Color.gray.opacity(0.2))
+                                    .overlay {
+                                        Image(systemName: "fork.knife")
+                                            .foregroundStyle(.gray)
+                                    }
+                            }
+                        }
+                        .frame(width: 50, height: 50)
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(recipe.title)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+
+                            HStack {
+                                if let cookTime = recipe.cookTime {
+                                    Label(cookTime, systemImage: "clock")
+                                }
+                                if let servings = recipe.servings {
+                                    Label("\(servings)", systemImage: "person.2")
+                                }
+                            }
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Add to Meal Plan")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Add") {
+                        addToMealPlan()
+                    }
+                    .fontWeight(.semibold)
+                }
+            }
+        }
+    }
+
+    private func addToMealPlan() {
+        let calendar = Calendar.current
+        let defaultTime = selectedMealType.defaultTime
+        var components = calendar.dateComponents([.year, .month, .day], from: selectedDate)
+        components.hour = defaultTime.hour
+        components.minute = defaultTime.minute
+        let reminderTime = calendar.date(from: components)
+
+        let mealPlan = MealPlan(
+            date: selectedDate,
+            mealType: selectedMealType,
+            recipeId: recipe.id,
+            recipeName: recipe.title,
+            reminder: enableReminder,
+            reminderTime: enableReminder ? reminderTime : nil
+        )
+
+        modelContext.insert(mealPlan)
+        dismiss()
+    }
+}
+
 #Preview {
     NavigationStack {
         RecipeDetailView(recipe: Recipe(
@@ -504,5 +628,5 @@ struct AddToGroceryListSheet: View {
             ]
         ))
     }
-    .modelContainer(for: [Recipe.self, PantryItem.self], inMemory: true)
+    .modelContainer(for: [Recipe.self, PantryItem.self, MealPlan.self], inMemory: true)
 }

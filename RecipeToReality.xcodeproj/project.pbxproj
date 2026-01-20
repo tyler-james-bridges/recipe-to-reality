@@ -32,6 +32,9 @@
 		A1000021 /* PantryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000021 /* PantryView.swift */; };
 		A1000022 /* AddPantryItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000022 /* AddPantryItemView.swift */; };
 		A1000023 /* WhatCanIMakeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000023 /* WhatCanIMakeView.swift */; };
+		A1000030 /* MealPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000030 /* MealPlan.swift */; };
+		A1000031 /* MealPlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000031 /* MealPlanView.swift */; };
+		A1000032 /* AddMealPlanSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000032 /* AddMealPlanSheet.swift */; };
 		B1000001 /* GroceryListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000001 /* GroceryListTests.swift */; };
 		B1000002 /* IngredientParsingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000002 /* IngredientParsingTests.swift */; };
 		B1000003 /* RecipeExtractionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000003 /* RecipeExtractionTests.swift */; };
@@ -73,6 +76,9 @@
 		A2000021 /* PantryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PantryView.swift; sourceTree = "<group>"; };
 		A2000022 /* AddPantryItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPantryItemView.swift; sourceTree = "<group>"; };
 		A2000023 /* WhatCanIMakeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhatCanIMakeView.swift; sourceTree = "<group>"; };
+		A2000030 /* MealPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealPlan.swift; sourceTree = "<group>"; };
+		A2000031 /* MealPlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealPlanView.swift; sourceTree = "<group>"; };
+		A2000032 /* AddMealPlanSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMealPlanSheet.swift; sourceTree = "<group>"; };
 		B0000001 /* RecipeToRealityTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RecipeToRealityTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2000001 /* GroceryListTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroceryListTests.swift; sourceTree = "<group>"; };
 		B2000002 /* IngredientParsingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IngredientParsingTests.swift; sourceTree = "<group>"; };
@@ -149,6 +155,7 @@
 				A2000003 /* Recipe.swift */,
 				A2000004 /* GroceryList.swift */,
 				A2000020 /* PantryItem.swift */,
+				A2000030 /* MealPlan.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -164,6 +171,8 @@
 				A2000021 /* PantryView.swift */,
 				A2000022 /* AddPantryItemView.swift */,
 				A2000023 /* WhatCanIMakeView.swift */,
+				A2000031 /* MealPlanView.swift */,
+				A2000032 /* AddMealPlanSheet.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -321,6 +330,9 @@
 				A1000021 /* PantryView.swift in Sources */,
 				A1000022 /* AddPantryItemView.swift in Sources */,
 				A1000023 /* WhatCanIMakeView.swift in Sources */,
+				A1000030 /* MealPlan.swift in Sources */,
+				A1000031 /* MealPlanView.swift in Sources */,
+				A1000032 /* AddMealPlanSheet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

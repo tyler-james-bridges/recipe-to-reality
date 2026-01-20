@@ -9,7 +9,7 @@ struct RecipeToRealityApp: App {
     init() {
         // Configure SwiftData
         do {
-            modelContainer = try ModelContainer(for: Recipe.self, GroceryList.self, PantryItem.self)
+            modelContainer = try ModelContainer(for: Recipe.self, GroceryList.self, PantryItem.self, MealPlan.self)
         } catch {
             fatalError("Failed to initialize ModelContainer: \(error)")
         }

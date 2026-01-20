@@ -235,75 +235,43 @@ struct GenerateGroceryListSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var recipes: [Recipe]
     @Query private var groceryLists: [GroceryList]
+    @Query(sort: \MealPlan.date) private var mealPlans: [MealPlan]
 
     @State private var selectedRecipeIds: Set<UUID> = []
+    @State private var generateMode: GenerateMode = .recipes
+    @State private var startDate: Date = Date()
+    @State private var endDate: Date = Calendar.current.date(byAdding: .day, value: 6, to: Date()) ?? Date()
+
+    enum GenerateMode: String, CaseIterable {
+        case recipes = "Recipes"
+        case mealPlan = "Meal Plan"
+    }
 
     private var queuedRecipes: [Recipe] {
         recipes.filter { $0.isInQueue }
     }
 
+    private var mealPlanRecipeIds: Set<UUID> {
+        let plansInRange = mealPlans.forDateRange(from: startDate, to: endDate)
+        return Set(plansInRange.compactMap { $0.recipeId })
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                if recipes.isEmpty {
-                    ContentUnavailableView(
-                        "No Recipes",
-                        systemImage: "book.closed",
-                        description: Text("Add some recipes first to generate a grocery list.")
-                    )
+                // Mode picker
+                Picker("Generate Mode", selection: $generateMode) {
+                    ForEach(GenerateMode.allCases, id: \.self) { mode in
+                        Text(mode.rawValue).tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding()
+
+                if generateMode == .recipes {
+                    recipesSelectionView
                 } else {
-                    // Quick select options
-                    HStack {
-                        Button("Select Queue (\(queuedRecipes.count))") {
-                            selectedRecipeIds = Set(queuedRecipes.map { $0.id })
-                        }
-                        .disabled(queuedRecipes.isEmpty)
-
-                        Spacer()
-
-                        Button("Clear") {
-                            selectedRecipeIds.removeAll()
-                        }
-                    }
-                    .font(.subheadline)
-                    .padding()
-
-                    Divider()
-
-                    List {
-                        ForEach(recipes) { recipe in
-                            HStack {
-                                Image(systemName: selectedRecipeIds.contains(recipe.id)
-                                      ? "checkmark.circle.fill"
-                                      : "circle")
-                                .foregroundStyle(selectedRecipeIds.contains(recipe.id)
-                                               ? .orange
-                                               : .gray)
-
-                                VStack(alignment: .leading) {
-                                    Text(recipe.title)
-                                        .lineLimit(1)
-
-                                    Text("\(recipe.ingredients.count) ingredients")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-
-                                Spacer()
-
-                                if recipe.isInQueue {
-                                    Image(systemName: "clock")
-                                        .font(.caption)
-                                        .foregroundStyle(.orange)
-                                }
-                            }
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                toggleRecipe(recipe.id)
-                            }
-                        }
-                    }
-                    .listStyle(.plain)
+                    mealPlanSelectionView
                 }
             }
             .navigationTitle("Generate List")
@@ -319,12 +287,149 @@ struct GenerateGroceryListSheet: View {
                     Button("Generate") {
                         generateList()
                     }
-                    .disabled(selectedRecipeIds.isEmpty)
+                    .disabled(generateMode == .recipes ? selectedRecipeIds.isEmpty : mealPlanRecipeIds.isEmpty)
                     .fontWeight(.semibold)
                 }
             }
         }
     }
+
+    // MARK: - Recipes Selection View
+
+    private var recipesSelectionView: some View {
+        VStack(spacing: 0) {
+            if recipes.isEmpty {
+                ContentUnavailableView(
+                    "No Recipes",
+                    systemImage: "book.closed",
+                    description: Text("Add some recipes first to generate a grocery list.")
+                )
+            } else {
+                // Quick select options
+                HStack {
+                    Button("Select Queue (\(queuedRecipes.count))") {
+                        selectedRecipeIds = Set(queuedRecipes.map { $0.id })
+                    }
+                    .disabled(queuedRecipes.isEmpty)
+
+                    Spacer()
+
+                    Button("Clear") {
+                        selectedRecipeIds.removeAll()
+                    }
+                }
+                .font(.subheadline)
+                .padding()
+
+                Divider()
+
+                List {
+                    ForEach(recipes) { recipe in
+                        HStack {
+                            Image(systemName: selectedRecipeIds.contains(recipe.id)
+                                  ? "checkmark.circle.fill"
+                                  : "circle")
+                            .foregroundStyle(selectedRecipeIds.contains(recipe.id)
+                                           ? .orange
+                                           : .gray)
+
+                            VStack(alignment: .leading) {
+                                Text(recipe.title)
+                                    .lineLimit(1)
+
+                                Text("\(recipe.ingredients.count) ingredients")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Spacer()
+
+                            if recipe.isInQueue {
+                                Image(systemName: "clock")
+                                    .font(.caption)
+                                    .foregroundStyle(.orange)
+                            }
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            toggleRecipe(recipe.id)
+                        }
+                    }
+                }
+                .listStyle(.plain)
+            }
+        }
+    }
+
+    // MARK: - Meal Plan Selection View
+
+    private var mealPlanSelectionView: some View {
+        VStack(spacing: 0) {
+            // Date range picker
+            VStack(spacing: 12) {
+                DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
+                DatePicker("End Date", selection: $endDate, in: startDate..., displayedComponents: .date)
+            }
+            .padding()
+
+            Divider()
+
+            // Show planned meals in range
+            let plansInRange = mealPlans.forDateRange(from: startDate, to: endDate)
+
+            if plansInRange.isEmpty {
+                ContentUnavailableView(
+                    "No Meals Planned",
+                    systemImage: "calendar",
+                    description: Text("No meals planned for this date range.")
+                )
+            } else {
+                List {
+                    let groupedByDate = plansInRange.groupedByDate()
+                    ForEach(groupedByDate.keys.sorted(), id: \.self) { date in
+                        Section(date.formatted(.dateTime.weekday().month().day())) {
+                            ForEach(groupedByDate[date] ?? []) { plan in
+                                HStack {
+                                    Image(systemName: plan.mealType.icon)
+                                        .foregroundStyle(.orange)
+                                        .frame(width: 24)
+
+                                    VStack(alignment: .leading) {
+                                        Text(plan.mealType.rawValue)
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                        Text(plan.recipeName ?? "Custom meal")
+                                            .lineLimit(1)
+                                    }
+
+                                    Spacer()
+
+                                    if plan.recipeId != nil {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundStyle(.green)
+                                            .font(.caption)
+                                    } else {
+                                        Text("No recipe")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                .listStyle(.insetGrouped)
+
+                // Summary
+                Text("\(mealPlanRecipeIds.count) recipes to shop for")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .padding()
+            }
+        }
+    }
+
+    // MARK: - Actions
 
     private func toggleRecipe(_ id: UUID) {
         if selectedRecipeIds.contains(id) {
@@ -335,8 +440,15 @@ struct GenerateGroceryListSheet: View {
     }
 
     private func generateList() {
-        let selectedRecipes = recipes.filter { selectedRecipeIds.contains($0.id) }
-        let list = GroceryList.generate(from: selectedRecipes)
+        let recipesToUse: [Recipe]
+
+        if generateMode == .recipes {
+            recipesToUse = recipes.filter { selectedRecipeIds.contains($0.id) }
+        } else {
+            recipesToUse = recipes.filter { mealPlanRecipeIds.contains($0.id) }
+        }
+
+        let list = GroceryList.generate(from: recipesToUse)
 
         // Replace existing list
         for existing in groceryLists {
@@ -350,5 +462,5 @@ struct GenerateGroceryListSheet: View {
 
 #Preview {
     GroceryListView()
-        .modelContainer(for: [Recipe.self, GroceryList.self], inMemory: true)
+        .modelContainer(for: [Recipe.self, GroceryList.self, MealPlan.self], inMemory: true)
 }
