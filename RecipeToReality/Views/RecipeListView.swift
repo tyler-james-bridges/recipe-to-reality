@@ -4,6 +4,7 @@ import SwiftData
 struct RecipeListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Recipe.dateAdded, order: .reverse) private var recipes: [Recipe]
+    @Query private var pantryItems: [PantryItem]
 
     @State private var showingAddRecipe = false
     @State private var searchText = ""
@@ -79,7 +80,7 @@ struct RecipeListView: View {
             List {
                 ForEach(filteredRecipes) { recipe in
                     NavigationLink(destination: RecipeDetailView(recipe: recipe)) {
-                        RecipeRowView(recipe: recipe)
+                        RecipeRowView(recipe: recipe, pantryItems: pantryItems)
                     }
                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                         Button(role: .destructive) {
@@ -140,6 +141,17 @@ struct EmptyRecipeView: View {
 
 struct RecipeRowView: View {
     let recipe: Recipe
+    var pantryItems: [PantryItem] = []
+
+    var pantryMatchPercentage: Double? {
+        guard !pantryItems.isEmpty, !recipe.ingredients.isEmpty else { return nil }
+
+        let matchedCount = recipe.ingredients.filter { ingredient in
+            pantryItems.contains { $0.matches(ingredient: ingredient) }
+        }.count
+
+        return Double(matchedCount) / Double(recipe.ingredients.count) * 100
+    }
 
     var body: some View {
         HStack(spacing: 12) {
@@ -185,6 +197,11 @@ struct RecipeRowView: View {
 
             Spacer()
 
+            // Pantry match indicator
+            if let percentage = pantryMatchPercentage {
+                PantryMatchBadge(percentage: percentage)
+            }
+
             if recipe.isInQueue {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(.orange)
@@ -229,7 +246,38 @@ struct RecipeRowView: View {
     }
 }
 
+// MARK: - Pantry Match Badge
+
+struct PantryMatchBadge: View {
+    let percentage: Double
+
+    var color: Color {
+        if percentage >= 70 {
+            return .green
+        } else if percentage >= 40 {
+            return .orange
+        } else {
+            return .gray
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: 2) {
+            Image(systemName: "refrigerator")
+                .font(.caption2)
+            Text("\(Int(percentage))%")
+                .font(.caption2)
+                .fontWeight(.medium)
+        }
+        .padding(.horizontal, 6)
+        .padding(.vertical, 2)
+        .background(color.opacity(0.15))
+        .foregroundStyle(color)
+        .clipShape(Capsule())
+    }
+}
+
 #Preview {
     RecipeListView()
-        .modelContainer(for: Recipe.self, inMemory: true)
+        .modelContainer(for: [Recipe.self, PantryItem.self], inMemory: true)
 }

@@ -3,6 +3,7 @@ import SwiftData
 
 struct RecipeDetailView: View {
     @Environment(\.modelContext) private var modelContext
+    @Query private var pantryItems: [PantryItem]
     @Bindable var recipe: Recipe
 
     @State private var showingAddToList = false
@@ -214,14 +215,24 @@ struct RecipeDetailView: View {
             }
 
             ForEach(recipe.ingredients) { ingredient in
+                let isOwned = pantryItems.contains { $0.matches(ingredient: ingredient) }
                 HStack(alignment: .top, spacing: 12) {
-                    Image(systemName: "circle")
-                        .font(.system(size: 8))
-                        .foregroundStyle(.orange)
-                        .padding(.top, 6)
+                    Image(systemName: isOwned ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: isOwned ? 14 : 8))
+                        .foregroundStyle(isOwned ? .green : .orange)
+                        .padding(.top, isOwned ? 3 : 6)
 
                     Text(scaledIngredient(ingredient))
                         .font(.body)
+                        .foregroundStyle(isOwned ? .primary : .primary)
+
+                    Spacer()
+
+                    if isOwned {
+                        Text("In Pantry")
+                            .font(.caption)
+                            .foregroundStyle(.green)
+                    }
                 }
             }
         }
@@ -493,5 +504,5 @@ struct AddToGroceryListSheet: View {
             ]
         ))
     }
-    .modelContainer(for: Recipe.self, inMemory: true)
+    .modelContainer(for: [Recipe.self, PantryItem.self], inMemory: true)
 }
