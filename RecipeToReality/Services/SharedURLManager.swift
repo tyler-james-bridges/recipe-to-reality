@@ -5,8 +5,8 @@ import SwiftUI
 class SharedURLManager: ObservableObject {
     static let shared = SharedURLManager()
 
-    private let appGroupID = "group.com.yourcompany.RecipeToReality"
-    private let sharedURLKey = "SharedRecipeURL"
+    private let appGroupID = AppConstants.appGroupID
+    private let sharedURLKey = AppConstants.sharedURLKey
 
     @Published var pendingURLs: [URL] = []
 

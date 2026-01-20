@@ -15,3 +15,16 @@ Pods/
 # Swift Package Manager
 .build/
 .swiftpm/
+
+# Secrets - NEVER commit these files
+Secrets.local.swift
+*.local.swift
+secrets.xcconfig
+*.secrets
+
+# Environment files
+.env
+.env.*
+
+# Package.resolved - regenerate from Package.swift
+Package.resolved
