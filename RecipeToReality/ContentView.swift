@@ -12,17 +12,23 @@ struct ContentView: View {
                 }
                 .tag(0)
 
+            PantryView()
+                .tabItem {
+                    Label("Pantry", systemImage: "refrigerator")
+                }
+                .tag(1)
+
             GroceryListView()
                 .tabItem {
                     Label("Grocery List", systemImage: "cart")
                 }
-                .tag(1)
+                .tag(2)
 
             SettingsView()
                 .tabItem {
                     Label("Settings", systemImage: "gear")
                 }
-                .tag(2)
+                .tag(3)
         }
         .tint(.orange)
         .handleSharedURLs()
@@ -31,5 +37,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: [Recipe.self, GroceryList.self], inMemory: true)
+        .modelContainer(for: [Recipe.self, GroceryList.self, PantryItem.self], inMemory: true)
 }
