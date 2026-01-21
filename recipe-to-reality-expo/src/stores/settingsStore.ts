@@ -9,6 +9,7 @@ const SETTINGS_KEYS = {
   NOTIFICATIONS_ENABLED: 'settings_notifications_enabled',
   REMINDER_TIME_HOUR: 'settings_reminder_time_hour',
   REMINDER_TIME_MINUTE: 'settings_reminder_time_minute',
+  HAS_COMPLETED_ONBOARDING: 'settings_has_completed_onboarding',
 };
 
 interface SettingsState {
@@ -19,6 +20,7 @@ interface SettingsState {
   reminderTimeMinute: number;
   isLoading: boolean;
   dbInitialized: boolean;
+  hasCompletedOnboarding: boolean;
 
   // Actions
   loadSettings: () => Promise<void>;
@@ -26,6 +28,7 @@ interface SettingsState {
   setAIProvider: (provider: AIProviderType) => Promise<void>;
   setNotificationsEnabled: (enabled: boolean) => Promise<void>;
   setReminderTime: (hour: number, minute: number) => Promise<void>;
+  setHasCompletedOnboarding: (completed: boolean) => Promise<void>;
   initializeApp: () => Promise<void>;
   clearAllData: () => Promise<void>;
 }
@@ -38,15 +41,17 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   reminderTimeMinute: 0,
   isLoading: true,
   dbInitialized: false,
+  hasCompletedOnboarding: false,
 
   loadSettings: async () => {
     try {
-      const [haptic, provider, notifications, reminderHour, reminderMinute] = await Promise.all([
+      const [haptic, provider, notifications, reminderHour, reminderMinute, hasOnboarded] = await Promise.all([
         AsyncStorage.getItem(SETTINGS_KEYS.HAPTIC_FEEDBACK),
         AsyncStorage.getItem(SETTINGS_KEYS.AI_PROVIDER),
         AsyncStorage.getItem(SETTINGS_KEYS.NOTIFICATIONS_ENABLED),
         AsyncStorage.getItem(SETTINGS_KEYS.REMINDER_TIME_HOUR),
         AsyncStorage.getItem(SETTINGS_KEYS.REMINDER_TIME_MINUTE),
+        AsyncStorage.getItem(SETTINGS_KEYS.HAS_COMPLETED_ONBOARDING),
       ]);
 
       set({
@@ -55,6 +60,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         notificationsEnabled: notifications !== 'false',
         reminderTimeHour: reminderHour ? parseInt(reminderHour, 10) : 18,
         reminderTimeMinute: reminderMinute ? parseInt(reminderMinute, 10) : 0,
+        hasCompletedOnboarding: hasOnboarded === 'true',
         isLoading: false,
       });
     } catch (error) {
@@ -84,6 +90,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       AsyncStorage.setItem(SETTINGS_KEYS.REMINDER_TIME_MINUTE, minute.toString()),
     ]);
     set({ reminderTimeHour: hour, reminderTimeMinute: minute });
+  },
+
+  setHasCompletedOnboarding: async (completed) => {
+    await AsyncStorage.setItem(SETTINGS_KEYS.HAS_COMPLETED_ONBOARDING, completed.toString());
+    set({ hasCompletedOnboarding: completed });
   },
 
   initializeApp: async () => {
