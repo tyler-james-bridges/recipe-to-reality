@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react';
 import { StyleSheet, View, Pressable, SectionList, useColorScheme, Alert } from 'react-native';
-import { router, Stack } from 'expo-router';
+import { router, Stack, Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
-import * as Progress from 'react-native-progress';
+import Animated, { FadeInDown, Layout } from 'react-native-reanimated';
 
 import { ThemedView, ThemedText } from '@/components/Themed';
 import { useGroceryStore } from '@/src/stores/groceryStore';
@@ -13,7 +13,9 @@ import { useSettingsStore } from '@/src/stores/settingsStore';
 import { GroceryItem, INGREDIENT_CATEGORIES } from '@/src/types';
 import GroceryItemRow from '@/src/components/GroceryItemRow';
 import EmptyState from '@/src/components/EmptyState';
-import Colors from '@/constants/Colors';
+import ProgressBar from '@/src/components/ui/ProgressBar';
+import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
+import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors';
 
 export default function GroceryScreen() {
   const colorScheme = useColorScheme();
@@ -62,11 +64,9 @@ export default function GroceryScreen() {
       grouped[category].push(item);
     });
 
-    // Sort categories by the order in INGREDIENT_CATEGORIES
     return INGREDIENT_CATEGORIES.filter((cat) => grouped[cat]?.length > 0).map((category) => ({
       title: category,
       data: grouped[category].sort((a, b) => {
-        // Unchecked items first
         if (a.isChecked !== b.isChecked) {
           return a.isChecked ? 1 : -1;
         }
@@ -109,17 +109,20 @@ export default function GroceryScreen() {
     );
   };
 
-  const renderItem = ({ item }: { item: GroceryItem }) => (
+  const renderItem = ({ item, index }: { item: GroceryItem; index: number }) => (
     <GroceryItemRow
       item={item}
       onToggle={() => handleToggleItem(item.id)}
       onDelete={() => deleteItem(item.id)}
+      index={index}
     />
   );
 
   const renderSectionHeader = ({ section: { title } }: { section: { title: string } }) => (
-    <View style={[styles.sectionHeader, { backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#F2F2F7' }]}>
-      <ThemedText style={styles.sectionTitle}>{title}</ThemedText>
+    <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
+      <ThemedText style={[styles.sectionTitle, { color: colors.textTertiary }]}>
+        {title}
+      </ThemedText>
     </View>
   );
 
@@ -132,16 +135,21 @@ export default function GroceryScreen() {
           headerRight: () => (
             <View style={styles.headerButtons}>
               {items.length > 0 && (
-                <Pressable onPress={handleShowMenu} style={styles.headerButton}>
+                <AnimatedPressable
+                  onPress={handleShowMenu}
+                  hapticType="selection"
+                  style={styles.headerButton}
+                >
                   <Ionicons name="ellipsis-horizontal-circle" size={24} color={colors.tint} />
-                </Pressable>
+                </AnimatedPressable>
               )}
-              <Pressable
-                onPress={() => router.push('/grocery/generate')}
+              <AnimatedPressable
+                onPress={() => router.push('/grocery/generate' as Href)}
+                hapticType="medium"
                 style={styles.headerButton}
               >
                 <Ionicons name="sparkles" size={22} color={colors.tint} />
-              </Pressable>
+              </AnimatedPressable>
             </View>
           ),
         }}
@@ -158,31 +166,34 @@ export default function GroceryScreen() {
                 : undefined
             }
             actionLabel={queuedRecipes.length > 0 ? 'Generate from Queue' : undefined}
-            onAction={queuedRecipes.length > 0 ? () => router.push('/grocery/generate') : undefined}
+            onAction={queuedRecipes.length > 0 ? () => router.push('/grocery/generate' as Href) : undefined}
           />
         ) : (
           <>
-            {/* Progress Header - matches SwiftUI design */}
-            <View style={[styles.progressContainer, { backgroundColor: colors.card }]}>
+            {/* Progress Header Card */}
+            <Animated.View
+              entering={FadeInDown.duration(300)}
+              style={[
+                styles.progressCard,
+                { backgroundColor: colors.card },
+                shadows.small,
+              ]}
+            >
               <View style={styles.progressHeader}>
-                <ThemedText style={styles.progressText}>
-                  {checkedCount} of {totalCount} items
-                </ThemedText>
+                <View style={styles.progressTextContainer}>
+                  <ThemedText style={styles.progressLabel}>Shopping Progress</ThemedText>
+                  <ThemedText style={[styles.progressCount, { color: colors.textTertiary }]}>
+                    {checkedCount} of {totalCount} items
+                  </ThemedText>
+                </View>
                 <ThemedText style={[styles.progressPercent, { color: colors.tint }]}>
                   {Math.round(progress * 100)}%
                 </ThemedText>
               </View>
-              <View style={[styles.progressBar, { backgroundColor: colorScheme === 'dark' ? '#38383A' : '#E5E5EA' }]}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    { width: `${progress * 100}%`, backgroundColor: colors.tint },
-                  ]}
-                />
-              </View>
-            </View>
+              <ProgressBar progress={progress} height={8} showGlow={progress > 0.5} />
+            </Animated.View>
 
-            {/* Grouped items by category - insetGrouped list style */}
+            {/* Grouped items by category */}
             <SectionList
               sections={sections}
               renderItem={renderItem}
@@ -191,10 +202,7 @@ export default function GroceryScreen() {
               contentContainerStyle={styles.list}
               showsVerticalScrollIndicator={false}
               stickySectionHeadersEnabled={false}
-              style={{ backgroundColor: colors.background }}
-              ItemSeparatorComponent={() => (
-                <View style={[styles.separator, { backgroundColor: colors.border }]} />
-              )}
+              ItemSeparatorComponent={() => <View style={styles.itemSeparator} />}
               SectionSeparatorComponent={() => <View style={styles.sectionSeparator} />}
             />
           </>
@@ -210,57 +218,53 @@ const styles = StyleSheet.create({
   },
   headerButtons: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   headerButton: {
-    padding: 4,
+    padding: spacing.xs,
   },
-  progressContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+  progressCard: {
+    marginHorizontal: spacing.lg,
+    marginVertical: spacing.md,
+    padding: spacing.lg,
+    borderRadius: radius.lg,
   },
   progressHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+    alignItems: 'flex-start',
+    marginBottom: spacing.md,
   },
-  progressText: {
-    fontSize: 15,
-    color: '#8E8E93',
+  progressTextContainer: {
+    flex: 1,
+  },
+  progressLabel: {
+    ...typography.titleSmall,
+    marginBottom: spacing.xs,
+  },
+  progressCount: {
+    ...typography.caption,
   },
   progressPercent: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  progressBar: {
-    height: 4,
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 2,
+    ...typography.displayMedium,
   },
   sectionHeader: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    paddingTop: spacing.md,
   },
   sectionTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#8E8E93',
+    ...typography.labelMedium,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  separator: {
-    height: StyleSheet.hairlineWidth,
-    marginLeft: 52, // 16 padding + 24 checkbox + 12 margin
+  itemSeparator: {
+    height: spacing.xs,
   },
   sectionSeparator: {
-    height: 16,
+    height: spacing.md,
   },
   list: {
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
 });

@@ -1,24 +1,51 @@
 import React from 'react';
-import { StyleSheet, View, Pressable, useColorScheme } from 'react-native';
+import { StyleSheet, View, useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withDelay,
+  interpolate,
+  Extrapolation,
+} from 'react-native-reanimated';
 import { ThemedText } from '@/components/Themed';
 import { PantryItem } from '../types';
 import { isExpired, isExpiringSoon } from '../utils/pantryMatching';
 import { formatIngredient } from '../utils/quantity';
-import Colors from '@/constants/Colors';
+import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors';
+import AnimatedPressable from './ui/AnimatedPressable';
+import Badge from './ui/Badge';
 
 interface PantryItemRowProps {
   item: PantryItem;
   onDelete: () => void;
   onPress?: () => void;
+  index?: number;
 }
 
 /**
- * Matches SwiftUI PantryItemRow styling
+ * Modern pantry item row with animations
  */
-export default function PantryItemRow({ item, onDelete, onPress }: PantryItemRowProps) {
+export default function PantryItemRow({ item, onDelete, onPress, index = 0 }: PantryItemRowProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const progress = useSharedValue(0);
+
+  React.useEffect(() => {
+    progress.value = withDelay(
+      index * 40,
+      withSpring(1, { damping: 18, stiffness: 100 })
+    );
+  }, [index]);
+
+  const rowAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(progress.value, [0, 1], [0, 1], Extrapolation.CLAMP),
+    transform: [
+      { translateX: interpolate(progress.value, [0, 1], [-20, 0], Extrapolation.CLAMP) },
+      { scale: interpolate(progress.value, [0, 1], [0.95, 1], Extrapolation.CLAMP) },
+    ],
+  }));
 
   const expired = isExpired(item);
   const expiringSoon = isExpiringSoon(item);
@@ -28,48 +55,81 @@ export default function PantryItemRow({ item, onDelete, onPress }: PantryItemRow
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
+  const getCategoryIcon = (category?: string): string => {
+    const icons: Record<string, string> = {
+      'Produce': 'leaf',
+      'Dairy': 'water',
+      'Meat': 'restaurant',
+      'Seafood': 'fish',
+      'Grains': 'nutrition',
+      'Spices': 'flame',
+      'Canned': 'cube',
+      'Frozen': 'snow',
+      'Beverages': 'cafe',
+      'Condiments': 'color-fill',
+    };
+    return icons[category || ''] || 'ellipse';
+  };
+
   return (
-    <Pressable
-      style={[
-        styles.container,
-        { backgroundColor: colorScheme === 'dark' ? colors.card : '#fff' },
-      ]}
-      onPress={onPress}
-    >
-      <View style={styles.content}>
-        <ThemedText style={[styles.name, expired && { color: colors.error }]}>
-          {formatIngredient(item.name, item.quantity, item.unit)}
-        </ThemedText>
-
-        <View style={styles.metaRow}>
-          {item.expirationDate && (
-            <View style={styles.expirationContainer}>
-              {expired ? (
-                <View style={[styles.badge, { backgroundColor: colors.error + '26' }]}>
-                  <Ionicons name="alert-circle" size={12} color={colors.error} />
-                  <ThemedText style={[styles.badgeText, { color: colors.error }]}>
-                    Expired
-                  </ThemedText>
-                </View>
-              ) : expiringSoon ? (
-                <View style={[styles.badge, { backgroundColor: colors.warning + '26' }]}>
-                  <Ionicons name="time" size={12} color={colors.warning} />
-                  <ThemedText style={[styles.badgeText, { color: colors.warning }]}>
-                    {formatDate(item.expirationDate)}
-                  </ThemedText>
-                </View>
-              ) : (
-                <ThemedText style={styles.expirationText}>
-                  Exp: {formatDate(item.expirationDate)}
-                </ThemedText>
-              )}
-            </View>
-          )}
+    <Animated.View style={rowAnimatedStyle}>
+      <AnimatedPressable
+        onPress={onPress}
+        hapticType="light"
+        scaleOnPress={0.98}
+        style={[
+          styles.container,
+          { backgroundColor: colors.card },
+          shadows.small,
+        ]}
+      >
+        {/* Category Icon */}
+        <View style={[styles.iconContainer, { backgroundColor: colors.accentSubtle }]}>
+          <Ionicons
+            name={getCategoryIcon(item.category) as any}
+            size={18}
+            color={colors.tint}
+          />
         </View>
-      </View>
 
-      <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
-    </Pressable>
+        {/* Content */}
+        <View style={styles.content}>
+          <ThemedText
+            style={[styles.name, expired && { color: colors.error }]}
+            numberOfLines={1}
+          >
+            {formatIngredient(item.name, item.quantity, item.unit)}
+          </ThemedText>
+
+          <View style={styles.metaRow}>
+            {item.category && (
+              <ThemedText style={[styles.categoryText, { color: colors.textTertiary }]}>
+                {item.category}
+              </ThemedText>
+            )}
+            {item.expirationDate && (
+              <>
+                {item.category && (
+                  <View style={[styles.dot, { backgroundColor: colors.textTertiary }]} />
+                )}
+                {expired ? (
+                  <Badge label="Expired" variant="error" size="small" />
+                ) : expiringSoon ? (
+                  <Badge label={`Exp: ${formatDate(item.expirationDate)}`} variant="warning" size="small" />
+                ) : (
+                  <ThemedText style={[styles.expirationText, { color: colors.textTertiary }]}>
+                    Exp: {formatDate(item.expirationDate)}
+                  </ThemedText>
+                )}
+              </>
+            )}
+          </View>
+        </View>
+
+        {/* Chevron */}
+        <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
+      </AnimatedPressable>
+    </Animated.View>
   );
 }
 
@@ -77,41 +137,41 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    marginHorizontal: spacing.lg,
+    borderRadius: radius.lg,
+    gap: spacing.md,
+  },
+  iconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: radius.md,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   content: {
     flex: 1,
-    gap: 4,
+    gap: spacing.xs,
   },
   name: {
-    fontSize: 17,
+    ...typography.bodyLarge,
     fontWeight: '500',
-    lineHeight: 22,
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
-  expirationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  categoryText: {
+    ...typography.caption,
   },
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 4,
-  },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: '500',
+  dot: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
   },
   expirationText: {
-    fontSize: 13,
-    color: '#8E8E93',
+    ...typography.caption,
   },
 });

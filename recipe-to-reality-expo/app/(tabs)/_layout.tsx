@@ -1,16 +1,53 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { useColorScheme, Platform } from 'react-native';
+import { useColorScheme, Platform, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  interpolate,
+} from 'react-native-reanimated';
 
-import Colors from '@/constants/Colors';
+import Colors, { spacing, animation } from '@/constants/Colors';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
-function TabBarIcon({ name, color, focused }: { name: IconName; color: string; focused: boolean }) {
+interface TabBarIconProps {
+  name: IconName;
+  color: string;
+  focused: boolean;
+}
+
+function TabBarIcon({ name, color, focused }: TabBarIconProps) {
+  const scale = useSharedValue(focused ? 1 : 0);
+
+  React.useEffect(() => {
+    scale.value = withSpring(focused ? 1 : 0, {
+      damping: animation.spring.damping,
+      stiffness: animation.spring.stiffness,
+    });
+  }, [focused]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { scale: interpolate(scale.value, [0, 1], [1, 1.1]) },
+    ],
+  }));
+
   // Use filled icons when focused, outline when not (iOS convention)
   const iconName = focused ? name : (`${name}-outline` as IconName);
-  return <Ionicons size={24} name={iconName} color={color} />;
+
+  return (
+    <View style={styles.iconContainer}>
+      <Animated.View style={animatedStyle}>
+        <Ionicons size={24} name={iconName} color={color} />
+      </Animated.View>
+      {focused && (
+        <View style={[styles.indicator, { backgroundColor: color }]} />
+      )}
+    </View>
+  );
 }
 
 export default function TabLayout() {
@@ -23,23 +60,36 @@ export default function TabLayout() {
         tabBarActiveTintColor: colors.tint,
         tabBarInactiveTintColor: colors.tabIconDefault,
         tabBarStyle: {
-          backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#F8F8F8',
-          borderTopColor: colors.border,
-          paddingBottom: Platform.OS === 'ios' ? 24 : 8,
-          paddingTop: 8,
-          height: Platform.OS === 'ios' ? 88 : 64,
+          backgroundColor: colorScheme === 'dark' ? colors.card : '#FFFFFF',
+          borderTopColor: colors.borderSubtle,
+          borderTopWidth: StyleSheet.hairlineWidth,
+          paddingBottom: Platform.OS === 'ios' ? 28 : 12,
+          paddingTop: 12,
+          height: Platform.OS === 'ios' ? 92 : 68,
+          // Modern glass effect for iOS
+          ...(Platform.OS === 'ios' && {
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+          }),
         },
         tabBarLabelStyle: {
           fontSize: 10,
-          fontWeight: '500',
+          fontWeight: '600',
+          letterSpacing: 0.2,
+          marginTop: 4,
         },
         headerStyle: {
-          backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#F8F8F8',
+          backgroundColor: colorScheme === 'dark' ? colors.card : '#FFFFFF',
+          shadowColor: 'transparent',
+          elevation: 0,
         },
         headerTintColor: colors.text,
         headerShadowVisible: false,
         headerTitleStyle: {
-          fontWeight: '600',
+          fontWeight: '700',
+          fontSize: 17,
         },
       }}
     >
@@ -91,3 +141,17 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  iconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  indicator: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    marginTop: 2,
+  },
+});

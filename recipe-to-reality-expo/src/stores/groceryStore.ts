@@ -24,6 +24,7 @@ interface GroceryState {
   toggleItem: (itemId: string) => Promise<void>;
   deleteItem: (itemId: string) => Promise<void>;
   clearChecked: () => Promise<void>;
+  clearAll: () => Promise<void>;
   deleteList: (listId: string) => Promise<void>;
 }
 
@@ -258,6 +259,28 @@ export const useGroceryStore = create<GroceryState>((set, get) => ({
         currentList: {
           ...currentList,
           items: currentList.items.filter((i) => !i.isChecked),
+        },
+      });
+    } catch (error) {
+      set({ error: (error as Error).message });
+      throw error;
+    }
+  },
+
+  clearAll: async () => {
+    try {
+      const currentList = get().currentList;
+      if (!currentList) return;
+
+      // Delete all items from the current list
+      for (const item of currentList.items) {
+        await db.delete(groceryItems).where(eq(groceryItems.id, item.id));
+      }
+
+      set({
+        currentList: {
+          ...currentList,
+          items: [],
         },
       });
     } catch (error) {
