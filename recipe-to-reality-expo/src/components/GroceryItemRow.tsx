@@ -1,9 +1,10 @@
 import React from 'react';
 import { StyleSheet, View, Pressable, useColorScheme } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/Themed';
 import { GroceryItem } from '../types';
 import { formatIngredient } from '../utils/quantity';
+import Colors from '@/constants/Colors';
 
 interface GroceryItemRowProps {
   item: GroceryItem;
@@ -11,45 +12,46 @@ interface GroceryItemRowProps {
   onDelete: () => void;
 }
 
+/**
+ * Matches SwiftUI GroceryItemRow styling
+ */
 export default function GroceryItemRow({ item, onToggle, onDelete }: GroceryItemRowProps) {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const colors = Colors[colorScheme ?? 'light'];
 
   return (
     <Pressable
       style={[
         styles.container,
-        { backgroundColor: isDark ? '#1f1f1f' : '#fff' },
-        item.isChecked && styles.checkedContainer,
+        { backgroundColor: colorScheme === 'dark' ? colors.card : '#fff' },
       ]}
       onPress={onToggle}
     >
-      <View style={styles.checkbox}>
-        <MaterialCommunityIcons
-          name={item.isChecked ? 'checkbox-marked' : 'checkbox-blank-outline'}
+      <Pressable onPress={onToggle} style={styles.checkbox}>
+        <Ionicons
+          name={item.isChecked ? 'checkmark-circle' : 'ellipse-outline'}
           size={24}
-          color={item.isChecked ? '#22c55e' : '#ccc'}
+          color={item.isChecked ? colors.success : '#C7C7CC'}
         />
-      </View>
+      </Pressable>
 
       <View style={styles.content}>
         <ThemedText
-          style={[styles.name, item.isChecked && styles.checkedText]}
+          style={[
+            styles.name,
+            item.isChecked && styles.checkedText,
+          ]}
           numberOfLines={1}
         >
           {formatIngredient(item.name, item.quantity, item.unit)}
         </ThemedText>
-      </View>
 
-      <Pressable
-        onPress={(e) => {
-          e.stopPropagation();
-          onDelete();
-        }}
-        style={styles.deleteButton}
-      >
-        <MaterialCommunityIcons name="close" size={18} color="#999" />
-      </Pressable>
+        {item.sourceRecipeIds && item.sourceRecipeIds.length > 1 && (
+          <ThemedText style={styles.sourceCount}>
+            From {item.sourceRecipeIds.length} recipes
+          </ThemedText>
+        )}
+      </View>
     </Pressable>
   );
 }
@@ -60,27 +62,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e0e0e0',
-  },
-  checkedContainer: {
-    opacity: 0.6,
   },
   checkbox: {
     marginRight: 12,
   },
   content: {
     flex: 1,
+    gap: 2,
   },
   name: {
-    fontSize: 16,
+    fontSize: 17,
+    lineHeight: 22,
   },
   checkedText: {
     textDecorationLine: 'line-through',
-    color: '#999',
+    color: '#8E8E93',
   },
-  deleteButton: {
-    padding: 8,
-    marginRight: -8,
+  sourceCount: {
+    fontSize: 11,
+    color: '#8E8E93',
   },
 });

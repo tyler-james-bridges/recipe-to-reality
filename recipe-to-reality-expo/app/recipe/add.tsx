@@ -9,9 +9,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  useColorScheme,
 } from 'react-native';
 import { router, Stack } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
 import { ThemedView, ThemedText } from '@/components/Themed';
@@ -19,11 +20,14 @@ import { useRecipeStore } from '@/src/stores/recipeStore';
 import { usePurchaseStore } from '@/src/stores/purchaseStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 import { extractRecipe } from '@/src/services/extraction/recipeExtraction';
-import { ExtractedRecipe, Ingredient, INGREDIENT_CATEGORIES, IngredientCategory } from '@/src/types';
+import { ExtractedRecipe, Ingredient, IngredientCategory } from '@/src/types';
+import Colors from '@/constants/Colors';
 
 type InputMode = 'url' | 'manual';
 
 export default function AddRecipeScreen() {
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
   const { addRecipe } = useRecipeStore();
   const { canExtract, recordExtraction, isPremium, remainingFreeExtractions } = usePurchaseStore();
   const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
@@ -41,7 +45,7 @@ export default function AddRecipeScreen() {
   const [instructionText, setInstructionText] = useState('');
   const [notes, setNotes] = useState('');
 
-  const triggerHaptic = (type: 'light' | 'success' | 'error') => {
+  const triggerHaptic = (type: 'light' | 'success' | 'error' | 'selection') => {
     if (!hapticFeedback) return;
     switch (type) {
       case 'light':
@@ -52,6 +56,9 @@ export default function AddRecipeScreen() {
         break;
       case 'error':
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        break;
+      case 'selection':
+        Haptics.selectionAsync();
         break;
     }
   };
@@ -169,15 +176,20 @@ export default function AddRecipeScreen() {
     <>
       <Stack.Screen
         options={{
+          title: 'Add Recipe',
           headerLeft: () => (
             <Pressable onPress={() => router.back()}>
-              <ThemedText style={styles.cancelButton}>Cancel</ThemedText>
+              <ThemedText style={[styles.headerButtonText, { color: colors.tint }]}>
+                Cancel
+              </ThemedText>
             </Pressable>
           ),
           headerRight: () =>
             mode === 'manual' ? (
               <Pressable onPress={handleSaveManual}>
-                <ThemedText style={styles.saveButton}>Save</ThemedText>
+                <ThemedText style={[styles.headerButtonText, styles.headerButtonBold, { color: colors.tint }]}>
+                  Save
+                </ThemedText>
               </Pressable>
             ) : null,
         }}
@@ -191,31 +203,43 @@ export default function AddRecipeScreen() {
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Mode Toggle */}
-          <View style={styles.modeToggle}>
+          {/* Segmented Mode Toggle - matches SwiftUI Picker with .segmented */}
+          <View style={[styles.segmentedContainer, { backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#E5E5EA' }]}>
             <Pressable
-              style={[styles.modeButton, mode === 'url' && styles.modeButtonActive]}
-              onPress={() => setMode('url')}
+              style={[
+                styles.segmentedButton,
+                mode === 'url' && [styles.segmentedButtonActive, { backgroundColor: colorScheme === 'dark' ? '#636366' : '#fff' }],
+              ]}
+              onPress={() => {
+                triggerHaptic('selection');
+                setMode('url');
+              }}
             >
-              <MaterialCommunityIcons
-                name="link-variant"
-                size={20}
-                color={mode === 'url' ? '#fff' : '#666'}
+              <Ionicons
+                name="link"
+                size={16}
+                color={mode === 'url' ? colors.text : '#8E8E93'}
               />
-              <ThemedText style={[styles.modeText, mode === 'url' && styles.modeTextActive]}>
+              <ThemedText style={[styles.segmentedText, mode === 'url' && styles.segmentedTextActive]}>
                 From URL
               </ThemedText>
             </Pressable>
             <Pressable
-              style={[styles.modeButton, mode === 'manual' && styles.modeButtonActive]}
-              onPress={() => setMode('manual')}
+              style={[
+                styles.segmentedButton,
+                mode === 'manual' && [styles.segmentedButtonActive, { backgroundColor: colorScheme === 'dark' ? '#636366' : '#fff' }],
+              ]}
+              onPress={() => {
+                triggerHaptic('selection');
+                setMode('manual');
+              }}
             >
-              <MaterialCommunityIcons
-                name="pencil"
-                size={20}
-                color={mode === 'manual' ? '#fff' : '#666'}
+              <Ionicons
+                name="create-outline"
+                size={16}
+                color={mode === 'manual' ? colors.text : '#8E8E93'}
               />
-              <ThemedText style={[styles.modeText, mode === 'manual' && styles.modeTextActive]}>
+              <ThemedText style={[styles.segmentedText, mode === 'manual' && styles.segmentedTextActive]}>
                 Manual
               </ThemedText>
             </Pressable>
@@ -223,33 +247,46 @@ export default function AddRecipeScreen() {
 
           {mode === 'url' ? (
             <View style={styles.urlSection}>
+              {/* Extraction Limit Banner */}
               {!isPremium && (
-                <View style={styles.limitBanner}>
-                  <MaterialCommunityIcons name="information" size={18} color="#FF6B35" />
-                  <ThemedText style={styles.limitText}>
+                <Pressable
+                  style={[styles.limitBanner, { backgroundColor: colors.tint + '1A' }]}
+                  onPress={() => router.push('/paywall')}
+                >
+                  <Ionicons name="sparkles" size={18} color={colors.tint} />
+                  <ThemedText style={[styles.limitText, { color: colors.tint }]}>
                     {remainingFreeExtractions} free extractions remaining
                   </ThemedText>
-                </View>
+                  <Ionicons name="chevron-forward" size={18} color={colors.tint} />
+                </Pressable>
               )}
 
-              <ThemedText style={styles.label}>Recipe URL</ThemedText>
-              <TextInput
-                style={styles.input}
-                value={url}
-                onChangeText={setUrl}
-                placeholder="https://example.com/recipe"
-                placeholderTextColor="#999"
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="url"
-              />
+              {/* URL Input - grouped style */}
+              <View style={[styles.inputGroup, { backgroundColor: colors.card }]}>
+                <ThemedText style={styles.inputLabel}>Recipe URL</ThemedText>
+                <TextInput
+                  style={[styles.input, { color: colors.text }]}
+                  value={url}
+                  onChangeText={setUrl}
+                  placeholder="https://example.com/recipe"
+                  placeholderTextColor="#8E8E93"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="url"
+                />
+              </View>
 
               <ThemedText style={styles.hint}>
-                Paste a link from any recipe website, YouTube, TikTok, or Instagram
+                Works with recipe websites, YouTube, TikTok, and Instagram videos.
               </ThemedText>
 
+              {/* Extract Button */}
               <Pressable
-                style={[styles.extractButton, isExtracting && styles.extractButtonDisabled]}
+                style={[
+                  styles.extractButton,
+                  { backgroundColor: colors.tint },
+                  isExtracting && styles.extractButtonDisabled,
+                ]}
                 onPress={handleExtractFromURL}
                 disabled={isExtracting}
               >
@@ -257,7 +294,7 @@ export default function AddRecipeScreen() {
                   <ActivityIndicator color="#fff" />
                 ) : (
                   <>
-                    <MaterialCommunityIcons name="auto-fix" size={20} color="#fff" />
+                    <Ionicons name="sparkles" size={20} color="#fff" />
                     <ThemedText style={styles.extractButtonText}>Extract Recipe</ThemedText>
                   </>
                 )}
@@ -265,83 +302,99 @@ export default function AddRecipeScreen() {
             </View>
           ) : (
             <View style={styles.manualSection}>
-              <ThemedText style={styles.label}>Recipe Title *</ThemedText>
-              <TextInput
-                style={styles.input}
-                value={title}
-                onChangeText={setTitle}
-                placeholder="Enter recipe title"
-                placeholderTextColor="#999"
-              />
+              {/* Title */}
+              <View style={[styles.inputGroup, { backgroundColor: colors.card }]}>
+                <ThemedText style={styles.inputLabel}>Recipe Title</ThemedText>
+                <TextInput
+                  style={[styles.input, { color: colors.text }]}
+                  value={title}
+                  onChangeText={setTitle}
+                  placeholder="Enter recipe title"
+                  placeholderTextColor="#8E8E93"
+                />
+              </View>
 
+              {/* Servings & Time Row */}
               <View style={styles.row}>
-                <View style={styles.halfField}>
-                  <ThemedText style={styles.label}>Servings</ThemedText>
+                <View style={[styles.inputGroup, styles.halfWidth, { backgroundColor: colors.card }]}>
+                  <ThemedText style={styles.inputLabel}>Servings</ThemedText>
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, { color: colors.text }]}
                     value={servings}
                     onChangeText={setServings}
                     placeholder="4"
-                    placeholderTextColor="#999"
+                    placeholderTextColor="#8E8E93"
                     keyboardType="number-pad"
                   />
                 </View>
-                <View style={styles.halfField}>
-                  <ThemedText style={styles.label}>Prep Time</ThemedText>
+                <View style={[styles.inputGroup, styles.halfWidth, { backgroundColor: colors.card }]}>
+                  <ThemedText style={styles.inputLabel}>Prep Time</ThemedText>
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, { color: colors.text }]}
                     value={prepTime}
                     onChangeText={setPrepTime}
                     placeholder="15 min"
-                    placeholderTextColor="#999"
+                    placeholderTextColor="#8E8E93"
                   />
                 </View>
               </View>
 
-              <ThemedText style={styles.label}>Cook Time</ThemedText>
-              <TextInput
-                style={styles.input}
-                value={cookTime}
-                onChangeText={setCookTime}
-                placeholder="30 min"
-                placeholderTextColor="#999"
-              />
+              {/* Cook Time */}
+              <View style={[styles.inputGroup, { backgroundColor: colors.card }]}>
+                <ThemedText style={styles.inputLabel}>Cook Time</ThemedText>
+                <TextInput
+                  style={[styles.input, { color: colors.text }]}
+                  value={cookTime}
+                  onChangeText={setCookTime}
+                  placeholder="30 min"
+                  placeholderTextColor="#8E8E93"
+                />
+              </View>
 
-              <ThemedText style={styles.label}>Ingredients (one per line)</ThemedText>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={ingredientText}
-                onChangeText={setIngredientText}
-                placeholder="2 cups flour&#10;1 tsp salt&#10;1/2 cup butter"
-                placeholderTextColor="#999"
-                multiline
-                numberOfLines={6}
-                textAlignVertical="top"
-              />
+              {/* Ingredients */}
+              <View style={[styles.inputGroup, { backgroundColor: colors.card }]}>
+                <ThemedText style={styles.inputLabel}>Ingredients (one per line)</ThemedText>
+                <TextInput
+                  style={[styles.input, styles.textArea, { color: colors.text }]}
+                  value={ingredientText}
+                  onChangeText={setIngredientText}
+                  placeholder={'2 cups flour\n1 tsp salt\n1/2 cup butter'}
+                  placeholderTextColor="#8E8E93"
+                  multiline
+                  numberOfLines={6}
+                  textAlignVertical="top"
+                />
+              </View>
 
-              <ThemedText style={styles.label}>Instructions (one step per line)</ThemedText>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={instructionText}
-                onChangeText={setInstructionText}
-                placeholder="Preheat oven to 350F&#10;Mix dry ingredients&#10;Add wet ingredients"
-                placeholderTextColor="#999"
-                multiline
-                numberOfLines={6}
-                textAlignVertical="top"
-              />
+              {/* Instructions */}
+              <View style={[styles.inputGroup, { backgroundColor: colors.card }]}>
+                <ThemedText style={styles.inputLabel}>Instructions (one step per line)</ThemedText>
+                <TextInput
+                  style={[styles.input, styles.textArea, { color: colors.text }]}
+                  value={instructionText}
+                  onChangeText={setInstructionText}
+                  placeholder={'Preheat oven to 350F\nMix dry ingredients\nAdd wet ingredients'}
+                  placeholderTextColor="#8E8E93"
+                  multiline
+                  numberOfLines={6}
+                  textAlignVertical="top"
+                />
+              </View>
 
-              <ThemedText style={styles.label}>Notes (optional)</ThemedText>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={notes}
-                onChangeText={setNotes}
-                placeholder="Any additional notes..."
-                placeholderTextColor="#999"
-                multiline
-                numberOfLines={3}
-                textAlignVertical="top"
-              />
+              {/* Notes */}
+              <View style={[styles.inputGroup, { backgroundColor: colors.card }]}>
+                <ThemedText style={styles.inputLabel}>Notes (optional)</ThemedText>
+                <TextInput
+                  style={[styles.input, styles.textAreaSmall, { color: colors.text }]}
+                  value={notes}
+                  onChangeText={setNotes}
+                  placeholder="Any additional notes..."
+                  placeholderTextColor="#8E8E93"
+                  multiline
+                  numberOfLines={3}
+                  textAlignVertical="top"
+                />
+              </View>
             </View>
           )}
         </ScrollView>
@@ -361,87 +414,97 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 40,
   },
-  modeToggle: {
+  headerButtonText: {
+    fontSize: 17,
+  },
+  headerButtonBold: {
+    fontWeight: '600',
+  },
+  segmentedContainer: {
     flexDirection: 'row',
-    backgroundColor: '#f0f0f0',
-    borderRadius: 12,
-    padding: 4,
+    borderRadius: 8,
+    padding: 2,
     marginBottom: 24,
   },
-  modeButton: {
+  segmentedButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 12,
-    borderRadius: 8,
+    gap: 6,
+    paddingVertical: 8,
+    borderRadius: 6,
   },
-  modeButtonActive: {
-    backgroundColor: '#FF6B35',
+  segmentedButtonActive: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
-  modeText: {
-    fontSize: 14,
+  segmentedText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#8E8E93',
+  },
+  segmentedTextActive: {
     fontWeight: '600',
-    color: '#666',
-  },
-  modeTextActive: {
-    color: '#fff',
   },
   urlSection: {},
   limitBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#FFF5F0',
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 10,
     marginBottom: 16,
+    gap: 8,
   },
   limitText: {
+    flex: 1,
     fontSize: 14,
-    color: '#FF6B35',
+    fontWeight: '500',
   },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 8,
-    color: '#333',
+  inputGroup: {
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+  },
+  inputLabel: {
+    fontSize: 13,
+    color: '#8E8E93',
+    marginBottom: 6,
   },
   input: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    marginBottom: 16,
+    fontSize: 17,
   },
   textArea: {
     height: 120,
-    paddingTop: 14,
+    paddingTop: 0,
+  },
+  textAreaSmall: {
+    height: 80,
+    paddingTop: 0,
   },
   hint: {
     fontSize: 13,
-    color: '#666',
+    color: '#8E8E93',
     marginBottom: 24,
+    textAlign: 'center',
   },
   extractButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#FF6B35',
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 10,
   },
   extractButtonDisabled: {
     opacity: 0.7,
   },
   extractButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
   },
   manualSection: {},
@@ -449,16 +512,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
   },
-  halfField: {
+  halfWidth: {
     flex: 1,
-  },
-  cancelButton: {
-    color: '#666',
-    fontSize: 16,
-  },
-  saveButton: {
-    color: '#FF6B35',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

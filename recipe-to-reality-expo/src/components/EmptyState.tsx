@@ -1,9 +1,10 @@
 import React from 'react';
-import { StyleSheet, View, Pressable } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { StyleSheet, View, Pressable, useColorScheme } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { ThemedText, ThemedView } from '@/components/Themed';
+import Colors from '@/constants/Colors';
 
-type IconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
 interface EmptyStateProps {
   icon: IconName;
@@ -11,24 +12,40 @@ interface EmptyStateProps {
   message: string;
   actionLabel?: string;
   onAction?: () => void;
+  secondaryMessage?: string;
 }
 
+/**
+ * Matches SwiftUI ContentUnavailableView styling
+ */
 export default function EmptyState({
   icon,
   title,
   message,
   actionLabel,
   onAction,
+  secondaryMessage,
 }: EmptyStateProps) {
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
+
   return (
     <ThemedView style={styles.container}>
       <View style={styles.iconContainer}>
-        <MaterialCommunityIcons name={icon} size={64} color="#d4d4d4" />
+        <Ionicons name={icon} size={56} color="#C7C7CC" />
       </View>
       <ThemedText style={styles.title}>{title}</ThemedText>
       <ThemedText style={styles.message}>{message}</ThemedText>
+      {secondaryMessage && (
+        <ThemedText style={[styles.secondaryMessage, { color: colors.tint }]}>
+          {secondaryMessage}
+        </ThemedText>
+      )}
       {actionLabel && onAction && (
-        <Pressable style={styles.button} onPress={onAction}>
+        <Pressable
+          style={[styles.button, { backgroundColor: colors.tint }]}
+          onPress={onAction}
+        >
           <ThemedText style={styles.buttonText}>{actionLabel}</ThemedText>
         </Pressable>
       )}
@@ -47,26 +64,31 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '600',
+    fontSize: 22,
+    fontWeight: '700',
     marginBottom: 8,
     textAlign: 'center',
   },
   message: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 15,
+    color: '#8E8E93',
     textAlign: 'center',
-    marginBottom: 24,
+    lineHeight: 20,
+  },
+  secondaryMessage: {
+    fontSize: 13,
+    marginTop: 8,
+    textAlign: 'center',
   },
   button: {
-    backgroundColor: '#FF6B35',
-    paddingHorizontal: 24,
+    marginTop: 20,
+    paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 24,
+    borderRadius: 10,
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
   },
 });

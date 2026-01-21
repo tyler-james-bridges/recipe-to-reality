@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Purchases, { CustomerInfo, PurchasesOfferings, PurchasesPackage } from 'react-native-purchases';
 import { FREE_EXTRACTION_LIMIT, PREMIUM_ENTITLEMENT } from '../types';
 
 const EXTRACTIONS_KEY = 'recipe_extractions_count';
@@ -10,6 +9,42 @@ const EXTRACTIONS_KEY = 'recipe_extractions_count';
 const REVENUECAT_IOS_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY || '';
 const REVENUECAT_ANDROID_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY || '';
 
+// Check if RevenueCat native module is available (not available in Expo Go)
+let Purchases: typeof import('react-native-purchases').default | null = null;
+let isRevenueCatAvailable = false;
+
+try {
+  // Dynamic require to avoid crash if native module isn't available
+  const RNPurchases = require('react-native-purchases');
+  Purchases = RNPurchases.default;
+  isRevenueCatAvailable = true;
+} catch (e) {
+  console.log('RevenueCat not available (running in Expo Go). Purchases disabled.');
+  isRevenueCatAvailable = false;
+}
+
+// Types for when RevenueCat isn't available
+interface CustomerInfo {
+  entitlements: {
+    active: Record<string, unknown>;
+  };
+}
+
+interface PurchasesOfferings {
+  current: {
+    availablePackages: PurchasesPackage[];
+  } | null;
+}
+
+interface PurchasesPackage {
+  identifier: string;
+  packageType: string;
+  product: {
+    title: string;
+    priceString: string;
+  };
+}
+
 interface PurchaseState {
   customerInfo: CustomerInfo | null;
   offerings: PurchasesOfferings | null;
@@ -17,6 +52,7 @@ interface PurchaseState {
   extractionsUsed: number;
   isLoading: boolean;
   error: string | null;
+  isRevenueCatAvailable: boolean;
 
   // Computed
   canExtract: boolean;
@@ -39,6 +75,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
   extractionsUsed: 0,
   isLoading: false,
   error: null,
+  isRevenueCatAvailable,
 
   get canExtract() {
     const state = get();
@@ -52,6 +89,18 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
 
   initialize: async () => {
     try {
+      // Load extraction count from storage first
+      const storedCount = await AsyncStorage.getItem(EXTRACTIONS_KEY);
+      if (storedCount) {
+        set({ extractionsUsed: parseInt(storedCount, 10) });
+      }
+
+      // Skip RevenueCat if not available (Expo Go)
+      if (!isRevenueCatAvailable || !Purchases) {
+        console.log('Skipping RevenueCat initialization (not available)');
+        return;
+      }
+
       // Configure RevenueCat
       const apiKey = Platform.OS === 'ios' ? REVENUECAT_IOS_KEY : REVENUECAT_ANDROID_KEY;
 
@@ -62,12 +111,6 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
 
       await Purchases.configure({ apiKey });
 
-      // Load extraction count from storage
-      const storedCount = await AsyncStorage.getItem(EXTRACTIONS_KEY);
-      if (storedCount) {
-        set({ extractionsUsed: parseInt(storedCount, 10) });
-      }
-
       // Fetch initial data
       await Promise.all([get().fetchCustomerInfo(), get().fetchOfferings()]);
     } catch (error) {
@@ -77,33 +120,44 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
   },
 
   fetchCustomerInfo: async () => {
+    if (!isRevenueCatAvailable || !Purchases) return;
+
     try {
       const customerInfo = await Purchases.getCustomerInfo();
       const isPremium = customerInfo.entitlements.active[PREMIUM_ENTITLEMENT] !== undefined;
 
-      set({ customerInfo, isPremium, error: null });
+      set({ customerInfo: customerInfo as CustomerInfo, isPremium, error: null });
     } catch (error) {
       set({ error: (error as Error).message });
     }
   },
 
   fetchOfferings: async () => {
+    if (!isRevenueCatAvailable || !Purchases) {
+      set({ isLoading: false });
+      return;
+    }
+
     set({ isLoading: true });
     try {
       const offerings = await Purchases.getOfferings();
-      set({ offerings, isLoading: false, error: null });
+      set({ offerings: offerings as PurchasesOfferings, isLoading: false, error: null });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
     }
   },
 
   purchase: async (pkg) => {
+    if (!isRevenueCatAvailable || !Purchases) {
+      throw new Error('Purchases not available in Expo Go. Build a development client to test purchases.');
+    }
+
     set({ isLoading: true, error: null });
     try {
-      const { customerInfo } = await Purchases.purchasePackage(pkg);
+      const { customerInfo } = await Purchases.purchasePackage(pkg as any);
       const isPremium = customerInfo.entitlements.active[PREMIUM_ENTITLEMENT] !== undefined;
 
-      set({ customerInfo, isPremium, isLoading: false });
+      set({ customerInfo: customerInfo as CustomerInfo, isPremium, isLoading: false });
     } catch (error: unknown) {
       const purchaseError = error as { userCancelled?: boolean };
       if (purchaseError.userCancelled) {
@@ -117,12 +171,16 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
   },
 
   restorePurchases: async () => {
+    if (!isRevenueCatAvailable || !Purchases) {
+      throw new Error('Purchases not available in Expo Go. Build a development client to test purchases.');
+    }
+
     set({ isLoading: true, error: null });
     try {
       const customerInfo = await Purchases.restorePurchases();
       const isPremium = customerInfo.entitlements.active[PREMIUM_ENTITLEMENT] !== undefined;
 
-      set({ customerInfo, isPremium, isLoading: false });
+      set({ customerInfo: customerInfo as CustomerInfo, isPremium, isLoading: false });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
       throw error;
