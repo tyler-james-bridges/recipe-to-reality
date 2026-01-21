@@ -2,7 +2,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, router, useSegments, useRootNavigationState } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
@@ -99,10 +99,31 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const segments = useSegments();
+  const navigationState = useRootNavigationState();
+  const hasCompletedOnboarding = useSettingsStore((state) => state.hasCompletedOnboarding);
+
+  // Handle onboarding navigation
+  useEffect(() => {
+    // Wait until navigation is ready
+    if (!navigationState?.key) return;
+
+    const firstSegment = segments[0] as string;
+    const inOnboarding = firstSegment === 'onboarding';
+
+    if (!hasCompletedOnboarding && !inOnboarding) {
+      // User hasn't completed onboarding, redirect to onboarding
+      router.replace('/onboarding' as any);
+    } else if (hasCompletedOnboarding && inOnboarding) {
+      // User has completed onboarding but is on onboarding screen, redirect to main app
+      router.replace('/(tabs)');
+    }
+  }, [hasCompletedOnboarding, segments, navigationState?.key]);
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkThemeCustom : LightTheme}>
       <Stack>
+        <Stack.Screen name="onboarding" options={{ headerShown: false, animation: 'fade' }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen
           name="recipe/[id]"
