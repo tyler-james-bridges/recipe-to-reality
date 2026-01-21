@@ -15,7 +15,8 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.recipetoreality.app"
+      "bundleIdentifier": "com.recipetoreality.app",
+      "appleTeamId": "4WXA94CNKK"
     },
     "android": {
       "adaptiveIcon": {

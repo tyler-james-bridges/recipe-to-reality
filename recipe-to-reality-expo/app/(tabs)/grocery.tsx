@@ -1,17 +1,28 @@
-import React, { useCallback, useState } from 'react';
-import { StyleSheet, FlatList, View, Pressable, SectionList } from 'react-native';
-import { router } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import React, { useCallback } from 'react';
+import { StyleSheet, View, Pressable, SectionList, useColorScheme, Alert } from 'react-native';
+import { router, Stack } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import * as Haptics from 'expo-haptics';
+import * as Progress from 'react-native-progress';
 
 import { ThemedView, ThemedText } from '@/components/Themed';
 import { useGroceryStore } from '@/src/stores/groceryStore';
-import { GroceryItem, IngredientCategory, INGREDIENT_CATEGORIES } from '@/src/types';
+import { useRecipeStore } from '@/src/stores/recipeStore';
+import { useSettingsStore } from '@/src/stores/settingsStore';
+import { GroceryItem, INGREDIENT_CATEGORIES } from '@/src/types';
 import GroceryItemRow from '@/src/components/GroceryItemRow';
 import EmptyState from '@/src/components/EmptyState';
+import Colors from '@/constants/Colors';
 
 export default function GroceryScreen() {
-  const { currentList, loadCurrentList, toggleItem, deleteItem, clearChecked } = useGroceryStore();
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
+  const { currentList, loadCurrentList, toggleItem, deleteItem, clearChecked, clearAll } = useGroceryStore();
+  const { recipes } = useRecipeStore();
+  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
+
+  const queuedRecipes = recipes.filter((r) => r.isInQueue);
 
   useFocusEffect(
     useCallback(() => {
@@ -19,9 +30,25 @@ export default function GroceryScreen() {
     }, [loadCurrentList])
   );
 
+  const triggerHaptic = (type: 'selection' | 'success' | 'warning') => {
+    if (!hapticFeedback) return;
+    switch (type) {
+      case 'selection':
+        Haptics.selectionAsync();
+        break;
+      case 'success':
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        break;
+      case 'warning':
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        break;
+    }
+  };
+
   const items = currentList?.items || [];
   const checkedCount = items.filter((i) => i.isChecked).length;
-  const progress = items.length > 0 ? checkedCount / items.length : 0;
+  const totalCount = items.length;
+  const progress = totalCount > 0 ? checkedCount / totalCount : 0;
 
   // Group items by category
   const sections = React.useMemo(() => {
@@ -48,75 +75,145 @@ export default function GroceryScreen() {
     }));
   }, [items]);
 
+  const handleToggleItem = (itemId: string) => {
+    triggerHaptic('selection');
+    const item = items.find((i) => i.id === itemId);
+    toggleItem(itemId);
+    if (!item?.isChecked) {
+      triggerHaptic('success');
+    }
+  };
+
+  const handleShowMenu = () => {
+    Alert.alert(
+      'Grocery List',
+      undefined,
+      [
+        {
+          text: 'Clear Checked',
+          onPress: () => {
+            triggerHaptic('selection');
+            clearChecked();
+          },
+        },
+        {
+          text: 'Clear All',
+          style: 'destructive',
+          onPress: () => {
+            triggerHaptic('warning');
+            clearAll();
+          },
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ]
+    );
+  };
+
   const renderItem = ({ item }: { item: GroceryItem }) => (
     <GroceryItemRow
       item={item}
-      onToggle={() => toggleItem(item.id)}
+      onToggle={() => handleToggleItem(item.id)}
       onDelete={() => deleteItem(item.id)}
     />
   );
 
   const renderSectionHeader = ({ section: { title } }: { section: { title: string } }) => (
-    <View style={styles.sectionHeader}>
+    <View style={[styles.sectionHeader, { backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#F2F2F7' }]}>
       <ThemedText style={styles.sectionTitle}>{title}</ThemedText>
     </View>
   );
 
   return (
-    <ThemedView style={styles.container}>
-      {items.length > 0 && (
-        <View style={styles.progressContainer}>
-          <View style={styles.progressHeader}>
-            <ThemedText style={styles.progressText}>
-              {checkedCount} of {items.length} items
-            </ThemedText>
-            {checkedCount > 0 && (
-              <Pressable onPress={clearChecked}>
-                <ThemedText style={styles.clearText}>Clear checked</ThemedText>
+    <>
+      <Stack.Screen
+        options={{
+          title: 'Grocery List',
+          headerLargeTitle: true,
+          headerRight: () => (
+            <View style={styles.headerButtons}>
+              {items.length > 0 && (
+                <Pressable onPress={handleShowMenu} style={styles.headerButton}>
+                  <Ionicons name="ellipsis-horizontal-circle" size={24} color={colors.tint} />
+                </Pressable>
+              )}
+              <Pressable
+                onPress={() => router.push('/grocery/generate')}
+                style={styles.headerButton}
+              >
+                <Ionicons name="sparkles" size={22} color={colors.tint} />
               </Pressable>
-            )}
-          </View>
-          <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
-          </View>
-        </View>
-      )}
+            </View>
+          ),
+        }}
+      />
+      <ThemedView style={styles.container}>
+        {items.length === 0 ? (
+          <EmptyState
+            icon="cart-outline"
+            title="No Items Yet"
+            message="Add ingredients from recipes or generate a list from your cooking queue."
+            secondaryMessage={
+              queuedRecipes.length > 0
+                ? `${queuedRecipes.length} recipe${queuedRecipes.length > 1 ? 's' : ''} in your queue`
+                : undefined
+            }
+            actionLabel={queuedRecipes.length > 0 ? 'Generate from Queue' : undefined}
+            onAction={queuedRecipes.length > 0 ? () => router.push('/grocery/generate') : undefined}
+          />
+        ) : (
+          <>
+            {/* Progress Header - matches SwiftUI design */}
+            <View style={[styles.progressContainer, { backgroundColor: colors.card }]}>
+              <View style={styles.progressHeader}>
+                <ThemedText style={styles.progressText}>
+                  {checkedCount} of {totalCount} items
+                </ThemedText>
+                <ThemedText style={[styles.progressPercent, { color: colors.tint }]}>
+                  {Math.round(progress * 100)}%
+                </ThemedText>
+              </View>
+              <View style={[styles.progressBar, { backgroundColor: colorScheme === 'dark' ? '#38383A' : '#E5E5EA' }]}>
+                <View
+                  style={[
+                    styles.progressFill,
+                    { width: `${progress * 100}%`, backgroundColor: colors.tint },
+                  ]}
+                />
+              </View>
+            </View>
 
-      {items.length === 0 ? (
-        <EmptyState
-          icon="cart-outline"
-          title="Grocery list is empty"
-          message="Generate a list from your recipes or add items manually"
-          actionLabel="Generate List"
-          onAction={() => router.push('/grocery/generate')}
-        />
-      ) : (
-        <SectionList
-          sections={sections}
-          renderItem={renderItem}
-          renderSectionHeader={renderSectionHeader}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
-          stickySectionHeadersEnabled={false}
-        />
-      )}
-
-      <View style={styles.fabContainer}>
-        <Pressable style={styles.fabSecondary} onPress={() => router.push('/grocery/generate')}>
-          <MaterialCommunityIcons name="auto-fix" size={24} color="#FF6B35" />
-        </Pressable>
-        <Pressable style={styles.fab} onPress={() => router.push('/grocery/add')}>
-          <MaterialCommunityIcons name="plus" size={28} color="#fff" />
-        </Pressable>
-      </View>
-    </ThemedView>
+            {/* Grouped items by category - insetGrouped list style */}
+            <SectionList
+              sections={sections}
+              renderItem={renderItem}
+              renderSectionHeader={renderSectionHeader}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={styles.list}
+              showsVerticalScrollIndicator={false}
+              stickySectionHeadersEnabled={false}
+              style={{ backgroundColor: colors.background }}
+              ItemSeparatorComponent={() => (
+                <View style={[styles.separator, { backgroundColor: colors.border }]} />
+              )}
+              SectionSeparatorComponent={() => <View style={styles.sectionSeparator} />}
+            />
+          </>
+        )}
+      </ThemedView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  headerButton: {
+    padding: 4,
   },
   progressContainer: {
     paddingHorizontal: 16,
@@ -129,72 +226,41 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   progressText: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 15,
+    color: '#8E8E93',
   },
-  clearText: {
-    fontSize: 14,
-    color: '#FF6B35',
-    fontWeight: '500',
+  progressPercent: {
+    fontSize: 15,
+    fontWeight: '600',
   },
   progressBar: {
-    height: 6,
-    backgroundColor: '#e0e0e0',
-    borderRadius: 3,
+    height: 4,
+    borderRadius: 2,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#22c55e',
-    borderRadius: 3,
+    borderRadius: 2,
   },
   sectionHeader: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: '#f5f5f5',
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
-    color: '#666',
+    color: '#8E8E93',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
+  separator: {
+    height: StyleSheet.hairlineWidth,
+    marginLeft: 52, // 16 padding + 24 checkbox + 12 margin
+  },
+  sectionSeparator: {
+    height: 16,
+  },
   list: {
     paddingBottom: 100,
-  },
-  fabContainer: {
-    position: 'absolute',
-    right: 16,
-    bottom: 16,
-    gap: 12,
-  },
-  fabSecondary: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    borderWidth: 2,
-    borderColor: '#FF6B35',
-  },
-  fab: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#FF6B35',
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
   },
 });

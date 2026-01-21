@@ -1,10 +1,11 @@
 import React from 'react';
 import { StyleSheet, View, Pressable, useColorScheme } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/Themed';
 import { PantryItem } from '../types';
 import { isExpired, isExpiringSoon } from '../utils/pantryMatching';
 import { formatIngredient } from '../utils/quantity';
+import Colors from '@/constants/Colors';
 
 interface PantryItemRowProps {
   item: PantryItem;
@@ -12,9 +13,12 @@ interface PantryItemRowProps {
   onPress?: () => void;
 }
 
+/**
+ * Matches SwiftUI PantryItemRow styling
+ */
 export default function PantryItemRow({ item, onDelete, onPress }: PantryItemRowProps) {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const colors = Colors[colorScheme ?? 'light'];
 
   const expired = isExpired(item);
   const expiringSoon = isExpiringSoon(item);
@@ -28,45 +32,43 @@ export default function PantryItemRow({ item, onDelete, onPress }: PantryItemRow
     <Pressable
       style={[
         styles.container,
-        { backgroundColor: isDark ? '#1f1f1f' : '#fff' },
-        expired && styles.expiredContainer,
+        { backgroundColor: colorScheme === 'dark' ? colors.card : '#fff' },
       ]}
       onPress={onPress}
     >
       <View style={styles.content}>
-        <View style={styles.header}>
-          <ThemedText style={[styles.name, expired && styles.expiredText]}>
-            {formatIngredient(item.name, item.quantity, item.unit)}
-          </ThemedText>
-          {expired && (
-            <View style={styles.expiredBadge}>
-              <MaterialCommunityIcons name="alert-circle" size={12} color="#ef4444" />
-              <ThemedText style={styles.expiredBadgeText}>Expired</ThemedText>
-            </View>
-          )}
-          {expiringSoon && !expired && (
-            <View style={styles.expiringSoonBadge}>
-              <MaterialCommunityIcons name="clock-alert" size={12} color="#f59e0b" />
-              <ThemedText style={styles.expiringSoonBadgeText}>Expiring soon</ThemedText>
-            </View>
-          )}
-        </View>
+        <ThemedText style={[styles.name, expired && { color: colors.error }]}>
+          {formatIngredient(item.name, item.quantity, item.unit)}
+        </ThemedText>
 
-        <View style={styles.meta}>
-          <View style={[styles.categoryBadge, { backgroundColor: isDark ? '#333' : '#f0f0f0' }]}>
-            <ThemedText style={styles.categoryText}>{item.category}</ThemedText>
-          </View>
+        <View style={styles.metaRow}>
           {item.expirationDate && (
-            <ThemedText style={[styles.expirationText, expired && styles.expiredText]}>
-              Exp: {formatDate(item.expirationDate)}
-            </ThemedText>
+            <View style={styles.expirationContainer}>
+              {expired ? (
+                <View style={[styles.badge, { backgroundColor: colors.error + '26' }]}>
+                  <Ionicons name="alert-circle" size={12} color={colors.error} />
+                  <ThemedText style={[styles.badgeText, { color: colors.error }]}>
+                    Expired
+                  </ThemedText>
+                </View>
+              ) : expiringSoon ? (
+                <View style={[styles.badge, { backgroundColor: colors.warning + '26' }]}>
+                  <Ionicons name="time" size={12} color={colors.warning} />
+                  <ThemedText style={[styles.badgeText, { color: colors.warning }]}>
+                    {formatDate(item.expirationDate)}
+                  </ThemedText>
+                </View>
+              ) : (
+                <ThemedText style={styles.expirationText}>
+                  Exp: {formatDate(item.expirationDate)}
+                </ThemedText>
+              )}
+            </View>
           )}
         </View>
       </View>
 
-      <Pressable onPress={onDelete} style={styles.deleteButton}>
-        <MaterialCommunityIcons name="delete-outline" size={22} color="#999" />
-      </Pressable>
+      <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
     </Pressable>
   );
 }
@@ -75,83 +77,41 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  expiredContainer: {
-    borderWidth: 1,
-    borderColor: '#fecaca',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
   content: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: 8,
+    gap: 4,
   },
   name: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '500',
+    lineHeight: 22,
   },
-  expiredText: {
-    color: '#ef4444',
-  },
-  expiredBadge: {
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fef2f2',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-    gap: 4,
-  },
-  expiredBadgeText: {
-    fontSize: 11,
-    color: '#ef4444',
-    fontWeight: '500',
-  },
-  expiringSoonBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fef3c7',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-    gap: 4,
-  },
-  expiringSoonBadgeText: {
-    fontSize: 11,
-    color: '#92400e',
-    fontWeight: '500',
-  },
-  meta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 6,
     gap: 8,
   },
-  categoryBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
+  expirationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  categoryText: {
-    fontSize: 11,
-    color: '#666',
+  badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  badgeText: {
+    fontSize: 12,
+    fontWeight: '500',
   },
   expirationText: {
-    fontSize: 12,
-    color: '#999',
-  },
-  deleteButton: {
-    padding: 8,
+    fontSize: 13,
+    color: '#8E8E93',
   },
 });

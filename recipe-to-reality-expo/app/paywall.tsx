@@ -42,6 +42,7 @@ export default function PaywallScreen() {
     restorePurchases,
     fetchOfferings,
     isPremium,
+    isRevenueCatAvailable,
   } = usePurchaseStore();
   const [selectedPackageIndex, setSelectedPackageIndex] = useState(0);
   const [isPurchasing, setIsPurchasing] = useState(false);
@@ -58,6 +59,58 @@ export default function PaywallScreen() {
 
   const currentOffering = offerings?.current;
   const packages = currentOffering?.availablePackages || [];
+
+  // Show message when running in Expo Go
+  if (!isRevenueCatAvailable) {
+    return (
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <View style={styles.header}>
+          <View style={styles.iconContainer}>
+            <MaterialCommunityIcons name="crown" size={48} color="#FF6B35" />
+          </View>
+          <ThemedText style={styles.title}>Unlock Premium</ThemedText>
+          <ThemedText style={styles.subtitle}>
+            Get unlimited recipe extractions and more
+          </ThemedText>
+        </View>
+
+        <View style={styles.features}>
+          <FeatureRow
+            icon="infinity"
+            title="Unlimited Extractions"
+            description="Extract recipes from any website or video"
+          />
+          <FeatureRow
+            icon="video"
+            title="Video Support"
+            description="YouTube, TikTok, and Instagram recipes"
+          />
+          <FeatureRow
+            icon="cloud-sync"
+            title="Cloud Backup"
+            description="Coming soon: sync across all your devices"
+          />
+          <FeatureRow
+            icon="heart"
+            title="Support Development"
+            description="Help us build more features"
+          />
+        </View>
+
+        <View style={styles.devNotice}>
+          <MaterialCommunityIcons name="information-outline" size={24} color="#f59e0b" />
+          <ThemedText style={styles.devNoticeText}>
+            Purchases are not available in Expo Go.{'\n'}
+            Build a development client to test in-app purchases.
+          </ThemedText>
+        </View>
+
+        <Pressable style={styles.restoreButton} onPress={() => router.back()}>
+          <ThemedText style={styles.restoreButtonText}>Go Back</ThemedText>
+        </Pressable>
+      </ScrollView>
+    );
+  }
 
   const handlePurchase = async () => {
     if (packages.length === 0) return;
@@ -366,5 +419,20 @@ const styles = StyleSheet.create({
     color: '#999',
     textAlign: 'center',
     lineHeight: 16,
+  },
+  devNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fffbeb',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+    gap: 12,
+  },
+  devNoticeText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#92400e',
+    lineHeight: 20,
   },
 });

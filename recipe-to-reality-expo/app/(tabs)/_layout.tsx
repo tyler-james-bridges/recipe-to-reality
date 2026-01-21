@@ -1,76 +1,91 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { useColorScheme, Platform } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 
 import Colors from '@/constants/Colors';
 
-type IconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
-function TabBarIcon({ name, color }: { name: IconName; color: string }) {
-  return <MaterialCommunityIcons size={24} name={name} color={color} style={{ marginBottom: -3 }} />;
+function TabBarIcon({ name, color, focused }: { name: IconName; color: string; focused: boolean }) {
+  // Use filled icons when focused, outline when not (iOS convention)
+  const iconName = focused ? name : (`${name}-outline` as IconName);
+  return <Ionicons size={24} name={iconName} color={color} />;
 }
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const tintColor = Colors[colorScheme ?? 'light'].tint;
+  const colors = Colors[colorScheme ?? 'light'];
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: tintColor,
-        tabBarInactiveTintColor: Colors[colorScheme ?? 'light'].tabIconDefault,
+        tabBarActiveTintColor: colors.tint,
+        tabBarInactiveTintColor: colors.tabIconDefault,
         tabBarStyle: {
-          backgroundColor: Colors[colorScheme ?? 'light'].background,
-          borderTopColor: colorScheme === 'dark' ? '#333' : '#e0e0e0',
-          paddingBottom: Platform.OS === 'ios' ? 20 : 8,
+          backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#F8F8F8',
+          borderTopColor: colors.border,
+          paddingBottom: Platform.OS === 'ios' ? 24 : 8,
           paddingTop: 8,
           height: Platform.OS === 'ios' ? 88 : 64,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: '500',
         },
         headerStyle: {
-          backgroundColor: Colors[colorScheme ?? 'light'].background,
+          backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#F8F8F8',
         },
-        headerTintColor: Colors[colorScheme ?? 'light'].text,
+        headerTintColor: colors.text,
         headerShadowVisible: false,
+        headerTitleStyle: {
+          fontWeight: '600',
+        },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: 'Recipes',
-          tabBarIcon: ({ color }) => <TabBarIcon name="book-open-variant" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name="book" color={color} focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
         name="pantry"
         options={{
           title: 'Pantry',
-          tabBarIcon: ({ color }) => <TabBarIcon name="fridge-outline" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name="snow" color={color} focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
         name="meal-plan"
         options={{
           title: 'Meal Plan',
-          tabBarIcon: ({ color }) => <TabBarIcon name="calendar-month" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name="calendar" color={color} focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
         name="grocery"
         options={{
           title: 'Grocery',
-          tabBarIcon: ({ color }) => <TabBarIcon name="cart-outline" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name="cart" color={color} focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',
-          tabBarIcon: ({ color }) => <TabBarIcon name="cog-outline" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name="settings" color={color} focused={focused} />
+          ),
         }}
       />
     </Tabs>

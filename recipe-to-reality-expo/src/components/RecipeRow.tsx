@@ -1,86 +1,120 @@
 import React from 'react';
 import { StyleSheet, View, Pressable, useColorScheme } from 'react-native';
 import { Image } from 'expo-image';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/Themed';
 import { RecipeWithIngredients } from '../types';
+import Colors from '@/constants/Colors';
 
 interface RecipeRowProps {
   recipe: RecipeWithIngredients;
   onPress: () => void;
+  pantryMatchPercentage?: number;
 }
 
-export default function RecipeRow({ recipe, onPress }: RecipeRowProps) {
+export default function RecipeRow({ recipe, onPress, pantryMatchPercentage }: RecipeRowProps) {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const colors = Colors[colorScheme ?? 'light'];
 
   const sourceIcon = React.useMemo(() => {
     switch (recipe.sourceType) {
       case 'youtube':
-        return 'youtube';
+        return { name: 'play-circle' as const, color: '#FF0000' };
       case 'tiktok':
-        return 'music-note';
+        return { name: 'musical-notes' as const, color: colors.text };
       case 'instagram':
-        return 'instagram';
+        return { name: 'camera' as const, color: '#833AB4' };
       case 'url':
-        return 'web';
+        return { name: 'link' as const, color: '#007AFF' };
+      case 'video':
+        return { name: 'videocam' as const, color: '#007AFF' };
       default:
-        return 'pencil';
+        return { name: 'pencil' as const, color: '#8E8E93' };
     }
-  }, [recipe.sourceType]);
+  }, [recipe.sourceType, colors.text]);
+
+  // Pantry match badge color
+  const getPantryMatchColor = (percentage: number) => {
+    if (percentage >= 70) return colors.success;
+    if (percentage >= 40) return colors.tint;
+    return '#8E8E93';
+  };
 
   return (
     <Pressable
-      style={[styles.container, { backgroundColor: isDark ? '#1f1f1f' : '#fff' }]}
+      style={({ pressed }) => [
+        styles.container,
+        pressed && styles.pressed,
+      ]}
       onPress={onPress}
     >
+      {/* Thumbnail - 60x60 matching SwiftUI */}
       {recipe.imageURL ? (
         <Image
           source={{ uri: recipe.imageURL }}
           style={styles.image}
           contentFit="cover"
           transition={200}
+          cachePolicy="memory-disk"
         />
       ) : (
-        <View style={[styles.imagePlaceholder, { backgroundColor: isDark ? '#333' : '#f0f0f0' }]}>
-          <MaterialCommunityIcons name="food" size={24} color="#999" />
+        <View style={[styles.imagePlaceholder, { backgroundColor: colorScheme === 'dark' ? '#2C2C2E' : '#E5E5EA' }]}>
+          <Ionicons name="restaurant" size={24} color="#8E8E93" />
         </View>
       )}
 
+      {/* Content */}
       <View style={styles.content}>
-        <View style={styles.header}>
-          <ThemedText style={styles.title} numberOfLines={2}>
-            {recipe.title}
-          </ThemedText>
-          {recipe.isInQueue && (
-            <View style={styles.queueBadge}>
-              <MaterialCommunityIcons name="playlist-check" size={14} color="#FF6B35" />
+        <ThemedText style={styles.title} numberOfLines={2}>
+          {recipe.title}
+        </ThemedText>
+
+        <View style={styles.metaRow}>
+          {recipe.servings && (
+            <View style={styles.metaItem}>
+              <Ionicons name="people" size={12} color="#8E8E93" />
+              <ThemedText style={styles.metaText}>{recipe.servings}</ThemedText>
             </View>
           )}
-        </View>
 
-        <View style={styles.meta}>
-          <MaterialCommunityIcons name={sourceIcon} size={14} color="#999" />
-          {recipe.servings && (
-            <>
-              <View style={styles.dot} />
-              <ThemedText style={styles.metaText}>{recipe.servings} servings</ThemedText>
-            </>
+          {recipe.cookTime && (
+            <View style={styles.metaItem}>
+              <Ionicons name="time-outline" size={12} color="#8E8E93" />
+              <ThemedText style={styles.metaText}>{recipe.cookTime}</ThemedText>
+            </View>
           )}
-          {recipe.prepTime && (
-            <>
-              <View style={styles.dot} />
-              <ThemedText style={styles.metaText}>{recipe.prepTime}</ThemedText>
-            </>
-          )}
-        </View>
 
-        <ThemedText style={styles.ingredientCount}>
-          {recipe.ingredients.length} ingredients
-        </ThemedText>
+          <Ionicons name={sourceIcon.name} size={12} color={sourceIcon.color} />
+        </View>
       </View>
 
-      <MaterialCommunityIcons name="chevron-right" size={24} color="#ccc" />
+      {/* Right side indicators */}
+      <View style={styles.rightContent}>
+        {/* Pantry match badge */}
+        {pantryMatchPercentage !== undefined && pantryMatchPercentage > 0 && (
+          <View style={[
+            styles.pantryBadge,
+            { backgroundColor: getPantryMatchColor(pantryMatchPercentage) + '26' }
+          ]}>
+            <Ionicons
+              name="snow-outline"
+              size={10}
+              color={getPantryMatchColor(pantryMatchPercentage)}
+            />
+            <ThemedText style={[
+              styles.pantryText,
+              { color: getPantryMatchColor(pantryMatchPercentage) }
+            ]}>
+              {Math.round(pantryMatchPercentage)}%
+            </ThemedText>
+          </View>
+        )}
+
+        {/* Queue indicator */}
+        {recipe.isInQueue && (
+          <Ionicons name="checkmark-circle" size={20} color={colors.tint} />
+        )}
+      </View>
     </Pressable>
   );
 }
@@ -89,66 +123,63 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  pressed: {
+    opacity: 0.7,
   },
   image: {
-    width: 72,
-    height: 72,
+    width: 60,
+    height: 60,
     borderRadius: 8,
   },
   imagePlaceholder: {
-    width: 72,
-    height: 72,
+    width: 60,
+    height: 60,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
   },
   content: {
     flex: 1,
-    marginLeft: 12,
-    marginRight: 8,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    gap: 4,
   },
   title: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
-    flex: 1,
+    lineHeight: 22,
   },
-  queueBadge: {
-    marginLeft: 8,
-    backgroundColor: '#FFF5F0',
-    padding: 4,
-    borderRadius: 4,
-  },
-  meta: {
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    gap: 8,
   },
-  dot: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: '#ccc',
-    marginHorizontal: 6,
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   metaText: {
     fontSize: 12,
-    color: '#999',
+    color: '#8E8E93',
   },
-  ingredientCount: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 4,
+  rightContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  pantryBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+    gap: 2,
+  },
+  pantryText: {
+    fontSize: 11,
+    fontWeight: '500',
   },
 });
