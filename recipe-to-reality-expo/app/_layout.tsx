@@ -137,6 +137,41 @@ function RootLayoutNav() {
           }}
         />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        <Stack.Screen
+          name="pantry/add"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: 'Add to Pantry',
+          }}
+        />
+        <Stack.Screen
+          name="pantry/edit"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: 'Edit Item',
+          }}
+        />
+        <Stack.Screen
+          name="meal-plan"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="grocery"
+          options={{
+            headerShown: false,
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen
+          name="settings"
+          options={{
+            headerShown: false,
+          }}
+        />
       </Stack>
     </ThemeProvider>
   );
