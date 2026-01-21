@@ -1,9 +1,11 @@
 import React, { useCallback, useState } from 'react';
-import { StyleSheet, FlatList, View, Pressable, ScrollView, useColorScheme } from 'react-native';
-import { router, Stack } from 'expo-router';
+import { StyleSheet, FlatList, View, ScrollView, useColorScheme } from 'react-native';
+import { router, Stack, Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { ThemedView, ThemedText } from '@/components/Themed';
 import { useMealPlanStore } from '@/src/stores/mealPlanStore';
@@ -11,13 +13,15 @@ import { useSettingsStore } from '@/src/stores/settingsStore';
 import { MealPlan, MealType } from '@/src/types';
 import MealPlanCard from '@/src/components/MealPlanCard';
 import EmptyState from '@/src/components/EmptyState';
-import Colors from '@/constants/Colors';
+import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
+import Colors, { shadows, radius, spacing, typography, gradients } from '@/constants/Colors';
 
 const MEAL_ORDER: MealType[] = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 
 export default function MealPlanScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const themeGradients = gradients[colorScheme ?? 'light'];
   const { mealPlans, loadMealPlans, deleteMealPlan, toggleCompleted } = useMealPlanStore();
   const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -114,33 +118,45 @@ export default function MealPlanScreen() {
           title: 'Meal Plan',
           headerLargeTitle: true,
           headerRight: () => (
-            <Pressable
+            <AnimatedPressable
               onPress={() => {
                 triggerHaptic('selection');
-                router.push({ pathname: '/meal-plan/add', params: { date: selectedDate.toISOString() } });
+                router.push({ pathname: '/meal-plan/add', params: { date: selectedDate.toISOString() } } as any);
               }}
+              hapticType="medium"
               style={styles.headerButton}
             >
               <Ionicons name="add" size={28} color={colors.tint} />
-            </Pressable>
+            </AnimatedPressable>
           ),
         }}
       />
       <ThemedView style={styles.container}>
         {/* Week Navigation Header */}
-        <View style={[styles.weekHeader, { backgroundColor: colors.card }]}>
+        <Animated.View
+          entering={FadeIn.duration(300)}
+          style={[styles.weekHeader, { backgroundColor: colors.card }, shadows.small]}
+        >
           <View style={styles.weekNav}>
-            <Pressable onPress={() => navigateWeek(-1)} style={styles.navButton}>
+            <AnimatedPressable
+              onPress={() => navigateWeek(-1)}
+              hapticType="selection"
+              style={styles.navButton}
+            >
               <Ionicons name="chevron-back" size={24} color={colors.tint} />
-            </Pressable>
+            </AnimatedPressable>
 
-            <Pressable onPress={goToToday}>
+            <AnimatedPressable onPress={goToToday} hapticType="selection">
               <ThemedText style={styles.weekTitle}>{formatWeekRange()}</ThemedText>
-            </Pressable>
+            </AnimatedPressable>
 
-            <Pressable onPress={() => navigateWeek(1)} style={styles.navButton}>
+            <AnimatedPressable
+              onPress={() => navigateWeek(1)}
+              hapticType="selection"
+              style={styles.navButton}
+            >
               <Ionicons name="chevron-forward" size={24} color={colors.tint} />
-            </Pressable>
+            </AnimatedPressable>
           </View>
 
           {/* Day Selector */}
@@ -155,54 +171,66 @@ export default function MealPlanScreen() {
               const todayStyle = isToday(date);
 
               return (
-                <Pressable
+                <AnimatedPressable
                   key={index}
-                  style={[
-                    styles.dayButton,
-                    { backgroundColor: colorScheme === 'dark' ? '#2C2C2E' : '#F2F2F7' },
-                    isSelected && { backgroundColor: colors.tint },
-                    todayStyle && !isSelected && { borderColor: colors.tint, borderWidth: 2 },
-                  ]}
-                  onPress={() => {
-                    triggerHaptic('selection');
-                    setSelectedDate(date);
-                  }}
+                  hapticType="selection"
+                  scaleOnPress={0.95}
+                  onPress={() => setSelectedDate(date)}
+                  style={styles.dayButtonWrapper}
                 >
-                  <ThemedText
-                    style={[styles.dayName, isSelected && { color: '#fff' }]}
+                  <View
+                    style={[
+                      styles.dayButton,
+                      { backgroundColor: colorScheme === 'dark' ? colors.cardElevated : '#F5F5F7' },
+                      isSelected && { backgroundColor: colors.tint },
+                      todayStyle && !isSelected && { borderColor: colors.tint, borderWidth: 2 },
+                    ]}
                   >
-                    {date.toLocaleDateString('en-US', { weekday: 'short' })}
-                  </ThemedText>
-                  <ThemedText
-                    style={[styles.dayNumber, isSelected && { color: '#fff' }]}
-                  >
-                    {date.getDate()}
-                  </ThemedText>
-                  {meals.length > 0 && (
-                    <View
+                    <ThemedText
                       style={[
-                        styles.mealDot,
-                        { backgroundColor: isSelected ? '#fff' : colors.tint },
+                        styles.dayName,
+                        { color: isSelected ? '#FFFFFF' : colors.textTertiary },
                       ]}
-                    />
-                  )}
-                </Pressable>
+                    >
+                      {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                    </ThemedText>
+                    <ThemedText
+                      style={[
+                        styles.dayNumber,
+                        { color: isSelected ? '#FFFFFF' : colors.text },
+                      ]}
+                    >
+                      {date.getDate()}
+                    </ThemedText>
+                    {meals.length > 0 && (
+                      <View
+                        style={[
+                          styles.mealDot,
+                          { backgroundColor: isSelected ? '#FFFFFF' : colors.tint },
+                        ]}
+                      />
+                    )}
+                  </View>
+                </AnimatedPressable>
               );
             })}
           </ScrollView>
-        </View>
+        </Animated.View>
 
         {/* Selected Day Title */}
-        <View style={styles.selectedDayHeader}>
+        <Animated.View
+          entering={FadeInDown.delay(100).duration(300)}
+          style={styles.selectedDayHeader}
+        >
           <ThemedText style={styles.selectedDayTitle}>
             {isToday(selectedDate)
               ? 'Today'
               : selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
           </ThemedText>
-          <ThemedText style={styles.mealCount}>
+          <ThemedText style={[styles.mealCount, { color: colors.textTertiary }]}>
             {todayMeals.length} {todayMeals.length === 1 ? 'meal' : 'meals'}
           </ThemedText>
-        </View>
+        </Animated.View>
 
         {/* Meals for Selected Day */}
         {todayMeals.length === 0 ? (
@@ -211,12 +239,12 @@ export default function MealPlanScreen() {
             title="No Meals Planned"
             message={`Plan your meals for ${isToday(selectedDate) ? 'today' : selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}.`}
             actionLabel="Add Meal"
-            onAction={() => router.push({ pathname: '/meal-plan/add', params: { date: selectedDate.toISOString() } })}
+            onAction={() => router.push({ pathname: '/meal-plan/add', params: { date: selectedDate.toISOString() } } as any)}
           />
         ) : (
           <FlatList
             data={todayMeals}
-            renderItem={({ item }) => (
+            renderItem={({ item, index }) => (
               <MealPlanCard
                 mealPlan={item}
                 onToggleComplete={() => {
@@ -229,6 +257,7 @@ export default function MealPlanScreen() {
                 onPress={() =>
                   item.recipeId ? router.push(`/recipe/${item.recipeId}`) : null
                 }
+                index={index}
               />
             )}
             keyExtractor={(item) => item.id}
@@ -246,70 +275,69 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerButton: {
-    padding: 4,
+    padding: spacing.xs,
   },
   weekHeader: {
-    paddingTop: 8,
-    paddingBottom: 16,
+    marginHorizontal: spacing.lg,
+    marginVertical: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.lg,
+    borderRadius: radius.xl,
   },
   weekNav: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 12,
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.md,
   },
   navButton: {
-    padding: 8,
+    padding: spacing.sm,
   },
   weekTitle: {
-    fontSize: 17,
-    fontWeight: '600',
+    ...typography.titleMedium,
   },
   daySelector: {
-    paddingHorizontal: 12,
-    gap: 8,
+    paddingHorizontal: spacing.md,
+    gap: spacing.sm,
+  },
+  dayButtonWrapper: {
+    // Wrapper for press animation
   },
   dayButton: {
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    minWidth: 52,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.lg,
+    minWidth: 54,
+    gap: spacing.xs,
   },
   dayName: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: '#8E8E93',
-    marginBottom: 2,
+    ...typography.labelSmall,
   },
   dayNumber: {
-    fontSize: 17,
-    fontWeight: '600',
+    ...typography.titleMedium,
   },
   mealDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    marginTop: 4,
   },
   selectedDayHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
   selectedDayTitle: {
-    fontSize: 22,
-    fontWeight: '700',
+    ...typography.titleLarge,
   },
   mealCount: {
-    fontSize: 15,
-    color: '#8E8E93',
+    ...typography.bodyMedium,
   },
   list: {
-    paddingHorizontal: 16,
-    paddingBottom: 100,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: 120,
   },
 });

@@ -1,9 +1,11 @@
 import React, { useCallback, useState } from 'react';
-import { StyleSheet, FlatList, View, Pressable, ScrollView, SectionList, useColorScheme } from 'react-native';
-import { router, Stack } from 'expo-router';
+import { StyleSheet, View, ScrollView, SectionList, useColorScheme } from 'react-native';
+import { router, Stack, Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { ThemedView, ThemedText } from '@/components/Themed';
 import { usePantryStore } from '@/src/stores/pantryStore';
@@ -11,13 +13,16 @@ import { useSettingsStore } from '@/src/stores/settingsStore';
 import { PantryItem, INGREDIENT_CATEGORIES, IngredientCategory } from '@/src/types';
 import PantryItemRow from '@/src/components/PantryItemRow';
 import EmptyState from '@/src/components/EmptyState';
-import Colors from '@/constants/Colors';
+import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
+import { ChipGroup } from '@/src/components/ui/Chip';
+import Colors, { shadows, radius, spacing, typography, gradients } from '@/constants/Colors';
 
 type FilterOption = 'all' | 'expiring' | IngredientCategory;
 
 export default function PantryScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const themeGradients = gradients[colorScheme ?? 'light'];
   const { items, loadItems, deleteItem } = usePantryStore();
   const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
   const [searchQuery, setSearchQuery] = useState('');
@@ -65,7 +70,6 @@ export default function PantryScreen() {
       result = result.filter((item) => item.category === selectedFilter);
     }
 
-    // Sort by expiration date (soonest first), then by name
     return [...result].sort((a, b) => {
       if (a.expirationDate && b.expirationDate) {
         return a.expirationDate - b.expirationDate;
@@ -76,7 +80,6 @@ export default function PantryScreen() {
     });
   }, [items, searchQuery, selectedFilter]);
 
-  // Group by category for section list
   const sections = React.useMemo(() => {
     if (selectedFilter !== 'all' && selectedFilter !== 'expiring') {
       return [{ title: selectedFilter, data: filteredItems }];
@@ -94,23 +97,26 @@ export default function PantryScreen() {
       .map((category) => ({ title: category, data: grouped[category] }));
   }, [filteredItems, selectedFilter]);
 
-  const filterOptions: { key: FilterOption; label: string; icon?: string }[] = [
+  const filterOptions: { key: string; label: string; icon?: any }[] = [
     { key: 'all', label: 'All' },
-    { key: 'expiring', label: 'Expiring', icon: 'time' },
-    ...INGREDIENT_CATEGORIES.map((cat) => ({ key: cat as FilterOption, label: cat })),
+    { key: 'expiring', label: 'Expiring', icon: 'time-outline' },
+    ...INGREDIENT_CATEGORIES.slice(0, 4).map((cat) => ({ key: cat, label: cat })),
   ];
 
-  const renderItem = ({ item }: { item: PantryItem }) => (
+  const renderItem = ({ item, index }: { item: PantryItem; index: number }) => (
     <PantryItemRow
       item={item}
       onDelete={() => deleteItem(item.id)}
-      onPress={() => router.push({ pathname: '/pantry/edit', params: { id: item.id } })}
+      onPress={() => router.push({ pathname: '/pantry/edit', params: { id: item.id } } as any)}
+      index={index}
     />
   );
 
   const renderSectionHeader = ({ section: { title } }: { section: { title: string } }) => (
-    <View style={[styles.sectionHeader, { backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#F2F2F7' }]}>
-      <ThemedText style={styles.sectionTitle}>{title}</ThemedText>
+    <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
+      <ThemedText style={[styles.sectionTitle, { color: colors.textTertiary }]}>
+        {title}
+      </ThemedText>
     </View>
   );
 
@@ -126,24 +132,26 @@ export default function PantryScreen() {
           },
           headerRight: () => (
             <View style={styles.headerButtons}>
-              <Pressable
+              <AnimatedPressable
                 onPress={() => {
                   triggerHaptic();
                   router.push('/what-can-i-make');
                 }}
+                hapticType="selection"
                 style={styles.headerButton}
               >
                 <Ionicons name="restaurant" size={22} color={colors.tint} />
-              </Pressable>
-              <Pressable
+              </AnimatedPressable>
+              <AnimatedPressable
                 onPress={() => {
                   triggerHaptic();
-                  router.push('/pantry/add');
+                  router.push('/pantry/add' as Href);
                 }}
+                hapticType="medium"
                 style={styles.headerButton}
               >
                 <Ionicons name="add" size={28} color={colors.tint} />
-              </Pressable>
+              </AnimatedPressable>
             </View>
           ),
         }}
@@ -155,30 +163,52 @@ export default function PantryScreen() {
             title="Pantry is Empty"
             message="Add items to track what ingredients you have and get recipe suggestions."
             actionLabel="Add First Item"
-            onAction={() => router.push('/pantry/add')}
+            onAction={() => router.push('/pantry/add' as Href)}
           />
         ) : (
           <>
-            {/* Expiring Soon Banner */}
-            {(expiringSoonCount > 0 || expiredCount > 0) && selectedFilter !== 'expiring' && (
-              <Pressable
-                style={[styles.warningBanner, { backgroundColor: colors.warning + '1A' }]}
-                onPress={() => {
-                  triggerHaptic();
-                  setSelectedFilter('expiring');
-                }}
-              >
-                <Ionicons name="alert-circle" size={20} color={colors.warning} />
-                <ThemedText style={[styles.warningText, { color: colors.warning }]}>
-                  {expiredCount > 0 && `${expiredCount} expired`}
-                  {expiredCount > 0 && expiringSoonCount > 0 && ', '}
-                  {expiringSoonCount > 0 && `${expiringSoonCount} expiring soon`}
+            {/* Stats Card */}
+            <Animated.View
+              entering={FadeIn.duration(300)}
+              style={[styles.statsCard, { backgroundColor: colors.card }, shadows.small]}
+            >
+              <View style={styles.statItem}>
+                <ThemedText style={[styles.statNumber, { color: colors.tint }]}>
+                  {items.length}
                 </ThemedText>
-                <Ionicons name="chevron-forward" size={18} color={colors.warning} />
-              </Pressable>
-            )}
+                <ThemedText style={[styles.statLabel, { color: colors.textTertiary }]}>
+                  Items
+                </ThemedText>
+              </View>
+              <View style={[styles.statDivider, { backgroundColor: colors.borderSubtle }]} />
+              <View style={styles.statItem}>
+                <ThemedText style={[styles.statNumber, { color: colors.success }]}>
+                  {sections.length}
+                </ThemedText>
+                <ThemedText style={[styles.statLabel, { color: colors.textTertiary }]}>
+                  Categories
+                </ThemedText>
+              </View>
+              {(expiringSoonCount > 0 || expiredCount > 0) && (
+                <>
+                  <View style={[styles.statDivider, { backgroundColor: colors.borderSubtle }]} />
+                  <AnimatedPressable
+                    onPress={() => setSelectedFilter('expiring')}
+                    hapticType="selection"
+                    style={styles.statItem}
+                  >
+                    <ThemedText style={[styles.statNumber, { color: colors.warning }]}>
+                      {expiringSoonCount + expiredCount}
+                    </ThemedText>
+                    <ThemedText style={[styles.statLabel, { color: colors.textTertiary }]}>
+                      Expiring
+                    </ThemedText>
+                  </AnimatedPressable>
+                </>
+              )}
+            </Animated.View>
 
-            {/* Filter Pills - horizontal scrolling */}
+            {/* Filter Pills */}
             <View style={styles.filterContainer}>
               <ScrollView
                 horizontal
@@ -186,36 +216,37 @@ export default function PantryScreen() {
                 contentContainerStyle={styles.filterScroll}
               >
                 {filterOptions.map((option) => (
-                  <Pressable
+                  <AnimatedPressable
                     key={option.key}
-                    style={[
-                      styles.filterPill,
-                      selectedFilter === option.key && { backgroundColor: colors.tint },
-                      selectedFilter !== option.key && {
-                        backgroundColor: colorScheme === 'dark' ? '#2C2C2E' : '#E5E5EA',
-                      },
-                    ]}
+                    hapticType="selection"
+                    scaleOnPress={0.95}
                     onPress={() => {
                       triggerHaptic();
-                      setSelectedFilter(option.key);
+                      setSelectedFilter(option.key as FilterOption);
                     }}
+                    style={[
+                      styles.filterPill,
+                      selectedFilter === option.key
+                        ? { backgroundColor: colors.tint }
+                        : { backgroundColor: colorScheme === 'dark' ? colors.cardElevated : '#E8E8ED' },
+                    ]}
                   >
                     {option.icon && (
                       <Ionicons
-                        name={option.icon as any}
+                        name={option.icon}
                         size={14}
-                        color={selectedFilter === option.key ? '#fff' : colors.text}
+                        color={selectedFilter === option.key ? '#FFFFFF' : colors.text}
                       />
                     )}
                     <ThemedText
                       style={[
                         styles.filterText,
-                        selectedFilter === option.key && { color: '#fff' },
+                        { color: selectedFilter === option.key ? '#FFFFFF' : colors.text },
                       ]}
                     >
                       {option.label}
                     </ThemedText>
-                  </Pressable>
+                  </AnimatedPressable>
                 ))}
               </ScrollView>
             </View>
@@ -229,10 +260,7 @@ export default function PantryScreen() {
               contentContainerStyle={styles.list}
               showsVerticalScrollIndicator={false}
               stickySectionHeadersEnabled={false}
-              style={{ backgroundColor: colors.background }}
-              ItemSeparatorComponent={() => (
-                <View style={[styles.separator, { backgroundColor: colors.border }]} />
-              )}
+              ItemSeparatorComponent={() => <View style={styles.itemSeparator} />}
               SectionSeparatorComponent={() => <View style={styles.sectionSeparator} />}
             />
           </>
@@ -248,61 +276,69 @@ const styles = StyleSheet.create({
   },
   headerButtons: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   headerButton: {
-    padding: 4,
+    padding: spacing.xs,
   },
-  warningBanner: {
+  statsCard: {
     flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 8,
+    marginHorizontal: spacing.lg,
+    marginVertical: spacing.md,
+    padding: spacing.lg,
+    borderRadius: radius.xl,
+    justifyContent: 'space-around',
   },
-  warningText: {
+  statItem: {
+    alignItems: 'center',
     flex: 1,
-    fontSize: 15,
-    fontWeight: '500',
+  },
+  statNumber: {
+    ...typography.displayMedium,
+  },
+  statLabel: {
+    ...typography.caption,
+    marginTop: spacing.xs,
+  },
+  statDivider: {
+    width: 1,
+    height: '100%',
   },
   filterContainer: {
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   filterScroll: {
-    paddingHorizontal: 16,
-    gap: 8,
+    paddingHorizontal: spacing.lg,
+    gap: spacing.sm,
   },
   filterPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    gap: 4,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.full,
+    gap: spacing.xs,
   },
   filterText: {
-    fontSize: 14,
-    fontWeight: '500',
+    ...typography.labelMedium,
   },
   sectionHeader: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    paddingTop: spacing.md,
   },
   sectionTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#8E8E93',
+    ...typography.labelMedium,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  separator: {
-    height: StyleSheet.hairlineWidth,
-    marginLeft: 16,
+  itemSeparator: {
+    height: spacing.xs,
   },
   sectionSeparator: {
-    height: 16,
+    height: spacing.md,
   },
   list: {
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
 });

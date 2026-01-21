@@ -1,15 +1,26 @@
 import React from 'react';
-import { StyleSheet, View, Pressable, useColorScheme } from 'react-native';
+import { StyleSheet, View, useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withDelay,
+  interpolate,
+  Extrapolation,
+} from 'react-native-reanimated';
 import { ThemedText } from '@/components/Themed';
 import { MealPlan, MealType } from '../types';
-import Colors from '@/constants/Colors';
+import Colors, { gradients, shadows, radius, spacing, typography } from '@/constants/Colors';
+import AnimatedPressable from './ui/AnimatedPressable';
+import Badge from './ui/Badge';
 
-const MEAL_TYPE_ICONS: Record<MealType, string> = {
-  Breakfast: 'sunny',
-  Lunch: 'restaurant',
-  Dinner: 'moon',
-  Snack: 'cafe',
+const MEAL_TYPE_ICONS: Record<MealType, { icon: string; gradient: readonly [string, string] }> = {
+  Breakfast: { icon: 'sunny', gradient: ['#FFD700', '#FFA500'] },
+  Lunch: { icon: 'restaurant', gradient: ['#34C759', '#30B350'] },
+  Dinner: { icon: 'moon', gradient: ['#5856D6', '#4B48C9'] },
+  Snack: { icon: 'cafe', gradient: ['#FF9500', '#FF7A00'] },
 };
 
 interface MealPlanCardProps {
@@ -17,58 +28,98 @@ interface MealPlanCardProps {
   onToggleComplete: () => void;
   onDelete: () => void;
   onPress?: () => void;
+  index?: number;
 }
 
-/**
- * Matches SwiftUI DayPlanCard styling
- */
 export default function MealPlanCard({
   mealPlan,
   onToggleComplete,
   onDelete,
   onPress,
+  index = 0,
 }: MealPlanCardProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const progress = useSharedValue(0);
+  const checkScale = useSharedValue(mealPlan.isCompleted ? 1 : 0);
 
-  const iconName = MEAL_TYPE_ICONS[mealPlan.mealType as MealType] || 'restaurant';
+  React.useEffect(() => {
+    progress.value = withDelay(
+      index * 80,
+      withSpring(1, { damping: 18, stiffness: 100 })
+    );
+  }, [index]);
+
+  React.useEffect(() => {
+    checkScale.value = withSpring(mealPlan.isCompleted ? 1 : 0, {
+      damping: 12,
+      stiffness: 200,
+    });
+  }, [mealPlan.isCompleted]);
+
+  const cardAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(progress.value, [0, 1], [0, 1], Extrapolation.CLAMP),
+    transform: [
+      { translateY: interpolate(progress.value, [0, 1], [20, 0], Extrapolation.CLAMP) },
+      { scale: interpolate(progress.value, [0, 1], [0.95, 1], Extrapolation.CLAMP) },
+    ],
+  }));
+
+  const checkAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { scale: interpolate(checkScale.value, [0, 0.5, 1], [1, 1.3, 1], Extrapolation.CLAMP) },
+    ],
+  }));
+
+  const mealConfig = MEAL_TYPE_ICONS[mealPlan.mealType as MealType] || MEAL_TYPE_ICONS.Dinner;
 
   return (
-    <Pressable
-      style={[
-        styles.container,
-        { backgroundColor: colorScheme === 'dark' ? colors.card : '#fff' },
-      ]}
-      onPress={onPress}
-      disabled={!onPress}
-    >
-      {/* Left side: checkbox + content */}
-      <View style={styles.leftContent}>
-        <Pressable onPress={onToggleComplete} style={styles.checkbox}>
-          <Ionicons
-            name={mealPlan.isCompleted ? 'checkmark-circle' : 'ellipse-outline'}
-            size={26}
-            color={mealPlan.isCompleted ? colors.success : '#C7C7CC'}
-          />
-        </Pressable>
+    <Animated.View style={cardAnimatedStyle}>
+      <AnimatedPressable
+        onPress={onPress}
+        hapticType="light"
+        scaleOnPress={0.98}
+        disabled={!onPress}
+        style={[
+          styles.container,
+          { backgroundColor: colors.card },
+          shadows.medium,
+        ]}
+      >
+        {/* Left: Meal Type Icon with Gradient */}
+        <View style={styles.iconWrapper}>
+          <LinearGradient
+            colors={mealConfig.gradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.iconGradient}
+          >
+            <Ionicons name={mealConfig.icon as any} size={22} color="#FFFFFF" />
+          </LinearGradient>
+        </View>
 
+        {/* Content */}
         <View style={styles.content}>
-          {/* Meal Type Badge */}
-          <View style={styles.mealTypeRow}>
-            <View style={[styles.mealTypeBadge, { backgroundColor: colors.tint + '1A' }]}>
-              <Ionicons name={iconName as any} size={12} color={colors.tint} />
-              <ThemedText style={[styles.mealTypeText, { color: colors.tint }]}>
-                {mealPlan.mealType}
-              </ThemedText>
-            </View>
+          {/* Header with meal type badge */}
+          <View style={styles.header}>
+            <Badge
+              label={mealPlan.mealType}
+              variant="neutral"
+              size="small"
+            />
             {mealPlan.reminder && (
-              <Ionicons name="notifications" size={14} color={colors.warning} />
+              <View style={styles.reminderIcon}>
+                <Ionicons name="notifications" size={14} color={colors.warning} />
+              </View>
             )}
           </View>
 
           {/* Recipe Name */}
           <ThemedText
-            style={[styles.recipeName, mealPlan.isCompleted && styles.completedText]}
+            style={[
+              styles.recipeName,
+              mealPlan.isCompleted && [styles.completedText, { color: colors.textTertiary }],
+            ]}
             numberOfLines={2}
           >
             {mealPlan.recipeName || 'No recipe selected'}
@@ -76,18 +127,39 @@ export default function MealPlanCard({
 
           {/* Notes */}
           {mealPlan.notes && (
-            <ThemedText style={styles.notes} numberOfLines={1}>
+            <ThemedText
+              style={[styles.notes, { color: colors.textTertiary }]}
+              numberOfLines={1}
+            >
               {mealPlan.notes}
             </ThemedText>
           )}
         </View>
-      </View>
 
-      {/* Right side: chevron */}
-      {onPress && (
-        <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
-      )}
-    </Pressable>
+        {/* Right: Checkbox */}
+        <AnimatedPressable
+          onPress={onToggleComplete}
+          hapticType={mealPlan.isCompleted ? 'selection' : 'medium'}
+          style={styles.checkboxContainer}
+        >
+          <Animated.View style={checkAnimatedStyle}>
+            <View
+              style={[
+                styles.checkbox,
+                {
+                  borderColor: mealPlan.isCompleted ? colors.success : colors.textTertiary,
+                  backgroundColor: mealPlan.isCompleted ? colors.success : 'transparent',
+                },
+              ]}
+            >
+              {mealPlan.isCompleted && (
+                <Ionicons name="checkmark" size={18} color="#FFFFFF" />
+              )}
+            </View>
+          </Animated.View>
+        </AnimatedPressable>
+      </AnimatedPressable>
+    </Animated.View>
   );
 }
 
@@ -95,57 +167,53 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    padding: spacing.lg,
+    borderRadius: radius.xl,
+    marginBottom: spacing.md,
+    gap: spacing.md,
   },
-  leftContent: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+  iconWrapper: {
+    // Container for icon
   },
-  checkbox: {
-    marginRight: 12,
-    marginTop: 2,
+  iconGradient: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.lg,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   content: {
     flex: 1,
-    gap: 4,
+    gap: spacing.xs,
   },
-  mealTypeRow: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
-  mealTypeBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 4,
-  },
-  mealTypeText: {
-    fontSize: 12,
-    fontWeight: '600',
+  reminderIcon: {
+    padding: 2,
   },
   recipeName: {
-    fontSize: 17,
-    fontWeight: '500',
+    ...typography.titleMedium,
     lineHeight: 22,
   },
   completedText: {
     textDecorationLine: 'line-through',
-    color: '#8E8E93',
   },
   notes: {
-    fontSize: 13,
-    color: '#8E8E93',
+    ...typography.bodySmall,
     lineHeight: 18,
+  },
+  checkboxContainer: {
+    padding: spacing.xs,
+  },
+  checkbox: {
+    width: 28,
+    height: 28,
+    borderRadius: radius.full,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

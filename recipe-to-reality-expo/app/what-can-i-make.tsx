@@ -100,7 +100,7 @@ export default function WhatCanIMakeScreen() {
   if (items.length === 0) {
     return (
       <EmptyState
-        icon="fridge-outline"
+        icon="snow-outline"
         title="Pantry is empty"
         message="Add items to your pantry to see what you can make"
         actionLabel="Go to Pantry"
@@ -115,7 +115,7 @@ export default function WhatCanIMakeScreen() {
   if (recipes.length === 0) {
     return (
       <EmptyState
-        icon="book-open-variant"
+        icon="book-outline"
         title="No recipes"
         message="Add some recipes to see what you can make"
         actionLabel="Add Recipe"

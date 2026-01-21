@@ -1,9 +1,18 @@
 import React, { useCallback, useState } from 'react';
-import { StyleSheet, FlatList, View, Pressable, useColorScheme } from 'react-native';
+import { StyleSheet, FlatList, View, Pressable, useColorScheme, Platform } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  interpolateColor,
+  FadeIn,
+  Layout,
+} from 'react-native-reanimated';
+import { BlurView } from 'expo-blur';
 
 import { ThemedView, ThemedText } from '@/components/Themed';
 import { useRecipeStore } from '@/src/stores/recipeStore';
@@ -11,8 +20,9 @@ import { useSettingsStore } from '@/src/stores/settingsStore';
 import { RecipeWithIngredients } from '@/src/types';
 import RecipeRow from '@/src/components/RecipeRow';
 import EmptyState from '@/src/components/EmptyState';
-import SearchBar from '@/src/components/SearchBar';
-import Colors from '@/constants/Colors';
+import { SkeletonRecipeList } from '@/src/components/ui/SkeletonLoader';
+import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
+import Colors, { shadows, radius, spacing, typography, animation } from '@/constants/Colors';
 
 type SortOption = 'dateAdded' | 'name' | 'cookTime';
 type FilterOption = 'all' | 'queue' | 'cooked';
@@ -29,10 +39,59 @@ const SORT_OPTIONS: { key: SortOption; label: string; icon: string }[] = [
   { key: 'cookTime', label: 'Cook Time', icon: 'time' },
 ];
 
+function SegmentedControl({
+  options,
+  selectedKey,
+  onSelect,
+}: {
+  options: { key: string; label: string }[];
+  selectedKey: string;
+  onSelect: (key: string) => void;
+}) {
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
+
+  return (
+    <View style={[styles.segmentedControl, { backgroundColor: colorScheme === 'dark' ? colors.cardElevated : '#E8E8ED' }]}>
+      {options.map((option) => {
+        const isSelected = option.key === selectedKey;
+        return (
+          <AnimatedPressable
+            key={option.key}
+            hapticType="selection"
+            scaleOnPress={0.97}
+            onPress={() => onSelect(option.key)}
+            style={[
+              styles.segmentedButton,
+              isSelected && [
+                styles.segmentedButtonActive,
+                {
+                  backgroundColor: colorScheme === 'dark' ? '#636366' : '#FFFFFF',
+                },
+                shadows.small,
+              ],
+            ]}
+          >
+            <ThemedText
+              style={[
+                styles.segmentedText,
+                { color: isSelected ? colors.text : colors.textTertiary },
+                isSelected && styles.segmentedTextActive,
+              ]}
+            >
+              {option.label}
+            </ThemedText>
+          </AnimatedPressable>
+        );
+      })}
+    </View>
+  );
+}
+
 export default function RecipesScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const { recipes, loadRecipes, searchRecipes } = useRecipeStore();
+  const { recipes, loadRecipes, searchRecipes, isLoading } = useRecipeStore();
   const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,9 +111,9 @@ export default function RecipesScreen() {
     }
   };
 
-  const handleFilterChange = (newFilter: FilterOption) => {
+  const handleFilterChange = (newFilter: string) => {
     triggerHaptic();
-    setFilter(newFilter);
+    setFilter(newFilter as FilterOption);
   };
 
   const extractMinutes = (cookTime: string | null | undefined): number => {
@@ -62,13 +121,11 @@ export default function RecipesScreen() {
     const time = cookTime.toLowerCase();
     let totalMinutes = 0;
 
-    // Handle hours
     const hourMatch = time.match(/(\d+)\s*(?:hour|hr|h)/);
     if (hourMatch) {
       totalMinutes += parseInt(hourMatch[1], 10) * 60;
     }
 
-    // Handle minutes
     const minMatch = time.match(/(\d+)\s*(?:min|m)/);
     if (minMatch) {
       totalMinutes += parseInt(minMatch[1], 10);
@@ -80,14 +137,12 @@ export default function RecipesScreen() {
   const filteredRecipes = React.useMemo(() => {
     let result = searchQuery ? searchRecipes(searchQuery) : recipes;
 
-    // Apply filter
     if (filter === 'queue') {
       result = result.filter((r) => r.isInQueue);
     } else if (filter === 'cooked') {
       result = result.filter((r) => r.dateCooked !== null);
     }
 
-    // Apply sort
     result = [...result].sort((a, b) => {
       switch (sortBy) {
         case 'name':
@@ -103,13 +158,71 @@ export default function RecipesScreen() {
     return result;
   }, [recipes, searchQuery, sortBy, filter, searchRecipes]);
 
-  const renderRecipe = ({ item }: { item: RecipeWithIngredients }) => (
-    <RecipeRow recipe={item} onPress={() => router.push(`/recipe/${item.id}`)} />
+  const renderRecipe = ({ item, index }: { item: RecipeWithIngredients; index: number }) => (
+    <RecipeRow
+      recipe={item}
+      onPress={() => router.push(`/recipe/${item.id}`)}
+      index={index}
+    />
   );
 
-  const renderSeparator = () => (
-    <View style={[styles.separator, { backgroundColor: colors.border }]} />
-  );
+  // Render sort menu with backdrop
+  const renderSortMenu = () => {
+    if (!showSortMenu) return null;
+
+    return (
+      <>
+        <Pressable
+          style={StyleSheet.absoluteFillObject}
+          onPress={() => setShowSortMenu(false)}
+        />
+        <Animated.View
+          entering={FadeIn.duration(150)}
+          style={[
+            styles.sortMenu,
+            {
+              backgroundColor: colors.card,
+              borderColor: colors.borderSubtle,
+            },
+            shadows.large,
+          ]}
+        >
+          {SORT_OPTIONS.map((option, index) => (
+            <React.Fragment key={option.key}>
+              <AnimatedPressable
+                hapticType="selection"
+                onPress={() => {
+                  setSortBy(option.key);
+                  setShowSortMenu(false);
+                }}
+                style={styles.sortMenuItem}
+              >
+                <Ionicons
+                  name={option.icon as any}
+                  size={18}
+                  color={sortBy === option.key ? colors.tint : colors.textTertiary}
+                />
+                <ThemedText
+                  style={[
+                    styles.sortMenuText,
+                    sortBy === option.key && { color: colors.tint },
+                  ]}
+                >
+                  {option.label}
+                </ThemedText>
+                {sortBy === option.key && (
+                  <Ionicons name="checkmark" size={18} color={colors.tint} />
+                )}
+              </AnimatedPressable>
+              {index < SORT_OPTIONS.length - 1 && (
+                <View style={[styles.sortMenuDivider, { backgroundColor: colors.borderSubtle }]} />
+              )}
+            </React.Fragment>
+          ))}
+        </Animated.View>
+      </>
+    );
+  };
 
   return (
     <>
@@ -123,31 +236,33 @@ export default function RecipesScreen() {
           },
           headerLeft: () =>
             recipes.length > 0 ? (
-              <Pressable
+              <AnimatedPressable
                 onPress={() => {
                   triggerHaptic();
                   setShowSortMenu(!showSortMenu);
                 }}
+                hapticType="selection"
                 style={styles.headerButton}
               >
                 <Ionicons name="swap-vertical" size={22} color={colors.tint} />
-              </Pressable>
+              </AnimatedPressable>
             ) : null,
           headerRight: () => (
-            <Pressable
+            <AnimatedPressable
               onPress={() => {
                 triggerHaptic();
                 router.push('/recipe/add');
               }}
+              hapticType="medium"
               style={styles.headerButton}
             >
               <Ionicons name="add" size={28} color={colors.tint} />
-            </Pressable>
+            </AnimatedPressable>
           ),
         }}
       />
       <ThemedView style={styles.container}>
-        {recipes.length === 0 ? (
+        {recipes.length === 0 && !isLoading ? (
           <EmptyState
             icon="book-outline"
             title="No Recipes Yet"
@@ -155,77 +270,30 @@ export default function RecipesScreen() {
             actionLabel="Add Your First Recipe"
             onAction={() => router.push('/recipe/add')}
           />
+        ) : recipes.length === 0 && isLoading ? (
+          <SkeletonRecipeList count={5} />
         ) : (
           <>
-            {/* Segmented Control - matches SwiftUI .segmented picker */}
+            {/* Segmented Control */}
             <View style={[styles.segmentedContainer, { backgroundColor: colors.background }]}>
-              <View style={[styles.segmentedControl, { backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#E5E5EA' }]}>
-                {FILTER_OPTIONS.map((option) => (
-                  <Pressable
-                    key={option.key}
-                    style={[
-                      styles.segmentedButton,
-                      filter === option.key && [
-                        styles.segmentedButtonActive,
-                        { backgroundColor: colorScheme === 'dark' ? '#636366' : '#fff' },
-                      ],
-                    ]}
-                    onPress={() => handleFilterChange(option.key)}
-                  >
-                    <ThemedText
-                      style={[
-                        styles.segmentedText,
-                        filter === option.key && styles.segmentedTextActive,
-                      ]}
-                    >
-                      {option.label}
-                    </ThemedText>
-                  </Pressable>
-                ))}
-              </View>
+              <SegmentedControl
+                options={FILTER_OPTIONS}
+                selectedKey={filter}
+                onSelect={handleFilterChange}
+              />
             </View>
 
-            {/* Sort menu dropdown */}
-            {showSortMenu && (
-              <View style={[styles.sortMenu, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                {SORT_OPTIONS.map((option) => (
-                  <Pressable
-                    key={option.key}
-                    style={styles.sortMenuItem}
-                    onPress={() => {
-                      triggerHaptic();
-                      setSortBy(option.key);
-                      setShowSortMenu(false);
-                    }}
-                  >
-                    <Ionicons
-                      name={option.icon as any}
-                      size={18}
-                      color={sortBy === option.key ? colors.tint : '#8E8E93'}
-                    />
-                    <ThemedText style={[
-                      styles.sortMenuText,
-                      sortBy === option.key && { color: colors.tint },
-                    ]}>
-                      {option.label}
-                    </ThemedText>
-                    {sortBy === option.key && (
-                      <Ionicons name="checkmark" size={18} color={colors.tint} />
-                    )}
-                  </Pressable>
-                ))}
-              </View>
-            )}
+            {/* Sort menu */}
+            {renderSortMenu()}
 
-            {/* Recipe List - plain style matching SwiftUI */}
+            {/* Recipe List */}
             <FlatList
               data={filteredRecipes}
               renderItem={renderRecipe}
               keyExtractor={(item) => item.id}
-              ItemSeparatorComponent={renderSeparator}
               contentContainerStyle={styles.list}
               showsVerticalScrollIndicator={false}
-              style={{ backgroundColor: colors.card }}
+              ItemSeparatorComponent={() => <View style={styles.separator} />}
             />
           </>
         )}
@@ -239,68 +307,62 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerButton: {
-    padding: 4,
+    padding: spacing.xs,
   },
   segmentedContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
   segmentedControl: {
     flexDirection: 'row',
-    borderRadius: 8,
-    padding: 2,
+    borderRadius: radius.md,
+    padding: 3,
   },
   segmentedButton: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: spacing.sm + 2,
     alignItems: 'center',
-    borderRadius: 6,
+    borderRadius: radius.sm + 1,
   },
   segmentedButtonActive: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    // Styles applied dynamically
   },
   segmentedText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#8E8E93',
+    ...typography.labelMedium,
   },
   segmentedTextActive: {
     fontWeight: '600',
   },
   sortMenu: {
     position: 'absolute',
-    top: 60,
-    left: 16,
+    top: 64,
+    left: spacing.lg,
     zIndex: 1000,
-    borderRadius: 12,
+    borderRadius: radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
-    minWidth: 180,
+    minWidth: 200,
+    overflow: 'hidden',
   },
   sortMenuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    gap: 12,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    gap: spacing.md,
   },
   sortMenuText: {
     flex: 1,
-    fontSize: 15,
+    ...typography.bodyMedium,
+  },
+  sortMenuDivider: {
+    height: StyleSheet.hairlineWidth,
+    marginLeft: spacing.lg + spacing.md + 18, // padding + gap + icon width
   },
   separator: {
-    height: StyleSheet.hairlineWidth,
-    marginLeft: 88, // 16 padding + 60 image + 12 gap
+    height: spacing.xs,
   },
   list: {
-    paddingBottom: 100,
+    paddingTop: spacing.sm,
+    paddingBottom: 120,
   },
 });
