@@ -12,6 +12,7 @@
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
     "@react-native-async-storage/async-storage": "^2.2.0",
+    "@react-native-community/datetimepicker": "^8.6.0",
     "@react-navigation/native": "^7.1.8",
     "drizzle-kit": "^0.28.1",
     "drizzle-orm": "^0.36.4",
@@ -28,6 +29,7 @@
     "expo-notifications": "^0.29.14",
     "expo-router": "~6.0.22",
     "expo-secure-store": "~14.0.1",
+    "expo-sharing": "^14.0.8",
     "expo-splash-screen": "~31.0.13",
     "expo-sqlite": "~15.0.3",
     "expo-status-bar": "~3.0.9",
@@ -46,6 +48,8 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~10.0.0",
     "patch-package": "^8.0.1",
     "react-test-renderer": "19.1.0",
     "typescript": "~5.9.2"
