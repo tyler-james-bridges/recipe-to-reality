@@ -152,6 +152,7 @@ export default function SettingsScreen() {
         style={[styles.container, { backgroundColor: colors.background }]}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
+        contentInsetAdjustmentBehavior="automatic"
       >
         {/* App Header Card */}
         <Animated.View
