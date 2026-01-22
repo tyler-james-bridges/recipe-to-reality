@@ -31,7 +31,6 @@ import Animated, {
   SharedValue,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BlurView } from 'expo-blur';
 
 import Colors, { gradients, shadows, radius, typography, spacing, animation } from '@/constants/Colors';
 import { ThemedText } from '@/components/Themed';

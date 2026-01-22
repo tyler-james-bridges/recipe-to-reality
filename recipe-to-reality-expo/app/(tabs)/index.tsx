@@ -11,7 +11,6 @@ import Animated, {
   FadeIn,
   Layout,
 } from 'react-native-reanimated';
-import { BlurView } from 'expo-blur';
 
 import { ThemedView, ThemedText } from '@/components/Themed';
 import { useRecipeStore } from '@/src/stores/recipeStore';

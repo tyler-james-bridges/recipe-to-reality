@@ -15,7 +15,6 @@ import { useLocalSearchParams, router, Stack, Href } from 'expo-router';
 import { Image } from 'expo-image';
 import { Icon } from '@/src/components/ui/Icon';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
 import * as Clipboard from 'expo-clipboard';
 import Animated, {
@@ -273,9 +272,7 @@ export default function RecipeDetailScreen() {
               hapticType="selection"
               style={styles.headerButton}
             >
-              <View style={[styles.headerButtonBackground, { backgroundColor: colors.glass }]}>
-                <Icon name="ellipsis-horizontal-circle" size={26} color={colors.tint} />
-              </View>
+              <Icon name="ellipsis-horizontal-circle" size={26} color={colors.tint} />
             </AnimatedPressable>
           ),
         }}
@@ -543,10 +540,6 @@ const styles = StyleSheet.create({
     paddingBottom: spacing['5xl'],
   },
   headerButton: {
-    padding: spacing.xs,
-  },
-  headerButtonBackground: {
-    borderRadius: radius.full,
     padding: spacing.xs,
   },
   toastContainer: {
