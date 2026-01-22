@@ -3,10 +3,16 @@ import { StyleSheet, ScrollView, View, Switch, Linking, Alert, useColorScheme } 
 import { router, Stack, Href } from 'expo-router';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
+import { File, Paths } from 'expo-file-system';
+import { shareAsync, isAvailableAsync } from 'expo-sharing';
 
 import { ThemedView, ThemedText } from '@/components/Themed';
 import { usePurchaseStore } from '@/src/stores/purchaseStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
+import { useRecipeStore } from '@/src/stores/recipeStore';
+import { useMealPlanStore } from '@/src/stores/mealPlanStore';
+import { useGroceryStore } from '@/src/stores/groceryStore';
+import { usePantryStore } from '@/src/stores/pantryStore';
 import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
 import { Icon, IconProps } from '@/src/components/ui/Icon';
 import Colors, { shadows, radius, spacing, typography, gradients } from '@/constants/Colors';
@@ -116,6 +122,12 @@ export default function SettingsScreen() {
   const { isPremium, remainingFreeExtractions, restorePurchases, isRevenueCatAvailable } = usePurchaseStore();
   const { hapticFeedback, setHapticFeedback, clearAllData } = useSettingsStore();
 
+  // Data stores for export
+  const { loadRecipes } = useRecipeStore();
+  const { loadMealPlans } = useMealPlanStore();
+  const { loadAllLists } = useGroceryStore();
+  const { loadItems: loadPantryItems } = usePantryStore();
+
   const handleRestorePurchases = async () => {
     try {
       await restorePurchases();
@@ -123,6 +135,90 @@ export default function SettingsScreen() {
     } catch (error) {
       Alert.alert('Error', 'Failed to restore purchases. Please try again.');
     }
+  };
+
+  const handleExportData = () => {
+    Alert.alert(
+      'Export All Data',
+      'This will create a JSON backup of all your recipes, meal plans, grocery lists, and pantry items.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Export',
+          onPress: async () => {
+            try {
+              // Check if sharing is available
+              const isSharingAvailable = await isAvailableAsync();
+              if (!isSharingAvailable) {
+                Alert.alert('Error', 'Sharing is not available on this device.');
+                return;
+              }
+
+              // Load all data from stores
+              await Promise.all([
+                loadRecipes(),
+                loadMealPlans(),
+                loadAllLists(),
+                loadPantryItems(),
+              ]);
+
+              // Get current state from stores
+              const recipes = useRecipeStore.getState().recipes;
+              const mealPlans = useMealPlanStore.getState().mealPlans;
+              const lists = useGroceryStore.getState().lists;
+              const pantryItems = usePantryStore.getState().items;
+
+              // Build export data
+              const timestamp = new Date().toISOString();
+              const exportData = {
+                exportedAt: timestamp,
+                appVersion: '1.0.0',
+                type: 'complete',
+                data: {
+                  recipes: recipes.map((recipe) => ({
+                    ...recipe,
+                    instructions:
+                      typeof recipe.instructions === 'string'
+                        ? JSON.parse(recipe.instructions)
+                        : recipe.instructions,
+                  })),
+                  mealPlans,
+                  groceryLists: lists.map((list) => ({
+                    ...list,
+                    items: list.items.map((item) => ({
+                      ...item,
+                      sourceRecipeIds:
+                        typeof item.sourceRecipeIds === 'string'
+                          ? JSON.parse(item.sourceRecipeIds)
+                          : item.sourceRecipeIds,
+                    })),
+                  })),
+                  pantryItems,
+                },
+              };
+
+              const jsonString = JSON.stringify(exportData, null, 2);
+              const date = new Date().toISOString().split('T')[0];
+              const fileName = `recipe-to-reality-complete-export-${date}.json`;
+
+              // Create file in cache directory
+              const file = new File(Paths.cache, fileName);
+              file.write(jsonString);
+
+              // Share the file
+              await shareAsync(file.uri, {
+                mimeType: 'application/json',
+                dialogTitle: 'Export All Data',
+                UTI: 'public.json',
+              });
+            } catch (error) {
+              console.error('Export error:', error);
+              Alert.alert('Export Failed', 'Unable to export data. Please try again.');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleClearData = () => {
@@ -285,7 +381,7 @@ export default function SettingsScreen() {
             iconColor="#34C759"
             title="Export Data"
             subtitle="Download all your recipes"
-            onPress={() => router.push('/settings/export' as Href)}
+            onPress={handleExportData}
           />
           <SettingsRow
             icon="trash"
