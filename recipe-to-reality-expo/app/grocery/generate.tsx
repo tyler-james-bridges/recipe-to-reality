@@ -30,7 +30,6 @@ import { useSettingsStore } from '@/src/stores/settingsStore';
 import { RecipeWithIngredients, MealPlan, MEAL_TYPES } from '@/src/types';
 import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
 import ModernButton from '@/src/components/ui/ModernButton';
-import GlassCard from '@/src/components/ui/GlassCard';
 import Badge from '@/src/components/ui/Badge';
 import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors';
 
