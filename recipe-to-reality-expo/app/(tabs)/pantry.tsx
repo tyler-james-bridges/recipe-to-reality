@@ -4,8 +4,6 @@ import { router, Stack, Href } from 'expo-router';
 import { Icon } from '@/src/components/ui/Icon';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
 
 import { ThemedView, ThemedText } from '@/components/Themed';
 import { usePantryStore } from '@/src/stores/pantryStore';
@@ -14,15 +12,13 @@ import { PantryItem, INGREDIENT_CATEGORIES, IngredientCategory } from '@/src/typ
 import PantryItemRow from '@/src/components/PantryItemRow';
 import EmptyState from '@/src/components/EmptyState';
 import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
-import { ChipGroup } from '@/src/components/ui/Chip';
-import Colors, { shadows, radius, spacing, typography, gradients } from '@/constants/Colors';
+import Colors, { radius, spacing, typography } from '@/constants/Colors';
 
 type FilterOption = 'all' | 'expiring' | IngredientCategory;
 
 export default function PantryScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const themeGradients = gradients[colorScheme ?? 'light'];
   const { items, loadItems, deleteItem } = usePantryStore();
   const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
   const [searchQuery, setSearchQuery] = useState('');
@@ -39,18 +35,6 @@ export default function PantryScreen() {
       Haptics.selectionAsync();
     }
   };
-
-  // Calculate expiring soon count
-  const expiringSoonCount = items.filter((item) => {
-    if (!item.expirationDate) return false;
-    const threeDaysFromNow = Date.now() + 3 * 24 * 60 * 60 * 1000;
-    return item.expirationDate <= threeDaysFromNow && item.expirationDate > Date.now();
-  }).length;
-
-  const expiredCount = items.filter((item) => {
-    if (!item.expirationDate) return false;
-    return item.expirationDate <= Date.now();
-  }).length;
 
   const filteredItems = React.useMemo(() => {
     let result = items;
@@ -99,8 +83,7 @@ export default function PantryScreen() {
 
   const filterOptions: { key: string; label: string; icon?: any }[] = [
     { key: 'all', label: 'All' },
-    { key: 'expiring', label: 'Expiring', icon: 'time-outline' },
-    ...INGREDIENT_CATEGORIES.slice(0, 4).map((cat) => ({ key: cat, label: cat })),
+    { key: 'expiring', label: 'Expiring Soon', icon: 'time-outline' },
   ];
 
   const renderItem = ({ item, index }: { item: PantryItem; index: number }) => (
@@ -167,47 +150,6 @@ export default function PantryScreen() {
           />
         ) : (
           <>
-            {/* Stats Card */}
-            <Animated.View
-              entering={FadeIn.duration(300)}
-              style={[styles.statsCard, { backgroundColor: colors.card }, shadows.small]}
-            >
-              <View style={styles.statItem}>
-                <ThemedText style={[styles.statNumber, { color: colors.tint }]}>
-                  {items.length}
-                </ThemedText>
-                <ThemedText style={[styles.statLabel, { color: colors.textTertiary }]}>
-                  Items
-                </ThemedText>
-              </View>
-              <View style={[styles.statDivider, { backgroundColor: colors.borderSubtle }]} />
-              <View style={styles.statItem}>
-                <ThemedText style={[styles.statNumber, { color: colors.success }]}>
-                  {sections.length}
-                </ThemedText>
-                <ThemedText style={[styles.statLabel, { color: colors.textTertiary }]}>
-                  Categories
-                </ThemedText>
-              </View>
-              {(expiringSoonCount > 0 || expiredCount > 0) && (
-                <>
-                  <View style={[styles.statDivider, { backgroundColor: colors.borderSubtle }]} />
-                  <AnimatedPressable
-                    onPress={() => setSelectedFilter('expiring')}
-                    hapticType="selection"
-                    style={styles.statItem}
-                  >
-                    <ThemedText style={[styles.statNumber, { color: colors.warning }]}>
-                      {expiringSoonCount + expiredCount}
-                    </ThemedText>
-                    <ThemedText style={[styles.statLabel, { color: colors.textTertiary }]}>
-                      Expiring
-                    </ThemedText>
-                  </AnimatedPressable>
-                </>
-              )}
-            </Animated.View>
-
             {/* Filter Pills */}
             <View style={styles.filterContainer}>
               <ScrollView
@@ -280,29 +222,6 @@ const styles = StyleSheet.create({
   },
   headerButton: {
     padding: spacing.xs,
-  },
-  statsCard: {
-    flexDirection: 'row',
-    marginHorizontal: spacing.lg,
-    marginVertical: spacing.md,
-    padding: spacing.lg,
-    borderRadius: radius.xl,
-    justifyContent: 'space-around',
-  },
-  statItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  statNumber: {
-    ...typography.displayMedium,
-  },
-  statLabel: {
-    ...typography.caption,
-    marginTop: spacing.xs,
-  },
-  statDivider: {
-    width: 1,
-    height: '100%',
   },
   filterContainer: {
     paddingVertical: spacing.sm,
