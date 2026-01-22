@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import storage from '../utils/storage';
 import { AIProviderType } from '../types';
 import { initializeDatabase, sqliteDB } from '../db/client';
 
@@ -46,12 +46,12 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   loadSettings: async () => {
     try {
       const [haptic, provider, notifications, reminderHour, reminderMinute, hasOnboarded] = await Promise.all([
-        AsyncStorage.getItem(SETTINGS_KEYS.HAPTIC_FEEDBACK),
-        AsyncStorage.getItem(SETTINGS_KEYS.AI_PROVIDER),
-        AsyncStorage.getItem(SETTINGS_KEYS.NOTIFICATIONS_ENABLED),
-        AsyncStorage.getItem(SETTINGS_KEYS.REMINDER_TIME_HOUR),
-        AsyncStorage.getItem(SETTINGS_KEYS.REMINDER_TIME_MINUTE),
-        AsyncStorage.getItem(SETTINGS_KEYS.HAS_COMPLETED_ONBOARDING),
+        storage.getItemAsync(SETTINGS_KEYS.HAPTIC_FEEDBACK),
+        storage.getItemAsync(SETTINGS_KEYS.AI_PROVIDER),
+        storage.getItemAsync(SETTINGS_KEYS.NOTIFICATIONS_ENABLED),
+        storage.getItemAsync(SETTINGS_KEYS.REMINDER_TIME_HOUR),
+        storage.getItemAsync(SETTINGS_KEYS.REMINDER_TIME_MINUTE),
+        storage.getItemAsync(SETTINGS_KEYS.HAS_COMPLETED_ONBOARDING),
       ]);
 
       set({
@@ -70,30 +70,30 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   },
 
   setHapticFeedback: async (enabled) => {
-    await AsyncStorage.setItem(SETTINGS_KEYS.HAPTIC_FEEDBACK, enabled.toString());
+    await storage.setItemAsync(SETTINGS_KEYS.HAPTIC_FEEDBACK, enabled.toString());
     set({ hapticFeedback: enabled });
   },
 
   setAIProvider: async (provider) => {
-    await AsyncStorage.setItem(SETTINGS_KEYS.AI_PROVIDER, provider);
+    await storage.setItemAsync(SETTINGS_KEYS.AI_PROVIDER, provider);
     set({ aiProvider: provider });
   },
 
   setNotificationsEnabled: async (enabled) => {
-    await AsyncStorage.setItem(SETTINGS_KEYS.NOTIFICATIONS_ENABLED, enabled.toString());
+    await storage.setItemAsync(SETTINGS_KEYS.NOTIFICATIONS_ENABLED, enabled.toString());
     set({ notificationsEnabled: enabled });
   },
 
   setReminderTime: async (hour, minute) => {
     await Promise.all([
-      AsyncStorage.setItem(SETTINGS_KEYS.REMINDER_TIME_HOUR, hour.toString()),
-      AsyncStorage.setItem(SETTINGS_KEYS.REMINDER_TIME_MINUTE, minute.toString()),
+      storage.setItemAsync(SETTINGS_KEYS.REMINDER_TIME_HOUR, hour.toString()),
+      storage.setItemAsync(SETTINGS_KEYS.REMINDER_TIME_MINUTE, minute.toString()),
     ]);
     set({ reminderTimeHour: hour, reminderTimeMinute: minute });
   },
 
   setHasCompletedOnboarding: async (completed) => {
-    await AsyncStorage.setItem(SETTINGS_KEYS.HAS_COMPLETED_ONBOARDING, completed.toString());
+    await storage.setItemAsync(SETTINGS_KEYS.HAS_COMPLETED_ONBOARDING, completed.toString());
     set({ hasCompletedOnboarding: completed });
   },
 
@@ -122,7 +122,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       await sqliteDB.execAsync('DELETE FROM recipes');
 
       // Clear extraction count
-      await AsyncStorage.removeItem('recipe_extractions_count');
+      await storage.removeItemAsync('recipe_extractions_count');
     } catch (error) {
       console.error('Failed to clear data:', error);
       throw error;

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { Platform } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import storage from '../utils/storage';
 import { FREE_EXTRACTION_LIMIT, PREMIUM_ENTITLEMENT } from '../types';
 
 const EXTRACTIONS_KEY = 'recipe_extractions_count';
@@ -90,7 +90,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
   initialize: async () => {
     try {
       // Load extraction count from storage first
-      const storedCount = await AsyncStorage.getItem(EXTRACTIONS_KEY);
+      const storedCount = await storage.getItemAsync(EXTRACTIONS_KEY);
       if (storedCount) {
         set({ extractionsUsed: parseInt(storedCount, 10) });
       }
@@ -189,12 +189,12 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
 
   recordExtraction: async () => {
     const newCount = get().extractionsUsed + 1;
-    await AsyncStorage.setItem(EXTRACTIONS_KEY, newCount.toString());
+    await storage.setItemAsync(EXTRACTIONS_KEY, newCount.toString());
     set({ extractionsUsed: newCount });
   },
 
   resetExtractionCount: async () => {
-    await AsyncStorage.setItem(EXTRACTIONS_KEY, '0');
+    await storage.setItemAsync(EXTRACTIONS_KEY, '0');
     set({ extractionsUsed: 0 });
   },
 }));
