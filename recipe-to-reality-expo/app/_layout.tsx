@@ -6,6 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import 'react-native-reanimated';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { useColorScheme } from '@/components/useColorScheme';
@@ -15,44 +16,32 @@ import { setupNetworkListener } from '@/src/hooks/useNetwork';
 import Colors from '@/constants/Colors';
 
 export {
-  // Catch any errors thrown by the Layout component.
   ErrorBoundary,
 } from 'expo-router';
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
   initialRouteName: '(tabs)',
 };
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-// Create a QueryClient instance with default options
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Retry failed requests up to 3 times
       retry: 3,
-      // Consider data stale after 5 minutes
       staleTime: 1000 * 60 * 5,
-      // Keep unused data in cache for 30 minutes
       gcTime: 1000 * 60 * 30,
-      // Refetch on window focus for fresh data
       refetchOnWindowFocus: true,
-      // Refetch when network reconnects
       refetchOnReconnect: true,
     },
     mutations: {
-      // Retry mutations up to 2 times
       retry: 2,
     },
   },
 });
 
-// Initialize network listener for offline support
 setupNetworkListener();
 
-// Custom theme that uses our orange accent color
 const LightTheme = {
   ...DefaultTheme,
   colors: {
@@ -84,12 +73,10 @@ export default function RootLayout() {
   const initializeApp = useSettingsStore((state) => state.initializeApp);
   const initializePurchases = usePurchaseStore((state) => state.initialize);
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
-  // Initialize app (database + settings + purchases)
   useEffect(() => {
     async function initialize() {
       try {
@@ -98,7 +85,6 @@ export default function RootLayout() {
         setAppReady(true);
       } catch (err) {
         console.error('Failed to initialize app:', err);
-        // Still allow app to load even if initialization fails
         setAppReady(true);
       }
     }
@@ -120,9 +106,11 @@ export default function RootLayout() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <RootLayoutNav />
-    </QueryClientProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <QueryClientProvider client={queryClient}>
+        <RootLayoutNav />
+      </QueryClientProvider>
+    </GestureHandlerRootView>
   );
 }
 
@@ -132,19 +120,15 @@ function RootLayoutNav() {
   const navigationState = useRootNavigationState();
   const hasCompletedOnboarding = useSettingsStore((state) => state.hasCompletedOnboarding);
 
-  // Handle onboarding navigation
   useEffect(() => {
-    // Wait until navigation is ready
     if (!navigationState?.key) return;
 
     const firstSegment = segments[0] as string;
     const inOnboarding = firstSegment === 'onboarding';
 
     if (!hasCompletedOnboarding && !inOnboarding) {
-      // User hasn't completed onboarding, redirect to onboarding
       router.replace('/onboarding' as any);
     } else if (hasCompletedOnboarding && inOnboarding) {
-      // User has completed onboarding but is on onboarding screen, redirect to main app
       router.replace('/(tabs)');
     }
   }, [hasCompletedOnboarding, segments, navigationState?.key]);

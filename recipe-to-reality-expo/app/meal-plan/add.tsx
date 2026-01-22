@@ -1,12 +1,10 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import {
   StyleSheet,
-  ScrollView,
   View,
   TextInput,
   FlatList,
   Switch,
-  Platform,
   KeyboardAvoidingView,
   useColorScheme,
   Image,
@@ -18,8 +16,6 @@ import * as Haptics from 'expo-haptics';
 import Animated, {
   FadeIn,
   FadeInDown,
-  FadeInUp,
-  FadeOut,
   Layout,
 } from 'react-native-reanimated';
 
@@ -30,15 +26,12 @@ import { useSettingsStore } from '@/src/stores/settingsStore';
 import {
   MealType,
   MEAL_TYPES,
-  MEAL_TYPE_ICONS,
   MEAL_TYPE_DEFAULT_TIMES,
   RecipeWithIngredients,
 } from '@/src/types';
 import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
 import ModernButton from '@/src/components/ui/ModernButton';
-import Colors, { shadows, radius, spacing, typography, animation } from '@/constants/Colors';
-
-type InputMode = 'recipe' | 'custom';
+import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors';
 
 // Icon mapping for meal types
 const getMealTypeIcon = (mealType: MealType): string => {
@@ -71,10 +64,7 @@ export default function AddMealPlanScreen() {
   // State
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [selectedMealType, setSelectedMealType] = useState<MealType>(initialMealType);
-  const [inputMode, setInputMode] = useState<InputMode>('recipe');
   const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null);
-  const [customMealName, setCustomMealName] = useState('');
-  const [notes, setNotes] = useState('');
   const [enableReminder, setEnableReminder] = useState(false);
   const [reminderTime, setReminderTime] = useState(() => {
     const defaultTime = MEAL_TYPE_DEFAULT_TIMES[initialMealType];
@@ -96,8 +86,8 @@ export default function AddMealPlanScreen() {
   }, [recipes, searchText]);
 
   const isValid = useMemo(() => {
-    return selectedRecipeId !== null || customMealName.trim().length > 0;
-  }, [selectedRecipeId, customMealName]);
+    return selectedRecipeId !== null;
+  }, [selectedRecipeId]);
 
   const selectedRecipe = useMemo(() => {
     return recipes.find((r) => r.id === selectedRecipeId);
@@ -145,7 +135,6 @@ export default function AddMealPlanScreen() {
       setSelectedRecipeId(null);
     } else {
       setSelectedRecipeId(recipe.id);
-      setCustomMealName('');
     }
   };
 
@@ -163,10 +152,8 @@ export default function AddMealPlanScreen() {
         date: mealDate.getTime(),
         mealType: selectedMealType,
         recipeId: selectedRecipeId,
-        recipeName:
-          selectedRecipe?.title ??
-          (customMealName.trim() || null),
-        notes: notes.trim() || null,
+        recipeName: selectedRecipe?.title ?? null,
+        notes: null,
         isCompleted: false,
         reminder: enableReminder,
         reminderTime: enableReminder ? reminderTime.getTime() : null,
@@ -234,6 +221,101 @@ export default function AddMealPlanScreen() {
           </ThemedText>
         </Animated.View>
       </AnimatedPressable>
+    );
+  };
+
+  // Render reminder footer when recipe is selected
+  const renderReminderFooter = () => {
+    if (!selectedRecipeId) return null;
+
+    return (
+      <Animated.View
+        entering={FadeIn.duration(200)}
+        style={[styles.reminderCard, { backgroundColor: colors.card }]}
+      >
+        <View style={styles.switchRow}>
+          <View style={styles.switchLabel}>
+            <Icon name="notifications-outline" size={20} color={colors.textSecondary} />
+            <ThemedText style={styles.switchText}>Reminder</ThemedText>
+          </View>
+          <Switch
+            value={enableReminder}
+            onValueChange={(value) => {
+              triggerHaptic('selection');
+              setEnableReminder(value);
+            }}
+            trackColor={{ false: colors.border, true: colors.tint + '80' }}
+            thumbColor={enableReminder ? colors.tint : '#f4f3f4'}
+            ios_backgroundColor={colors.border}
+          />
+        </View>
+
+        {/* Reminder Time Picker */}
+        {enableReminder && (
+          <Animated.View
+            entering={FadeIn.duration(200)}
+            style={styles.reminderTimeContainer}
+          >
+            <View style={styles.reminderTimeRow}>
+              <ThemedText style={[styles.reminderTimeLabel, { color: colors.textSecondary }]}>
+                Reminder Time
+              </ThemedText>
+              <AnimatedPressable
+                onPress={() => {
+                  triggerHaptic('selection');
+                  setShowTimePicker(true);
+                }}
+                hapticType="selection"
+                style={[styles.timeButton, { backgroundColor: colors.secondaryBackground }]}
+              >
+                <ThemedText style={[styles.timeButtonText, { color: colors.tint }]}>
+                  {reminderTime.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                  })}
+                </ThemedText>
+              </AnimatedPressable>
+            </View>
+
+            {showTimePicker && process.env.EXPO_OS === 'ios' && (
+              <Animated.View entering={FadeIn.duration(200)}>
+                <DateTimePicker
+                  value={reminderTime}
+                  mode="time"
+                  display="spinner"
+                  onChange={(event, time) => {
+                    if (time) {
+                      setReminderTime(time);
+                    }
+                  }}
+                  style={styles.timePicker}
+                />
+                <ModernButton
+                  title="Done"
+                  onPress={() => setShowTimePicker(false)}
+                  variant="secondary"
+                  size="small"
+                  style={styles.timePickerDone}
+                />
+              </Animated.View>
+            )}
+
+            {showTimePicker && process.env.EXPO_OS === 'android' && (
+              <DateTimePicker
+                value={reminderTime}
+                mode="time"
+                display="default"
+                onChange={(event, time) => {
+                  setShowTimePicker(false);
+                  if (time) {
+                    setReminderTime(time);
+                  }
+                }}
+              />
+            )}
+          </Animated.View>
+        )}
+      </Animated.View>
     );
   };
 
@@ -431,271 +513,80 @@ export default function AddMealPlanScreen() {
                 {MEAL_TYPES.map(renderMealTypeChip)}
               </View>
             </View>
-
-            {/* Input Mode Toggle */}
-            <View
-              style={[
-                styles.segmentedContainer,
-                { backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#E5E5EA' },
-              ]}
-            >
-              <AnimatedPressable
-                style={[
-                  styles.segmentedButton,
-                  inputMode === 'recipe' && [
-                    styles.segmentedButtonActive,
-                    { backgroundColor: colorScheme === 'dark' ? '#636366' : '#fff' },
-                  ],
-                ]}
-                onPress={() => {
-                  triggerHaptic('selection');
-                  setInputMode('recipe');
-                }}
-                hapticType="none"
-              >
-                <ThemedText
-                  style={[
-                    styles.segmentedText,
-                    inputMode === 'recipe' && styles.segmentedTextActive,
-                  ]}
-                >
-                  Choose Recipe
-                </ThemedText>
-              </AnimatedPressable>
-              <AnimatedPressable
-                style={[
-                  styles.segmentedButton,
-                  inputMode === 'custom' && [
-                    styles.segmentedButtonActive,
-                    { backgroundColor: colorScheme === 'dark' ? '#636366' : '#fff' },
-                  ],
-                ]}
-                onPress={() => {
-                  triggerHaptic('selection');
-                  setInputMode('custom');
-                  setSelectedRecipeId(null);
-                }}
-                hapticType="none"
-              >
-                <ThemedText
-                  style={[
-                    styles.segmentedText,
-                    inputMode === 'custom' && styles.segmentedTextActive,
-                  ]}
-                >
-                  Custom Meal
-                </ThemedText>
-              </AnimatedPressable>
-            </View>
           </Animated.View>
 
-          {inputMode === 'recipe' ? (
-            // Recipe Selection Mode
-            <View style={styles.recipeSection}>
-              {/* Search Bar */}
-              <View style={styles.searchContainer}>
-                <View
-                  style={[
-                    styles.searchBar,
-                    {
-                      backgroundColor: colorScheme === 'dark' ? colors.cardElevated : '#F5F5F7',
-                    },
-                  ]}
-                >
-                  <Icon name="search" size={18} color={colors.textTertiary} />
-                  <TextInput
-                    style={[styles.searchInput, { color: colors.text }]}
-                    value={searchText}
-                    onChangeText={setSearchText}
-                    placeholder="Search recipes"
-                    placeholderTextColor={colors.textTertiary}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                  />
-                  {searchText.length > 0 && (
-                    <AnimatedPressable
-                      onPress={() => setSearchText('')}
-                      hapticType="light"
-                    >
-                      <Icon name="close-circle" size={18} color={colors.textTertiary} />
-                    </AnimatedPressable>
-                  )}
-                </View>
-              </View>
-
-              {/* Recipe List or Empty State */}
-              {recipes.length === 0 ? (
-                <Animated.View
-                  entering={FadeIn.duration(300)}
-                  style={styles.emptyState}
-                >
-                  <Icon name="book-outline" size={48} color={colors.textTertiary} />
-                  <ThemedText style={[styles.emptyTitle, { color: colors.text }]}>
-                    No Recipes
-                  </ThemedText>
-                  <ThemedText style={[styles.emptyMessage, { color: colors.textTertiary }]}>
-                    Add some recipes first, then come back to plan your meals!
-                  </ThemedText>
-                </Animated.View>
-              ) : filteredRecipes.length === 0 ? (
-                <Animated.View
-                  entering={FadeIn.duration(300)}
-                  style={styles.emptyState}
-                >
-                  <Icon name="search" size={48} color={colors.textTertiary} />
-                  <ThemedText style={[styles.emptyTitle, { color: colors.text }]}>
-                    No Results
-                  </ThemedText>
-                  <ThemedText style={[styles.emptyMessage, { color: colors.textTertiary }]}>
-                    No recipes match "{searchText}"
-                  </ThemedText>
-                </Animated.View>
-              ) : (
-                <FlatList
-                  data={filteredRecipes}
-                  renderItem={renderRecipeRow}
-                  keyExtractor={(item) => item.id}
-                  contentContainerStyle={styles.recipeList}
-                  showsVerticalScrollIndicator={false}
-                  keyboardShouldPersistTaps="handled"
-                />
-              )}
-            </View>
-          ) : (
-            // Custom Meal Mode
-            <ScrollView
-              style={styles.customSection}
-              contentContainerStyle={styles.customContent}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-            >
-              {/* Meal Name */}
-              <Animated.View
-                entering={FadeInUp.delay(100).duration(300)}
-                style={[styles.inputGroup, { backgroundColor: colors.card }]}
+          {/* Recipe Selection */}
+          <View style={styles.recipeSection}>
+            {/* Search Bar */}
+            <View style={styles.searchContainer}>
+              <View
+                style={[
+                  styles.searchBar,
+                  {
+                    backgroundColor: colorScheme === 'dark' ? colors.cardElevated : '#F5F5F7',
+                  },
+                ]}
               >
-                <ThemedText style={[styles.inputLabel, { color: colors.textTertiary }]}>
-                  Meal Name
-                </ThemedText>
+                <Icon name="search" size={18} color={colors.textTertiary} />
                 <TextInput
-                  style={[styles.input, { color: colors.text }]}
-                  value={customMealName}
-                  onChangeText={setCustomMealName}
-                  placeholder="e.g., Leftovers, Eating Out"
+                  style={[styles.searchInput, { color: colors.text }]}
+                  value={searchText}
+                  onChangeText={setSearchText}
+                  placeholder="Search recipes"
                   placeholderTextColor={colors.textTertiary}
+                  autoCapitalize="none"
+                  autoCorrect={false}
                 />
-              </Animated.View>
-
-              {/* Notes */}
-              <Animated.View
-                entering={FadeInUp.delay(200).duration(300)}
-                style={[styles.inputGroup, { backgroundColor: colors.card }]}
-              >
-                <ThemedText style={[styles.inputLabel, { color: colors.textTertiary }]}>
-                  Notes (Optional)
-                </ThemedText>
-                <TextInput
-                  style={[styles.input, styles.textArea, { color: colors.text }]}
-                  value={notes}
-                  onChangeText={setNotes}
-                  placeholder="Add any notes about this meal..."
-                  placeholderTextColor={colors.textTertiary}
-                  multiline
-                  numberOfLines={3}
-                  textAlignVertical="top"
-                />
-              </Animated.View>
-
-              {/* Reminder Toggle */}
-              <Animated.View
-                entering={FadeInUp.delay(300).duration(300)}
-                style={[styles.inputGroup, { backgroundColor: colors.card }]}
-              >
-                <View style={styles.switchRow}>
-                  <View style={styles.switchLabel}>
-                    <Icon name="notifications-outline" size={20} color={colors.textSecondary} />
-                    <ThemedText style={styles.switchText}>Reminder</ThemedText>
-                  </View>
-                  <Switch
-                    value={enableReminder}
-                    onValueChange={(value) => {
-                      triggerHaptic('selection');
-                      setEnableReminder(value);
-                    }}
-                    trackColor={{ false: colors.border, true: colors.tint + '80' }}
-                    thumbColor={enableReminder ? colors.tint : '#f4f3f4'}
-                    ios_backgroundColor={colors.border}
-                  />
-                </View>
-
-                {/* Reminder Time Picker */}
-                {enableReminder && (
-                  <Animated.View
-                    entering={FadeIn.duration(200)}
-                    style={styles.reminderTimeContainer}
+                {searchText.length > 0 && (
+                  <AnimatedPressable
+                    onPress={() => setSearchText('')}
+                    hapticType="light"
                   >
-                    <View style={styles.reminderTimeRow}>
-                      <ThemedText style={[styles.reminderTimeLabel, { color: colors.textSecondary }]}>
-                        Reminder Time
-                      </ThemedText>
-                      <AnimatedPressable
-                        onPress={() => {
-                          triggerHaptic('selection');
-                          setShowTimePicker(true);
-                        }}
-                        hapticType="selection"
-                        style={[styles.timeButton, { backgroundColor: colors.secondaryBackground }]}
-                      >
-                        <ThemedText style={[styles.timeButtonText, { color: colors.tint }]}>
-                          {reminderTime.toLocaleTimeString('en-US', {
-                            hour: 'numeric',
-                            minute: '2-digit',
-                          })}
-                        </ThemedText>
-                      </AnimatedPressable>
-                    </View>
-
-                    {showTimePicker && process.env.EXPO_OS === 'ios' && (
-                      <Animated.View entering={FadeIn.duration(200)}>
-                        <DateTimePicker
-                          value={reminderTime}
-                          mode="time"
-                          display="spinner"
-                          onChange={(event, time) => {
-                            if (time) {
-                              setReminderTime(time);
-                            }
-                          }}
-                          style={styles.timePicker}
-                        />
-                        <ModernButton
-                          title="Done"
-                          onPress={() => setShowTimePicker(false)}
-                          variant="secondary"
-                          size="small"
-                          style={styles.timePickerDone}
-                        />
-                      </Animated.View>
-                    )}
-
-                    {showTimePicker && process.env.EXPO_OS === 'android' && (
-                      <DateTimePicker
-                        value={reminderTime}
-                        mode="time"
-                        display="default"
-                        onChange={(event, time) => {
-                          setShowTimePicker(false);
-                          if (time) {
-                            setReminderTime(time);
-                          }
-                        }}
-                      />
-                    )}
-                  </Animated.View>
+                    <Icon name="close-circle" size={18} color={colors.textTertiary} />
+                  </AnimatedPressable>
                 )}
+              </View>
+            </View>
+
+            {/* Recipe List or Empty State */}
+            {recipes.length === 0 ? (
+              <Animated.View
+                entering={FadeIn.duration(300)}
+                style={styles.emptyState}
+              >
+                <Icon name="book-outline" size={48} color={colors.textTertiary} />
+                <ThemedText style={[styles.emptyTitle, { color: colors.text }]}>
+                  No Recipes
+                </ThemedText>
+                <ThemedText style={[styles.emptyMessage, { color: colors.textTertiary }]}>
+                  Add some recipes first, then come back to plan your meals!
+                </ThemedText>
               </Animated.View>
-            </ScrollView>
-          )}
+            ) : filteredRecipes.length === 0 ? (
+              <Animated.View
+                entering={FadeIn.duration(300)}
+                style={styles.emptyState}
+              >
+                <Icon name="search" size={48} color={colors.textTertiary} />
+                <ThemedText style={[styles.emptyTitle, { color: colors.text }]}>
+                  No Results
+                </ThemedText>
+                <ThemedText style={[styles.emptyMessage, { color: colors.textTertiary }]}>
+                  No recipes match "{searchText}"
+                </ThemedText>
+              </Animated.View>
+            ) : (
+              <FlatList
+                data={filteredRecipes}
+                renderItem={renderRecipeRow}
+                keyExtractor={(item) => item.id}
+                contentContainerStyle={styles.recipeList}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                ListFooterComponent={renderReminderFooter}
+              />
+            )}
+          </View>
         </ThemedView>
       </KeyboardAvoidingView>
     </>
@@ -741,7 +632,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   mealTypeSelector: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.sm,
   },
   mealTypeChipGroup: {
     flexDirection: 'row',
@@ -758,34 +649,6 @@ const styles = StyleSheet.create({
   },
   mealTypeChipLabel: {
     ...typography.labelMedium,
-  },
-  segmentedContainer: {
-    flexDirection: 'row',
-    borderRadius: 8,
-    padding: 2,
-  },
-  segmentedButton: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  segmentedButtonActive: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  segmentedText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#8E8E93',
-  },
-  segmentedTextActive: {
-    fontWeight: '600',
-    color: undefined, // Will inherit from ThemedText
   },
   recipeSection: {
     flex: 1,
@@ -869,30 +732,11 @@ const styles = StyleSheet.create({
     ...typography.bodyMedium,
     textAlign: 'center',
   },
-  customSection: {
-    flex: 1,
-  },
-  customContent: {
-    padding: spacing.lg,
-    paddingBottom: 120,
-    gap: spacing.md,
-  },
-  inputGroup: {
+  reminderCard: {
     borderRadius: radius.lg,
     padding: spacing.md,
+    marginTop: spacing.lg,
     ...shadows.small,
-  },
-  inputLabel: {
-    ...typography.caption,
-    marginBottom: spacing.sm,
-  },
-  input: {
-    fontSize: 17,
-    paddingVertical: spacing.xs,
-  },
-  textArea: {
-    height: 80,
-    textAlignVertical: 'top',
   },
   switchRow: {
     flexDirection: 'row',
