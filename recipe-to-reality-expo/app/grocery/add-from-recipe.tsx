@@ -6,7 +6,7 @@ import {
   useColorScheme,
 } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/src/components/ui/Icon';
 import * as Haptics from 'expo-haptics';
 import Animated, {
   FadeIn,
@@ -88,7 +88,7 @@ function IngredientSelectItem({
           >
             {isSelected && (
               <Animated.View style={animatedCheckStyle}>
-                <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                <Icon name="checkmark" size={14} color="#FFFFFF" />
               </Animated.View>
             )}
           </View>
@@ -291,7 +291,7 @@ export default function AddFromRecipeScreen() {
         />
         <ThemedView style={styles.loadingContainer}>
           <Animated.View entering={FadeIn.duration(300)}>
-            <Ionicons name="cart-outline" size={48} color={colors.textTertiary} />
+            <Icon name="cart-outline" size={48} color={colors.textTertiary} />
             <ThemedText style={[styles.loadingText, { color: colors.textTertiary }]}>
               Loading ingredients...
             </ThemedText>
@@ -344,7 +344,7 @@ export default function AddFromRecipeScreen() {
           entering={FadeIn.duration(300)}
           style={[styles.recipeHeader, { backgroundColor: colors.card }, shadows.small]}
         >
-          <Ionicons name="restaurant-outline" size={20} color={colors.tint} />
+          <Icon name="restaurant-outline" size={20} color={colors.tint} />
           <ThemedText style={styles.recipeTitle} numberOfLines={2}>
             {recipe.title}
           </ThemedText>
@@ -366,7 +366,7 @@ export default function AddFromRecipeScreen() {
               shadows.small,
             ]}
           >
-            <Ionicons
+            <Icon
               name="checkbox-outline"
               size={18}
               color={selectedCount !== totalCount ? colors.tint : colors.textTertiary}
@@ -392,7 +392,7 @@ export default function AddFromRecipeScreen() {
               shadows.small,
             ]}
           >
-            <Ionicons
+            <Icon
               name="square-outline"
               size={18}
               color={selectedCount > 0 ? colors.text : colors.textTertiary}
@@ -415,7 +415,7 @@ export default function AddFromRecipeScreen() {
             exiting={FadeOut.duration(150)}
             style={[styles.summaryCard, { backgroundColor: colors.accentSubtle }]}
           >
-            <Ionicons name="cart-outline" size={20} color={colors.tint} />
+            <Icon name="cart-outline" size={20} color={colors.tint} />
             <ThemedText style={[styles.summaryText, { color: colors.tint }]}>
               {selectedCount} of {totalCount} ingredient{totalCount !== 1 ? 's' : ''} selected
             </ThemedText>

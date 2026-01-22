@@ -1,12 +1,12 @@
 import React from 'react';
 import { StyleSheet, ViewStyle, StyleProp, useColorScheme, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import Colors, { radius, typography, spacing } from '@/constants/Colors';
 import { ThemedText } from '@/components/Themed';
+import { Icon, IconProps } from './Icon';
 
 type BadgeVariant = 'primary' | 'success' | 'warning' | 'error' | 'info' | 'neutral';
 type BadgeSize = 'small' | 'medium';
-type IconName = React.ComponentProps<typeof Ionicons>['name'];
+type IconName = IconProps['name'];
 
 interface BadgeProps {
   label: string;
@@ -78,7 +78,7 @@ export default function Badge({
       ]}
     >
       {icon && (
-        <Ionicons
+        <Icon
           name={icon}
           size={sizeStyles.icon}
           color={variantColors.text}

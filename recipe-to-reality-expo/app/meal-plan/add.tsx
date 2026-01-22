@@ -12,7 +12,7 @@ import {
   Image,
 } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Icon, MaterialIcon } from '@/src/components/ui/Icon';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
 import Animated, {
@@ -40,9 +40,9 @@ import Colors, { shadows, radius, spacing, typography, animation } from '@/const
 
 type InputMode = 'recipe' | 'custom';
 
-// Icon mapping for meal types using MaterialCommunityIcons
-const getMealTypeIcon = (mealType: MealType): keyof typeof MaterialCommunityIcons.glyphMap => {
-  const icons: Record<MealType, keyof typeof MaterialCommunityIcons.glyphMap> = {
+// Icon mapping for meal types
+const getMealTypeIcon = (mealType: MealType): string => {
+  const icons: Record<MealType, string> = {
     Breakfast: 'weather-sunset-up',
     Lunch: 'weather-sunny',
     Dinner: 'weather-night',
@@ -219,8 +219,8 @@ export default function AddMealPlanScreen() {
             },
           ]}
         >
-          <MaterialCommunityIcons
-            name={getMealTypeIcon(type)}
+          <MaterialIcon
+            name={getMealTypeIcon(type) as any}
             size={14}
             color={isSelected ? '#FFFFFF' : colors.textTertiary}
           />
@@ -266,7 +266,7 @@ export default function AddMealPlanScreen() {
                 { backgroundColor: colors.skeleton },
               ]}
             >
-              <Ionicons name="restaurant" size={20} color={colors.textTertiary} />
+              <Icon name="restaurant" size={20} color={colors.textTertiary} />
             </View>
           )}
 
@@ -278,7 +278,7 @@ export default function AddMealPlanScreen() {
             <View style={styles.recipeMeta}>
               {item.cookTime && (
                 <View style={styles.metaItem}>
-                  <Ionicons name="time-outline" size={12} color={colors.textTertiary} />
+                  <Icon name="time-outline" size={12} color={colors.textTertiary} />
                   <ThemedText style={[styles.metaText, { color: colors.textTertiary }]}>
                     {item.cookTime}
                   </ThemedText>
@@ -286,7 +286,7 @@ export default function AddMealPlanScreen() {
               )}
               {item.servings && (
                 <View style={styles.metaItem}>
-                  <Ionicons name="people-outline" size={12} color={colors.textTertiary} />
+                  <Icon name="people-outline" size={12} color={colors.textTertiary} />
                   <ThemedText style={[styles.metaText, { color: colors.textTertiary }]}>
                     {item.servings}
                   </ThemedText>
@@ -296,7 +296,7 @@ export default function AddMealPlanScreen() {
           </View>
 
           {/* Selection Indicator */}
-          <Ionicons
+          <Icon
             name={isSelected ? 'checkmark-circle' : 'ellipse-outline'}
             size={24}
             color={isSelected ? colors.tint : colors.textTertiary}
@@ -357,8 +357,8 @@ export default function AddMealPlanScreen() {
           >
             {/* Date and Meal Type Display */}
             <View style={styles.mealHeader}>
-              <MaterialCommunityIcons
-                name={getMealTypeIcon(selectedMealType)}
+              <MaterialIcon
+                name={getMealTypeIcon(selectedMealType) as any}
                 size={28}
                 color={colors.tint}
               />
@@ -502,7 +502,7 @@ export default function AddMealPlanScreen() {
                     },
                   ]}
                 >
-                  <Ionicons name="search" size={18} color={colors.textTertiary} />
+                  <Icon name="search" size={18} color={colors.textTertiary} />
                   <TextInput
                     style={[styles.searchInput, { color: colors.text }]}
                     value={searchText}
@@ -517,7 +517,7 @@ export default function AddMealPlanScreen() {
                       onPress={() => setSearchText('')}
                       hapticType="light"
                     >
-                      <Ionicons name="close-circle" size={18} color={colors.textTertiary} />
+                      <Icon name="close-circle" size={18} color={colors.textTertiary} />
                     </AnimatedPressable>
                   )}
                 </View>
@@ -529,7 +529,7 @@ export default function AddMealPlanScreen() {
                   entering={FadeIn.duration(300)}
                   style={styles.emptyState}
                 >
-                  <Ionicons name="book-outline" size={48} color={colors.textTertiary} />
+                  <Icon name="book-outline" size={48} color={colors.textTertiary} />
                   <ThemedText style={[styles.emptyTitle, { color: colors.text }]}>
                     No Recipes
                   </ThemedText>
@@ -542,7 +542,7 @@ export default function AddMealPlanScreen() {
                   entering={FadeIn.duration(300)}
                   style={styles.emptyState}
                 >
-                  <Ionicons name="search" size={48} color={colors.textTertiary} />
+                  <Icon name="search" size={48} color={colors.textTertiary} />
                   <ThemedText style={[styles.emptyTitle, { color: colors.text }]}>
                     No Results
                   </ThemedText>
@@ -613,7 +613,7 @@ export default function AddMealPlanScreen() {
               >
                 <View style={styles.switchRow}>
                   <View style={styles.switchLabel}>
-                    <Ionicons name="notifications-outline" size={20} color={colors.textSecondary} />
+                    <Icon name="notifications-outline" size={20} color={colors.textSecondary} />
                     <ThemedText style={styles.switchText}>Reminder</ThemedText>
                   </View>
                   <Switch

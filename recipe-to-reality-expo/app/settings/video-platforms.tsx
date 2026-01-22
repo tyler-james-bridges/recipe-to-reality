@@ -11,7 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import { Stack, router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/src/components/ui/Icon';
 import Animated, { FadeIn, FadeInDown, SlideInRight } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
@@ -88,7 +88,7 @@ function PlatformRow({ platform, hasSupadataKey, index }: PlatformRowProps) {
             },
           ]}
         >
-          <Ionicons
+          <Icon
             name={platform.icon}
             size={22}
             color={
@@ -105,7 +105,7 @@ function PlatformRow({ platform, hasSupadataKey, index }: PlatformRowProps) {
             <ThemedText style={styles.platformName}>{platform.name}</ThemedText>
             {isConfigured && (
               <View style={[styles.configuredBadge, { backgroundColor: colors.successBackground }]}>
-                <Ionicons name="checkmark-circle" size={14} color={colors.success} />
+                <Icon name="checkmark-circle" size={14} color={colors.success} />
                 <ThemedText style={[styles.configuredText, { color: colors.success }]}>
                   Ready
                 </ThemedText>
@@ -116,7 +116,7 @@ function PlatformRow({ platform, hasSupadataKey, index }: PlatformRowProps) {
             {platform.description}
           </ThemedText>
         </View>
-        <Ionicons
+        <Icon
           name={isConfigured ? 'checkmark-circle' : 'ellipse-outline'}
           size={24}
           color={isConfigured ? colors.success : colors.textTertiary}
@@ -301,7 +301,7 @@ export default function VideoPlatformsSettingsScreen() {
                   hapticType="selection"
                   style={styles.eyeButton}
                 >
-                  <Ionicons
+                  <Icon
                     name={showApiKey ? 'eye-off' : 'eye'}
                     size={22}
                     color={colors.textTertiary}
@@ -319,7 +319,7 @@ export default function VideoPlatformsSettingsScreen() {
                 entering={FadeIn.duration(200)}
                 style={[styles.statusCard, { backgroundColor: colors.successBackground }]}
               >
-                <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+                <Icon name="checkmark-circle" size={20} color={colors.success} />
                 <ThemedText style={[styles.statusText, { color: colors.success }]}>
                   API key configured
                 </ThemedText>
@@ -338,11 +338,11 @@ export default function VideoPlatformsSettingsScreen() {
                 hapticType="light"
                 style={styles.linkRow}
               >
-                <Ionicons name="key-outline" size={20} color={colors.tint} />
+                <Icon name="key-outline" size={20} color={colors.tint} />
                 <ThemedText style={[styles.linkText, { color: colors.text }]}>
                   Get a Free API Key
                 </ThemedText>
-                <Ionicons name="open-outline" size={18} color={colors.textTertiary} />
+                <Icon name="open-outline" size={18} color={colors.textTertiary} />
               </AnimatedPressable>
               <View style={[styles.linkSeparator, { backgroundColor: colors.borderSubtle }]} />
               <AnimatedPressable
@@ -350,11 +350,11 @@ export default function VideoPlatformsSettingsScreen() {
                 hapticType="light"
                 style={styles.linkRow}
               >
-                <Ionicons name="pricetag-outline" size={20} color={colors.tint} />
+                <Icon name="pricetag-outline" size={20} color={colors.tint} />
                 <ThemedText style={[styles.linkText, { color: colors.text }]}>
                   View Pricing
                 </ThemedText>
-                <Ionicons name="open-outline" size={18} color={colors.textTertiary} />
+                <Icon name="open-outline" size={18} color={colors.textTertiary} />
               </AnimatedPressable>
             </View>
           </Animated.View>
@@ -371,7 +371,7 @@ export default function VideoPlatformsSettingsScreen() {
                   hapticType="medium"
                   style={styles.deleteButton}
                 >
-                  <Ionicons name="trash-outline" size={20} color={colors.error} />
+                  <Icon name="trash-outline" size={20} color={colors.error} />
                   <ThemedText style={[styles.deleteText, { color: colors.error }]}>
                     {isDeleting ? 'Deleting...' : 'Remove API Key'}
                   </ThemedText>
@@ -383,7 +383,7 @@ export default function VideoPlatformsSettingsScreen() {
           {/* Info Card */}
           <Animated.View entering={FadeIn.delay(500).duration(300)} style={styles.section}>
             <View style={[styles.infoCard, { backgroundColor: colors.infoBackground }]}>
-              <Ionicons name="information-circle" size={20} color={colors.info} />
+              <Icon name="information-circle" size={20} color={colors.info} />
               <ThemedText style={[styles.infoText, { color: colors.text }]}>
                 Supadata extracts transcripts from TikTok and Instagram videos. YouTube transcripts
                 are free and do not require an API key. Supadata offers 100 free transcript requests

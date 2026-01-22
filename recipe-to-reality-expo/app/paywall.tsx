@@ -8,14 +8,14 @@ import {
   Alert,
 } from 'react-native';
 import { router } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { ThemedView, ThemedText } from '@/components/Themed';
 import { usePurchaseStore } from '@/src/stores/purchaseStore';
 import { HapticManager } from '@/src/services/haptics';
+import { MaterialIcon, MaterialIconProps } from '@/src/components/ui/Icon';
 
 interface FeatureRowProps {
-  icon: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+  icon: MaterialIconProps['name'];
   title: string;
   description: string;
 }
@@ -24,7 +24,7 @@ function FeatureRow({ icon, title, description }: FeatureRowProps) {
   return (
     <View style={styles.featureRow}>
       <View style={styles.featureIcon}>
-        <MaterialCommunityIcons name={icon} size={24} color="#FF6B35" />
+        <MaterialIcon name={icon} size={24} color="#FF6B35" />
       </View>
       <View style={styles.featureContent}>
         <ThemedText style={styles.featureTitle}>{title}</ThemedText>
@@ -66,7 +66,7 @@ export default function PaywallScreen() {
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <View style={styles.iconContainer}>
-            <MaterialCommunityIcons name="crown" size={48} color="#FF6B35" />
+            <MaterialIcon name="crown" size={48} color="#FF6B35" />
           </View>
           <ThemedText style={styles.title}>Unlock Premium</ThemedText>
           <ThemedText style={styles.subtitle}>
@@ -98,7 +98,7 @@ export default function PaywallScreen() {
         </View>
 
         <View style={styles.devNotice}>
-          <MaterialCommunityIcons name="information-outline" size={24} color="#f59e0b" />
+          <MaterialIcon name="information-outline" size={24} color="#f59e0b" />
           <ThemedText style={styles.devNoticeText}>
             Purchases are not available in Expo Go.{'\n'}
             Build a development client to test in-app purchases.
@@ -160,7 +160,7 @@ export default function PaywallScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.iconContainer}>
-          <MaterialCommunityIcons name="crown" size={48} color="#FF6B35" />
+          <MaterialIcon name="crown" size={48} color="#FF6B35" />
         </View>
         <ThemedText style={styles.title}>Unlock Premium</ThemedText>
         <ThemedText style={styles.subtitle}>
@@ -214,7 +214,7 @@ export default function PaywallScreen() {
               >
                 {isSelected && (
                   <View style={styles.selectedBadge}>
-                    <MaterialCommunityIcons name="check-circle" size={20} color="#fff" />
+                    <MaterialIcon name="check-circle" size={20} color="#fff" />
                   </View>
                 )}
                 <ThemedText style={styles.packageTitle}>{product.title}</ThemedText>

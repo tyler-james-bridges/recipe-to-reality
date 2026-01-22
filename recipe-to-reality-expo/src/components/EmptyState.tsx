@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View, useColorScheme } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useAnimatedStyle,
@@ -14,8 +13,9 @@ import { ThemedText, ThemedView } from '@/components/Themed';
 import Colors, { gradients, radius, spacing, typography, shadows } from '@/constants/Colors';
 import AnimatedPressable from './ui/AnimatedPressable';
 import ModernButton from './ui/ModernButton';
+import { Icon, IconProps } from './ui/Icon';
 
-type IconName = React.ComponentProps<typeof Ionicons>['name'];
+type IconName = IconProps['name'];
 
 interface EmptyStateProps {
   icon: IconName;
@@ -79,7 +79,7 @@ export default function EmptyState({
           end={{ x: 1, y: 1 }}
           style={styles.iconBackground}
         >
-          <Ionicons name={icon} size={48} color={colors.tint} />
+          <Icon name={icon} size={48} color={colors.tint} />
         </LinearGradient>
       </Animated.View>
 

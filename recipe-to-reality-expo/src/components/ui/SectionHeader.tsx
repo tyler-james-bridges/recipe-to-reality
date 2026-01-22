@@ -1,10 +1,10 @@
 import React from 'react';
 import { StyleSheet, ViewStyle, StyleProp, useColorScheme, View, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import Colors, { typography, spacing } from '@/constants/Colors';
 import { ThemedText } from '@/components/Themed';
+import { Icon, IconProps } from './Icon';
 
-type IconName = React.ComponentProps<typeof Ionicons>['name'];
+type IconName = IconProps['name'];
 
 interface SectionHeaderProps {
   title: string;
@@ -31,7 +31,7 @@ export default function SectionHeader({
       <View style={styles.left}>
         {icon && (
           <View style={[styles.iconContainer, { backgroundColor: colors.accentSubtle }]}>
-            <Ionicons name={icon} size={16} color={colors.accent} />
+            <Icon name={icon} size={16} color={colors.accent} />
           </View>
         )}
         <View style={styles.textContainer}>
@@ -48,7 +48,7 @@ export default function SectionHeader({
           <ThemedText style={[styles.actionText, { color: colors.tint }]}>
             {actionLabel}
           </ThemedText>
-          <Ionicons name="chevron-forward" size={16} color={colors.tint} />
+          <Icon name="chevron-forward" size={16} color={colors.tint} />
         </Pressable>
       )}
     </View>

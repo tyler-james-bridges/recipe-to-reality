@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useMemo } from 'react';
 import { StyleSheet, FlatList, View, ScrollView, useColorScheme, Dimensions } from 'react-native';
 import { router, Stack } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/src/components/ui/Icon';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import Animated, {
@@ -301,7 +301,7 @@ export default function MealPlanScreen() {
           hapticType="selection"
           style={styles.navButton}
         >
-          <Ionicons name="chevron-back" size={24} color={colors.tint} />
+          <Icon name="chevron-back" size={24} color={colors.tint} />
         </AnimatedPressable>
 
         <AnimatedPressable onPress={goToToday} hapticType="selection">
@@ -313,7 +313,7 @@ export default function MealPlanScreen() {
           hapticType="selection"
           style={styles.navButton}
         >
-          <Ionicons name="chevron-forward" size={24} color={colors.tint} />
+          <Icon name="chevron-forward" size={24} color={colors.tint} />
         </AnimatedPressable>
       </View>
 
@@ -375,7 +375,7 @@ export default function MealPlanScreen() {
         {/* Meals for Selected Day */}
         {todayMeals.length === 0 ? (
           <View style={styles.monthEmptyState}>
-            <Ionicons name="calendar-outline" size={32} color={colors.textTertiary} />
+            <Icon name="calendar-outline" size={32} color={colors.textTertiary} />
             <ThemedText style={[styles.monthEmptyText, { color: colors.textTertiary }]}>
               No meals planned
             </ThemedText>
@@ -387,7 +387,7 @@ export default function MealPlanScreen() {
               hapticType="selection"
               style={[styles.addMealButton, { backgroundColor: colors.tint }]}
             >
-              <Ionicons name="add" size={18} color="#FFFFFF" />
+              <Icon name="add" size={18} color="#FFFFFF" />
               <ThemedText style={styles.addMealButtonText}>Add Meal</ThemedText>
             </AnimatedPressable>
           </View>
@@ -434,7 +434,7 @@ export default function MealPlanScreen() {
             hapticType="selection"
             style={styles.navButton}
           >
-            <Ionicons name="chevron-back" size={24} color={colors.tint} />
+            <Icon name="chevron-back" size={24} color={colors.tint} />
           </AnimatedPressable>
 
           <AnimatedPressable onPress={goToToday} hapticType="selection">
@@ -446,7 +446,7 @@ export default function MealPlanScreen() {
             hapticType="selection"
             style={styles.navButton}
           >
-            <Ionicons name="chevron-forward" size={24} color={colors.tint} />
+            <Icon name="chevron-forward" size={24} color={colors.tint} />
           </AnimatedPressable>
         </View>
 
@@ -585,7 +585,7 @@ export default function MealPlanScreen() {
               hapticType="medium"
               style={styles.headerButton}
             >
-              <Ionicons name="add" size={28} color={colors.tint} />
+              <Icon name="add" size={28} color={colors.tint} />
             </AnimatedPressable>
           ),
         }}

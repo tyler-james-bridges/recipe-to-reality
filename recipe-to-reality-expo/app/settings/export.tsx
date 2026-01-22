@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Stack } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/src/components/ui/Icon';
 import Animated, {
   FadeIn,
   FadeInDown,
@@ -39,7 +39,7 @@ interface ExportOption {
   type: ExportType;
   title: string;
   description: string;
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: string;
   iconColor: string;
 }
 
@@ -133,7 +133,7 @@ function ExportRow({ option, count, isLoading, isSuccess, onExport, index }: Exp
         ]}
       >
         <View style={[styles.iconContainer, { backgroundColor: option.iconColor + '20' }]}>
-          <Ionicons name={option.icon} size={24} color={option.iconColor} />
+          <Icon name={option.icon as any} size={24} color={option.iconColor} />
         </View>
 
         <View style={styles.rowContent}>
@@ -155,10 +155,10 @@ function ExportRow({ option, count, isLoading, isSuccess, onExport, index }: Exp
             <ActivityIndicator size="small" color={colors.tint} />
           ) : isSuccess ? (
             <Animated.View style={successAnimatedStyle}>
-              <Ionicons name="checkmark-circle" size={24} color={colors.success} />
+              <Icon name="checkmark-circle" size={24} color={colors.success} />
             </Animated.View>
           ) : (
-            <Ionicons
+            <Icon
               name="share-outline"
               size={22}
               color={count === 0 ? colors.textTertiary : colors.tint}
@@ -425,7 +425,7 @@ export default function ExportDataScreen() {
           <GlassCard style={styles.summaryCard}>
             <View style={styles.summaryHeader}>
               <View style={[styles.summaryIconContainer, { backgroundColor: colors.accentSubtle }]}>
-                <Ionicons name="cloud-download-outline" size={28} color={colors.tint} />
+                <Icon name="cloud-download-outline" size={28} color={colors.tint} />
               </View>
               <View style={styles.summaryTextContainer}>
                 <ThemedText style={styles.summaryTitle}>Your Data</ThemedText>
@@ -505,7 +505,7 @@ export default function ExportDataScreen() {
           <View style={[styles.exportAllCard, { backgroundColor: colors.card }, shadows.medium]}>
             <View style={styles.exportAllContent}>
               <View style={[styles.exportAllIcon, { backgroundColor: colors.tint + '20' }]}>
-                <Ionicons name="archive-outline" size={32} color={colors.tint} />
+                <Icon name="archive-outline" size={32} color={colors.tint} />
               </View>
               <View style={styles.exportAllText}>
                 <ThemedText style={styles.exportAllTitle}>Export Everything</ThemedText>
@@ -545,7 +545,7 @@ export default function ExportDataScreen() {
         {/* Info Card */}
         <Animated.View entering={FadeIn.delay(600).duration(300)} style={styles.section}>
           <View style={[styles.infoCard, { backgroundColor: colors.infoBackground }]}>
-            <Ionicons name="information-circle" size={20} color={colors.info} />
+            <Icon name="information-circle" size={20} color={colors.info} />
             <ThemedText style={[styles.infoText, { color: colors.text }]}>
               Exported files are saved as JSON and can be used for backup purposes or to transfer
               data between devices. Your data is never sent to any external servers during export.

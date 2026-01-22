@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { StyleSheet, View, ScrollView, SectionList, useColorScheme } from 'react-native';
 import { router, Stack, Href } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/src/components/ui/Icon';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
@@ -140,7 +140,7 @@ export default function PantryScreen() {
                 hapticType="selection"
                 style={styles.headerButton}
               >
-                <Ionicons name="restaurant" size={22} color={colors.tint} />
+                <Icon name="restaurant" size={22} color={colors.tint} />
               </AnimatedPressable>
               <AnimatedPressable
                 onPress={() => {
@@ -150,7 +150,7 @@ export default function PantryScreen() {
                 hapticType="medium"
                 style={styles.headerButton}
               >
-                <Ionicons name="add" size={28} color={colors.tint} />
+                <Icon name="add" size={28} color={colors.tint} />
               </AnimatedPressable>
             </View>
           ),
@@ -232,7 +232,7 @@ export default function PantryScreen() {
                     ]}
                   >
                     {option.icon && (
-                      <Ionicons
+                      <Icon
                         name={option.icon}
                         size={14}
                         color={selectedFilter === option.key ? '#FFFFFF' : colors.text}

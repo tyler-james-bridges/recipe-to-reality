@@ -1,6 +1,5 @@
 import React from 'react';
 import { StyleSheet, View, useColorScheme } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -15,6 +14,7 @@ import { GroceryItem } from '../types';
 import { formatIngredient } from '../utils/quantity';
 import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors';
 import AnimatedPressable from './ui/AnimatedPressable';
+import { Icon } from './ui/Icon';
 
 interface GroceryItemRowProps {
   item: GroceryItem;
@@ -85,7 +85,7 @@ export default function GroceryItemRow({ item, onToggle, onDelete, index = 0 }: 
               },
             ]}>
               {item.isChecked && (
-                <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                <Icon name="checkmark" size={14} color="#FFFFFF" />
               )}
             </View>
           </Animated.View>
@@ -105,7 +105,7 @@ export default function GroceryItemRow({ item, onToggle, onDelete, index = 0 }: 
 
           {item.sourceRecipeIds && item.sourceRecipeIds.length > 1 && (
             <View style={styles.sourceContainer}>
-              <Ionicons name="restaurant-outline" size={10} color={colors.textTertiary} />
+              <Icon name="restaurant-outline" size={10} color={colors.textTertiary} />
               <ThemedText style={[styles.sourceCount, { color: colors.textTertiary }]}>
                 From {item.sourceRecipeIds.length} recipes
               </ThemedText>
@@ -115,7 +115,7 @@ export default function GroceryItemRow({ item, onToggle, onDelete, index = 0 }: 
 
         {/* Swipe hint indicator */}
         <View style={styles.swipeHint}>
-          <Ionicons name="chevron-back" size={14} color={colors.textTertiary} style={{ opacity: 0.3 }} />
+          <Icon name="chevron-back" size={14} color={colors.textTertiary} style={{ opacity: 0.3 }} />
         </View>
       </AnimatedPressable>
     </Animated.View>

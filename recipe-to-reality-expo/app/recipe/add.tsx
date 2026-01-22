@@ -12,7 +12,7 @@ import {
   useColorScheme,
 } from 'react-native';
 import { router, Stack } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/src/components/ui/Icon';
 import * as Haptics from 'expo-haptics';
 
 import { ThemedView, ThemedText } from '@/components/Themed';
@@ -215,7 +215,7 @@ export default function AddRecipeScreen() {
                 setMode('url');
               }}
             >
-              <Ionicons
+              <Icon
                 name="link"
                 size={16}
                 color={mode === 'url' ? colors.text : '#8E8E93'}
@@ -234,7 +234,7 @@ export default function AddRecipeScreen() {
                 setMode('manual');
               }}
             >
-              <Ionicons
+              <Icon
                 name="create-outline"
                 size={16}
                 color={mode === 'manual' ? colors.text : '#8E8E93'}
@@ -253,11 +253,11 @@ export default function AddRecipeScreen() {
                   style={[styles.limitBanner, { backgroundColor: colors.tint + '1A' }]}
                   onPress={() => router.push('/paywall')}
                 >
-                  <Ionicons name="sparkles" size={18} color={colors.tint} />
+                  <Icon name="sparkles" size={18} color={colors.tint} />
                   <ThemedText style={[styles.limitText, { color: colors.tint }]}>
                     {remainingFreeExtractions} free extractions remaining
                   </ThemedText>
-                  <Ionicons name="chevron-forward" size={18} color={colors.tint} />
+                  <Icon name="chevron-forward" size={18} color={colors.tint} />
                 </Pressable>
               )}
 
@@ -294,7 +294,7 @@ export default function AddRecipeScreen() {
                   <ActivityIndicator color="#fff" />
                 ) : (
                   <>
-                    <Ionicons name="sparkles" size={20} color="#fff" />
+                    <Icon name="sparkles" size={20} color="#fff" />
                     <ThemedText style={styles.extractButtonText}>Extract Recipe</ThemedText>
                   </>
                 )}
