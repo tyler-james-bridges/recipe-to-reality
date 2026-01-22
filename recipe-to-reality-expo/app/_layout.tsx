@@ -7,10 +7,12 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import 'react-native-reanimated';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 import { usePurchaseStore } from '@/src/stores/purchaseStore';
+import { setupNetworkListener } from '@/src/hooks/useNetwork';
 import Colors from '@/constants/Colors';
 
 export {
@@ -25,6 +27,31 @@ export const unstable_settings = {
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+// Create a QueryClient instance with default options
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Retry failed requests up to 3 times
+      retry: 3,
+      // Consider data stale after 5 minutes
+      staleTime: 1000 * 60 * 5,
+      // Keep unused data in cache for 30 minutes
+      gcTime: 1000 * 60 * 30,
+      // Refetch on window focus for fresh data
+      refetchOnWindowFocus: true,
+      // Refetch when network reconnects
+      refetchOnReconnect: true,
+    },
+    mutations: {
+      // Retry mutations up to 2 times
+      retry: 2,
+    },
+  },
+});
+
+// Initialize network listener for offline support
+setupNetworkListener();
 
 // Custom theme that uses our orange accent color
 const LightTheme = {
@@ -94,7 +121,11 @@ export default function RootLayout() {
     );
   }
 
-  return <RootLayoutNav />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RootLayoutNav />
+    </QueryClientProvider>
+  );
 }
 
 function RootLayoutNav() {
