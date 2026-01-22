@@ -22,35 +22,19 @@ export const gradients = {
   },
 };
 
-// Shadow presets for elevation system
+// Shadow presets for elevation system - using CSS boxShadow syntax
 export const shadows = {
   small: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.06)',
   },
   medium: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
   },
   large: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 24,
-    elevation: 8,
+    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
   },
   glow: (color: string) => ({
-    shadowColor: color,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 6,
+    boxShadow: `0 4px 12px ${color}4D`, // 4D = 30% opacity in hex
   }),
 };
 
@@ -157,6 +141,16 @@ export const radius = {
   '2xl': 24,
   full: 9999,
 } as const;
+
+// Border radius with continuous curve (iOS squircle) for native feel
+export const borderRadius = {
+  sm: { borderRadius: radius.sm, borderCurve: 'continuous' as const },
+  md: { borderRadius: radius.md, borderCurve: 'continuous' as const },
+  lg: { borderRadius: radius.lg, borderCurve: 'continuous' as const },
+  xl: { borderRadius: radius.xl, borderCurve: 'continuous' as const },
+  '2xl': { borderRadius: radius['2xl'], borderCurve: 'continuous' as const },
+  full: { borderRadius: radius.full, borderCurve: 'continuous' as const },
+};
 
 // Animation durations
 export const animation = {
