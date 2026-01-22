@@ -15,7 +15,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.recipetoreality.app",
-      "appleTeamId": "4WXA94CNKK"
+      "appleTeamId": "4WXA94CNKK",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -44,6 +47,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "7b02d6b5-ac58-45c8-89fa-3373fa3fd767"
+      }
+    },
+    "owner": "tjames145"
   }
 }
