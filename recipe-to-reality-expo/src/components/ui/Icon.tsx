@@ -19,6 +19,8 @@ const IONICONS_TO_SF: Record<string, SFSymbol> = {
   'add-outline': 'plus',
   'add-circle': 'plus.circle.fill',
   'add-circle-outline': 'plus.circle',
+  'remove-circle': 'minus.circle.fill',
+  'remove-circle-outline': 'minus.circle',
   'close': 'xmark',
   'close-circle': 'xmark.circle.fill',
   'close-circle-outline': 'xmark.circle',
@@ -84,6 +86,11 @@ const IONICONS_TO_SF: Record<string, SFSymbol> = {
   'person': 'person.fill',
   'person-outline': 'person',
   'person-circle': 'person.circle.fill',
+  'people': 'person.2.fill',
+  'people-outline': 'person.2',
+  'play-circle': 'play.circle.fill',
+  'play-circle-outline': 'play.circle',
+  'musical-notes': 'music.note.list',
 };
 
 const MATERIAL_TO_SF: Record<string, SFSymbol> = {

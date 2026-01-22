@@ -22,20 +22,47 @@ export const gradients = {
   },
 };
 
-// Shadow presets for elevation system - using CSS boxShadow syntax
+// Shadow presets for elevation system - React Native compatible
+import { Platform } from 'react-native';
 export const shadows = {
-  small: {
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.06)',
-  },
-  medium: {
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
-  },
-  large: {
-    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
-  },
-  glow: (color: string) => ({
-    boxShadow: `0 4px 12px ${color}4D`, // 4D = 30% opacity in hex
+  small: Platform.select({
+    ios: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.06,
+      shadowRadius: 4,
+    },
+    android: {
+      elevation: 2,
+    },
+    default: {},
   }),
+  medium: Platform.select({
+    ios: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.08,
+      shadowRadius: 12,
+    },
+    android: {
+      elevation: 4,
+    },
+    default: {},
+  }),
+  large: Platform.select({
+    ios: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.12,
+      shadowRadius: 24,
+    },
+    android: {
+      elevation: 8,
+    },
+    default: {},
+  }),
+};
+  },
 };
 
 // Modern spacing scale (4px base)

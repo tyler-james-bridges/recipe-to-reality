@@ -34,7 +34,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Colors, { gradients, shadows, radius, typography, spacing, animation } from '@/constants/Colors';
 import { ThemedText } from '@/components/Themed';
-import { ModernButton, AnimatedPressable, GlassCard } from '@/src/components/ui';
+import { ModernButton, AnimatedPressable } from '@/src/components/ui';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');

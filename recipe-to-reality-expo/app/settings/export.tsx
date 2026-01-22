@@ -30,7 +30,6 @@ import { usePantryStore } from '@/src/stores/pantryStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
 import ModernButton from '@/src/components/ui/ModernButton';
-import GlassCard from '@/src/components/ui/GlassCard';
 import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors';
 
 type ExportType = 'recipes' | 'mealPlans' | 'groceryLists' | 'pantryItems' | 'all';
@@ -422,7 +421,7 @@ export default function ExportDataScreen() {
       >
         {/* Data Summary Card */}
         <Animated.View entering={FadeIn.duration(400)} style={styles.summarySection}>
-          <GlassCard style={styles.summaryCard}>
+          <View style={[styles.summaryCard, { backgroundColor: colors.card }, shadows.medium]}>
             <View style={styles.summaryHeader}>
               <View style={[styles.summaryIconContainer, { backgroundColor: colors.accentSubtle }]}>
                 <Icon name="cloud-download-outline" size={28} color={colors.tint} />
@@ -474,7 +473,7 @@ export default function ExportDataScreen() {
                 </ThemedText>
               </View>
             </View>
-          </GlassCard>
+          </View>
         </Animated.View>
 
         {/* Export Options Section */}
