@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { useColorScheme, Platform, StyleSheet, View } from 'react-native';
+import { useColorScheme, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   useAnimatedStyle,
@@ -63,11 +63,11 @@ export default function TabLayout() {
           backgroundColor: colorScheme === 'dark' ? colors.card : '#FFFFFF',
           borderTopColor: colors.borderSubtle,
           borderTopWidth: StyleSheet.hairlineWidth,
-          paddingBottom: Platform.OS === 'ios' ? 28 : 12,
+          paddingBottom: process.env.EXPO_OS === 'ios' ? 28 : 12,
           paddingTop: 12,
-          height: Platform.OS === 'ios' ? 92 : 68,
+          height: process.env.EXPO_OS === 'ios' ? 92 : 68,
           // Modern glass effect for iOS
-          ...(Platform.OS === 'ios' && {
+          ...(process.env.EXPO_OS === 'ios' && {
             position: 'absolute',
             bottom: 0,
             left: 0,

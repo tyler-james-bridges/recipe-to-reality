@@ -246,7 +246,7 @@ export default function VideoPlatformsSettingsScreen() {
         }}
       />
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={process.env.EXPO_OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}
       >
         <ScrollView

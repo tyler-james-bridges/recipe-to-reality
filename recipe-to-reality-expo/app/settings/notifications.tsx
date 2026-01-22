@@ -114,7 +114,7 @@ export default function NotificationsSettingsScreen() {
 
   // Handle time picker change
   const handleTimeChange = async (event: DateTimePickerEvent, selectedDate?: Date) => {
-    if (Platform.OS === 'android') {
+    if (process.env.EXPO_OS === 'android') {
       setShowTimePicker(false);
     }
 
@@ -349,7 +349,7 @@ export default function NotificationsSettingsScreen() {
         {/* Time Picker - iOS shows inline, Android shows modal */}
         {showTimePicker && (
           <Animated.View entering={SlideInRight.duration(300)} style={styles.pickerSection}>
-            {Platform.OS === 'ios' && (
+            {process.env.EXPO_OS === 'ios' && (
               <>
                 <ThemedText style={[styles.sectionTitle, { color: colors.textTertiary }]}>
                   SELECT TIME
@@ -373,7 +373,7 @@ export default function NotificationsSettingsScreen() {
                 </View>
               </>
             )}
-            {Platform.OS === 'android' && (
+            {process.env.EXPO_OS === 'android' && (
               <DateTimePicker
                 value={reminderDate}
                 mode="time"

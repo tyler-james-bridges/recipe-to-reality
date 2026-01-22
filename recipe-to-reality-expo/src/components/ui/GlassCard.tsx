@@ -35,7 +35,7 @@ export default function GlassCard({
   }));
 
   // Fallback for platforms that don't support blur well
-  const useBlur = Platform.OS === 'ios';
+  const useBlur = process.env.EXPO_OS === 'ios';
 
   if (useBlur) {
     return (
