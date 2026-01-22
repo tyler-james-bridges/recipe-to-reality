@@ -46,7 +46,7 @@ export default function RecipeRow({
   enableLinkPreview = true,
 }: RecipeRowProps) {
   const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? "light"];
+  const colors = Colors[colorScheme ?? 'light'];
   const progress = useSharedValue(0);
   const swipeableRef = useRef<Swipeable>(null);
 
@@ -67,17 +67,19 @@ export default function RecipeRow({
     ],
   }));
 
+  // Handle swipe action for queue toggle
   const handleSwipeAction = useCallback(() => {
     HapticManager.success();
     onAddToQueue?.();
     swipeableRef.current?.close();
   }, [onAddToQueue]);
 
+  // Render the left swipe action (revealed when swiping right)
   const renderLeftActions = useCallback(() => {
     const isInQueue = recipe.isInQueue;
-    const backgroundColor = isInQueue ? "#FF3B30" : "#34C759";
-    const iconName = isInQueue ? "remove-circle-outline" : "add-circle-outline";
-    const actionText = isInQueue ? "Remove" : "Add";
+    const backgroundColor = isInQueue ? '#FF3B30' : '#34C759';
+    const iconName = isInQueue ? 'remove-circle-outline' : 'add-circle-outline';
+    const actionText = isInQueue ? 'Remove' : 'Add';
 
     return (
       <Pressable
@@ -96,25 +98,25 @@ export default function RecipeRow({
 
   const sourceIcon = React.useMemo(() => {
     switch (recipe.sourceType) {
-      case "youtube":
-        return { name: "play-circle" as const, color: "#FF0000" };
-      case "tiktok":
-        return { name: "musical-notes" as const, color: colors.text };
-      case "instagram":
-        return { name: "camera" as const, color: "#833AB4" };
-      case "url":
-        return { name: "link" as const, color: "#007AFF" };
-      case "video":
-        return { name: "videocam" as const, color: "#007AFF" };
+      case 'youtube':
+        return { name: 'play-circle' as const, color: '#FF0000' };
+      case 'tiktok':
+        return { name: 'musical-notes' as const, color: colors.text };
+      case 'instagram':
+        return { name: 'camera' as const, color: '#833AB4' };
+      case 'url':
+        return { name: 'link' as const, color: '#007AFF' };
+      case 'video':
+        return { name: 'videocam' as const, color: '#007AFF' };
       default:
-        return { name: "pencil" as const, color: colors.textTertiary };
+        return { name: 'pencil' as const, color: colors.textTertiary };
     }
   }, [recipe.sourceType, colors.text, colors.textTertiary]);
 
   const getPantryMatchVariant = (percentage: number) => {
-    if (percentage >= 70) return "success";
-    if (percentage >= 40) return "warning";
-    return "neutral";
+    if (percentage >= 70) return 'success';
+    if (percentage >= 40) return 'warning';
+    return 'neutral';
   };
 
   const handleShare = async () => {
@@ -122,9 +124,10 @@ export default function RecipeRow({
       onShare();
     } else {
       try {
-        const shareMessage = "Check out this recipe: " + recipe.title + (recipe.sourceURL ? "\n" + recipe.sourceURL : "");
+        const shareMessage = 'Check out this recipe: ' + recipe.title + (recipe.sourceURL ? '\n' + recipe.sourceURL : '');
         await Share.share({ message: shareMessage });
       } catch {
+        // Ignore share errors
       }
     }
   };
@@ -162,7 +165,7 @@ export default function RecipeRow({
       ) : (
         <View style={[styles.imagePlaceholder, { backgroundColor: colors.accentSubtle }]}>
           <LinearGradient
-            colors={[colors.accentSubtle, colors.tint + "20"]}
+            colors={[colors.accentSubtle, colors.tint + '20']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={StyleSheet.absoluteFillObject}
@@ -203,7 +206,7 @@ export default function RecipeRow({
         {pantryMatchPercentage !== undefined && pantryMatchPercentage > 0 && (
           <View style={styles.badgeRow}>
             <Badge
-              label={"" + Math.round(pantryMatchPercentage) + "% match"}
+              label={`${Math.round(pantryMatchPercentage)}% match`}
               variant={getPantryMatchVariant(pantryMatchPercentage)}
               size="small"
               icon="snow-outline"
@@ -217,6 +220,7 @@ export default function RecipeRow({
     </View>
   );
 
+  // If Link.Preview is not enabled, use the original behavior with swipe
   if (!enableLinkPreview) {
     return (
       <Animated.View style={animatedStyle}>
@@ -227,7 +231,7 @@ export default function RecipeRow({
           overshootLeft={false}
           friction={2}
           onSwipeableOpen={(direction) => {
-            if (direction === "left") {
+            if (direction === 'left') {
               handleSwipeAction();
             }
           }}
@@ -245,7 +249,8 @@ export default function RecipeRow({
     );
   }
 
-  const recipeHref = "/recipe/" + recipe.id as const;
+  // Enhanced navigation with Link.Preview, context menu, and swipe gesture
+  const recipeHref = `/recipe/${recipe.id}` as const;
   return (
     <Animated.View style={animatedStyle}>
       <Swipeable
@@ -255,7 +260,7 @@ export default function RecipeRow({
         overshootLeft={false}
         friction={2}
         onSwipeableOpen={(direction) => {
-          if (direction === "left") {
+          if (direction === 'left') {
             handleSwipeAction();
           }
         }}
@@ -270,8 +275,8 @@ export default function RecipeRow({
             <Link.Preview />
             <Link.Menu>
               <Link.MenuAction
-                title={recipe.isInQueue ? "Remove from Queue" : "Add to Queue"}
-                icon={recipe.isInQueue ? "minus.circle" : "plus.circle"}
+                title={recipe.isInQueue ? 'Remove from Queue' : 'Add to Queue'}
+                icon={recipe.isInQueue ? 'minus.circle' : 'plus.circle'}
                 onPress={() => onAddToQueue?.()}
               />
               <Link.MenuAction
@@ -310,15 +315,15 @@ const styles = StyleSheet.create({
   },
   linkTrigger: {},
   container: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: spacing.md,
     borderRadius: radius.lg,
     gap: spacing.md,
     ...shadows.small,
   },
   imageWrapper: {
-    position: "relative",
+    position: 'relative',
   },
   image: {
     width: 68,
@@ -329,19 +334,19 @@ const styles = StyleSheet.create({
     width: 68,
     height: 68,
     borderRadius: radius.md,
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
   },
   queueBadge: {
-    position: "absolute",
+    position: 'absolute',
     bottom: -4,
     right: -4,
-    backgroundColor: "#34C759",
+    backgroundColor: '#34C759',
     borderRadius: radius.full,
     padding: 2,
     borderWidth: 2,
-    borderColor: "#FFFFFF",
+    borderColor: '#FFFFFF',
   },
   content: {
     flex: 1,
@@ -352,14 +357,14 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   metaRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.md,
     marginTop: 2,
   },
   metaItem: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.xs,
   },
   metaText: {
@@ -372,8 +377,8 @@ const styles = StyleSheet.create({
     padding: spacing.xs,
   },
   swipeAction: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     width: 100,
     marginVertical: spacing.xs,
   },
@@ -383,9 +388,9 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: radius.lg,
   },
   swipeActionText: {
-    color: "#FFFFFF",
+    color: '#FFFFFF',
     fontSize: 12,
-    fontWeight: "600",
+    fontWeight: '600',
     marginTop: 4,
   },
 });
