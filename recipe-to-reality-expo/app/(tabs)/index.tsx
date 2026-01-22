@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { StyleSheet, FlatList, View, Pressable, useColorScheme, Platform } from 'react-native';
+import { StyleSheet, FlatList, View, Pressable, useColorScheme, Platform, Alert } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
@@ -91,7 +91,7 @@ function SegmentedControl({
 export default function RecipesScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const { recipes, loadRecipes, searchRecipes, isLoading } = useRecipeStore();
+  const { recipes, loadRecipes, searchRecipes, isLoading, toggleQueue, markAsCooked, deleteRecipe } = useRecipeStore();
   const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -158,11 +158,50 @@ export default function RecipesScreen() {
     return result;
   }, [recipes, searchQuery, sortBy, filter, searchRecipes]);
 
+  // Handle context menu actions
+  const handleAddToQueue = async (recipe: RecipeWithIngredients) => {
+    if (hapticFeedback) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    await toggleQueue(recipe.id);
+    loadRecipes();
+  };
+
+  const handleMarkAsCooked = async (recipe: RecipeWithIngredients) => {
+    if (hapticFeedback) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+    await markAsCooked(recipe.id);
+    loadRecipes();
+  };
+
+  const handleAddToGroceryList = (recipe: RecipeWithIngredients) => {
+    router.push({ pathname: '/grocery/add-from-recipe', params: { recipeId: recipe.id } } as any);
+  };
+
+  const handleDelete = (recipe: RecipeWithIngredients) => {
+    Alert.alert('Delete Recipe', `Are you sure you want to delete "${recipe.title}"?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          await deleteRecipe(recipe.id);
+          loadRecipes();
+        },
+      },
+    ]);
+  };
+
   const renderRecipe = ({ item, index }: { item: RecipeWithIngredients; index: number }) => (
     <RecipeRow
       recipe={item}
-      onPress={() => router.push(`/recipe/${item.id}`)}
       index={index}
+      onAddToQueue={() => handleAddToQueue(item)}
+      onMarkAsCooked={() => handleMarkAsCooked(item)}
+      onAddToGroceryList={() => handleAddToGroceryList(item)}
+      onDelete={() => handleDelete(item)}
+      enableLinkPreview={true}
     />
   );
 

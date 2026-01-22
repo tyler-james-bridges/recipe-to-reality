@@ -1,6 +1,7 @@
 import React from 'react';
-import { StyleSheet, View, useColorScheme } from 'react-native';
+import { StyleSheet, View, useColorScheme, Share, Pressable } from 'react-native';
 import { Image } from 'expo-image';
+import { Link } from 'expo-router';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -19,12 +20,29 @@ import { Icon } from './ui/Icon';
 
 interface RecipeRowProps {
   recipe: RecipeWithIngredients;
-  onPress: () => void;
+  onPress?: () => void;
   pantryMatchPercentage?: number;
   index?: number;
+  onShare?: () => void;
+  onAddToQueue?: () => void;
+  onMarkAsCooked?: () => void;
+  onDelete?: () => void;
+  onAddToGroceryList?: () => void;
+  enableLinkPreview?: boolean;
 }
 
-export default function RecipeRow({ recipe, onPress, pantryMatchPercentage, index = 0 }: RecipeRowProps) {
+export default function RecipeRow({
+  recipe,
+  onPress,
+  pantryMatchPercentage,
+  index = 0,
+  onShare,
+  onAddToQueue,
+  onMarkAsCooked,
+  onDelete,
+  onAddToGroceryList,
+  enableLinkPreview = true,
+}: RecipeRowProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const progress = useSharedValue(0);
@@ -70,103 +88,175 @@ export default function RecipeRow({ recipe, onPress, pantryMatchPercentage, inde
     return 'neutral';
   };
 
-  return (
-    <AnimatedPressable
-      onPress={onPress}
-      hapticType="light"
-      scaleOnPress={0.98}
-      style={[styles.pressable, animatedStyle]}
+  // Default share handler
+  const handleShare = async () => {
+    if (onShare) {
+      onShare();
+    } else {
+      try {
+        const shareMessage = 'Check out this recipe: ' + recipe.title + (recipe.sourceURL ? '\n' + recipe.sourceURL : '');
+        await Share.share({ message: shareMessage });
+      } catch {
+        // Ignore share errors
+      }
+    }
+  };
+
+  // Default delete handler
+  const handleDelete = () => {
+    if (onDelete) {
+      onDelete();
+    }
+  };
+
+  // Card content - extracted to avoid duplication
+  const CardContent = () => (
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.card,
+        },
+      ]}
     >
-      <View
-        style={[
-          styles.container,
-          {
-            backgroundColor: colors.card,
-          },
-        ]}
-      >
-        {/* Thumbnail with gradient overlay */}
-        {recipe.imageURL ? (
-          <View style={styles.imageWrapper}>
-            <Image
-              source={{ uri: recipe.imageURL }}
-              style={styles.image}
-              contentFit="cover"
-              transition={200}
-              cachePolicy="memory-disk"
-            />
-            {recipe.isInQueue && (
-              <View style={styles.queueBadge}>
-                <Icon name="checkmark-circle" size={16} color="#FFFFFF" />
-              </View>
-            )}
-          </View>
-        ) : (
-          <View style={[styles.imagePlaceholder, { backgroundColor: colors.accentSubtle }]}>
-            <LinearGradient
-              colors={[colors.accentSubtle, colors.tint + '20']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={StyleSheet.absoluteFillObject}
-            />
-            <Icon name="restaurant" size={24} color={colors.tint} />
-            {recipe.isInQueue && (
-              <View style={styles.queueBadge}>
-                <Icon name="checkmark-circle" size={16} color="#FFFFFF" />
-              </View>
-            )}
-          </View>
-        )}
-
-        {/* Content */}
-        <View style={styles.content}>
-          <ThemedText style={styles.title} numberOfLines={2}>
-            {recipe.title}
-          </ThemedText>
-
-          <View style={styles.metaRow}>
-            {recipe.servings && (
-              <View style={styles.metaItem}>
-                <Icon name="people" size={12} color={colors.textTertiary} />
-                <ThemedText style={[styles.metaText, { color: colors.textTertiary }]}>
-                  {recipe.servings}
-                </ThemedText>
-              </View>
-            )}
-
-            {recipe.cookTime && (
-              <View style={styles.metaItem}>
-                <Icon name="time-outline" size={12} color={colors.textTertiary} />
-                <ThemedText style={[styles.metaText, { color: colors.textTertiary }]}>
-                  {recipe.cookTime}
-                </ThemedText>
-              </View>
-            )}
-
-            <View style={styles.metaItem}>
-              <Icon name={sourceIcon.name} size={12} color={sourceIcon.color} />
-            </View>
-          </View>
-
-          {/* Pantry match badge */}
-          {pantryMatchPercentage !== undefined && pantryMatchPercentage > 0 && (
-            <View style={styles.badgeRow}>
-              <Badge
-                label={`${Math.round(pantryMatchPercentage)}% match`}
-                variant={getPantryMatchVariant(pantryMatchPercentage)}
-                size="small"
-                icon="snow-outline"
-              />
+      {/* Thumbnail with gradient overlay */}
+      {recipe.imageURL ? (
+        <View style={styles.imageWrapper}>
+          <Image
+            source={{ uri: recipe.imageURL }}
+            style={styles.image}
+            contentFit="cover"
+            transition={200}
+            cachePolicy="memory-disk"
+          />
+          {recipe.isInQueue && (
+            <View style={styles.queueBadge}>
+              <Icon name="checkmark-circle" size={16} color="#FFFFFF" />
             </View>
           )}
         </View>
-
-        {/* Chevron */}
-        <View style={styles.chevronContainer}>
-          <Icon name="chevron-forward" size={18} color={colors.textTertiary} />
+      ) : (
+        <View style={[styles.imagePlaceholder, { backgroundColor: colors.accentSubtle }]}>
+          <LinearGradient
+            colors={[colors.accentSubtle, colors.tint + '20']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFillObject}
+          />
+          <Icon name="restaurant" size={24} color={colors.tint} />
+          {recipe.isInQueue && (
+            <View style={styles.queueBadge}>
+              <Icon name="checkmark-circle" size={16} color="#FFFFFF" />
+            </View>
+          )}
         </View>
+      )}
+
+      {/* Content */}
+      <View style={styles.content}>
+        <ThemedText style={styles.title} numberOfLines={2}>
+          {recipe.title}
+        </ThemedText>
+
+        <View style={styles.metaRow}>
+          {recipe.servings && (
+            <View style={styles.metaItem}>
+              <Icon name="people" size={12} color={colors.textTertiary} />
+              <ThemedText style={[styles.metaText, { color: colors.textTertiary }]}>
+                {recipe.servings}
+              </ThemedText>
+            </View>
+          )}
+
+          {recipe.cookTime && (
+            <View style={styles.metaItem}>
+              <Icon name="time-outline" size={12} color={colors.textTertiary} />
+              <ThemedText style={[styles.metaText, { color: colors.textTertiary }]}>
+                {recipe.cookTime}
+              </ThemedText>
+            </View>
+          )}
+
+          <View style={styles.metaItem}>
+            <Icon name={sourceIcon.name} size={12} color={sourceIcon.color} />
+          </View>
+        </View>
+
+        {/* Pantry match badge */}
+        {pantryMatchPercentage !== undefined && pantryMatchPercentage > 0 && (
+          <View style={styles.badgeRow}>
+            <Badge
+              label={`${Math.round(pantryMatchPercentage)}% match`}
+              variant={getPantryMatchVariant(pantryMatchPercentage)}
+              size="small"
+              icon="snow-outline"
+            />
+          </View>
+        )}
       </View>
-    </AnimatedPressable>
+
+      {/* Chevron */}
+      <View style={styles.chevronContainer}>
+        <Icon name="chevron-forward" size={18} color={colors.textTertiary} />
+      </View>
+    </View>
+  );
+
+  // If Link.Preview is not enabled, use the original behavior
+  if (!enableLinkPreview) {
+    return (
+      <AnimatedPressable
+        onPress={onPress}
+        hapticType="light"
+        scaleOnPress={0.98}
+        style={[styles.pressable, animatedStyle]}
+      >
+        <CardContent />
+      </AnimatedPressable>
+    );
+  }
+
+  // Enhanced navigation with Link.Preview and context menu
+  const recipeHref = `/recipe/${recipe.id}` as const;
+  return (
+    <Animated.View style={[styles.pressable, animatedStyle]}>
+      <Link href={recipeHref} asChild>
+        <Link.Trigger>
+          <Pressable style={styles.linkTrigger}>
+            <CardContent />
+          </Pressable>
+        </Link.Trigger>
+        <Link.Preview />
+        <Link.Menu>
+          <Link.MenuAction
+            title={recipe.isInQueue ? 'Remove from Queue' : 'Add to Queue'}
+            icon={recipe.isInQueue ? 'minus.circle' : 'plus.circle'}
+            onPress={() => onAddToQueue?.()}
+          />
+          <Link.MenuAction
+            title="Add to Grocery List"
+            icon="cart"
+            onPress={() => onAddToGroceryList?.()}
+          />
+          <Link.MenuAction
+            title="Mark as Cooked"
+            icon="checkmark.circle"
+            onPress={() => onMarkAsCooked?.()}
+          />
+          <Link.MenuAction
+            title="Share"
+            icon="square.and.arrow.up"
+            onPress={handleShare}
+          />
+          <Link.MenuAction
+            title="Delete"
+            icon="trash"
+            destructive
+            onPress={handleDelete}
+          />
+        </Link.Menu>
+      </Link>
+    </Animated.View>
   );
 }
 
@@ -174,6 +264,9 @@ const styles = StyleSheet.create({
   pressable: {
     marginHorizontal: spacing.lg,
     marginVertical: spacing.xs,
+  },
+  linkTrigger: {
+    // Wrapper for Link.Trigger
   },
   container: {
     flexDirection: 'row',
