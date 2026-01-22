@@ -7,7 +7,6 @@ import {
   Pressable,
   Alert,
   KeyboardAvoidingView,
-  Platform,
   ActivityIndicator,
   useColorScheme,
 } from 'react-native';
@@ -203,48 +202,6 @@ export default function AddRecipeScreen() {
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Segmented Mode Toggle - matches SwiftUI Picker with .segmented */}
-          <View style={[styles.segmentedContainer, { backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#E5E5EA' }]}>
-            <Pressable
-              style={[
-                styles.segmentedButton,
-                mode === 'url' && [styles.segmentedButtonActive, { backgroundColor: colorScheme === 'dark' ? '#636366' : '#fff' }],
-              ]}
-              onPress={() => {
-                triggerHaptic('selection');
-                setMode('url');
-              }}
-            >
-              <Icon
-                name="link"
-                size={16}
-                color={mode === 'url' ? colors.text : '#8E8E93'}
-              />
-              <ThemedText style={[styles.segmentedText, mode === 'url' && styles.segmentedTextActive]}>
-                From URL
-              </ThemedText>
-            </Pressable>
-            <Pressable
-              style={[
-                styles.segmentedButton,
-                mode === 'manual' && [styles.segmentedButtonActive, { backgroundColor: colorScheme === 'dark' ? '#636366' : '#fff' }],
-              ]}
-              onPress={() => {
-                triggerHaptic('selection');
-                setMode('manual');
-              }}
-            >
-              <Icon
-                name="create-outline"
-                size={16}
-                color={mode === 'manual' ? colors.text : '#8E8E93'}
-              />
-              <ThemedText style={[styles.segmentedText, mode === 'manual' && styles.segmentedTextActive]}>
-                Manual
-              </ThemedText>
-            </Pressable>
-          </View>
-
           {mode === 'url' ? (
             <View style={styles.urlSection}>
               {/* Extraction Limit Banner */}
@@ -299,9 +256,36 @@ export default function AddRecipeScreen() {
                   </>
                 )}
               </Pressable>
+
+              {/* Manual Entry Link */}
+              <Pressable
+                style={styles.manualEntryLink}
+                onPress={() => {
+                  triggerHaptic('selection');
+                  setMode('manual');
+                }}
+              >
+                <ThemedText style={styles.manualEntryLinkText}>
+                  Enter manually instead
+                </ThemedText>
+              </Pressable>
             </View>
           ) : (
             <View style={styles.manualSection}>
+              {/* Back to URL Link */}
+              <Pressable
+                style={styles.backToUrlLink}
+                onPress={() => {
+                  triggerHaptic('selection');
+                  setMode('url');
+                }}
+              >
+                <Icon name="arrow-back" size={16} color={colors.tint} />
+                <ThemedText style={[styles.backToUrlLinkText, { color: colors.tint }]}>
+                  Back to URL
+                </ThemedText>
+              </Pressable>
+
               {/* Title */}
               <View style={[styles.inputGroup, { backgroundColor: colors.card }]}>
                 <ThemedText style={styles.inputLabel}>Recipe Title</ThemedText>
@@ -420,36 +404,6 @@ const styles = StyleSheet.create({
   headerButtonBold: {
     fontWeight: '600',
   },
-  segmentedContainer: {
-    flexDirection: 'row',
-    borderRadius: 8,
-    padding: 2,
-    marginBottom: 24,
-  },
-  segmentedButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  segmentedButtonActive: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  segmentedText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#8E8E93',
-  },
-  segmentedTextActive: {
-    fontWeight: '600',
-  },
   urlSection: {},
   limitBanner: {
     flexDirection: 'row',
@@ -514,5 +468,24 @@ const styles = StyleSheet.create({
   },
   halfWidth: {
     flex: 1,
+  },
+  manualEntryLink: {
+    alignItems: 'center',
+    paddingVertical: 16,
+    marginTop: 8,
+  },
+  manualEntryLinkText: {
+    fontSize: 15,
+    color: '#8E8E93',
+  },
+  backToUrlLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 16,
+  },
+  backToUrlLinkText: {
+    fontSize: 15,
+    fontWeight: '500',
   },
 });
