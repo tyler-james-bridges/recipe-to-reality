@@ -1,37 +1,70 @@
 /**
  * Recipe Extraction Service
- * Ported from RecipeExtractionService.swift
+ * Uses server-side API routes for extraction
  */
 
-import { ExtractedRecipe } from '../../types';
-import { getAIProvider } from '../ai';
+import { ExtractedRecipe, AIProviderType } from '../../types';
+import { useSettingsStore } from '../../stores/settingsStore';
+import { getAPIKey } from '../ai';
 import { extractVideoTranscript, isVideoURL, getVideoPlatform } from '../video/videoTranscript';
 
+const API_BASE = process.env.EXPO_PUBLIC_API_URL || '';
+
 /**
- * Extract recipe from a URL using AI
+ * Extract recipe from a URL using the API route
  */
 export async function extractRecipe(urlString: string): Promise<ExtractedRecipe> {
   const url = new URL(urlString);
+  const provider = useSettingsStore.getState().aiProvider;
+  const apiKey = await getAPIKey(provider);
+
+  if (!apiKey) {
+    throw new Error(`No API key configured for ${provider}. Please add your API key in Settings.`);
+  }
 
   // Check if this is a video platform URL
   if (isVideoURL(url)) {
-    return extractFromVideo(url);
+    return extractFromVideo(url, { apiKey, provider });
   }
 
-  // Standard webpage extraction
-  return extractFromWebpage(url);
+  // Standard webpage extraction via API route
+  return extractFromWebpage(url, { apiKey, provider });
 }
 
 /**
- * Extract recipe from a video transcript
+ * Extract recipe from a video transcript via API route
  */
-async function extractFromVideo(url: URL): Promise<ExtractedRecipe> {
+async function extractFromVideo(
+  url: URL,
+  settings: { apiKey: string; provider: AIProviderType }
+): Promise<ExtractedRecipe> {
   const platform = getVideoPlatform(url);
 
   try {
+    // First get the transcript
     const transcript = await extractVideoTranscript(url);
-    const provider = await getAIProvider();
-    return provider.extractRecipeFromTranscript(transcript, url);
+
+    // Then call the extract API with the transcript
+    const response = await fetch(`${API_BASE}/api/extract`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url: url.toString(),
+        provider: settings.provider,
+        apiKey: settings.apiKey,
+        isTranscript: true,
+        transcript,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || `HTTP ${response.status}`);
+    }
+
+    return await response.json();
   } catch (error) {
     // For TikTok/Instagram, fall back to HTML scraping if transcript fails
     if (platform === 'tiktok' || platform === 'instagram') {
@@ -41,69 +74,35 @@ async function extractFromVideo(url: URL): Promise<ExtractedRecipe> {
         throw error;
       }
       // Try HTML fallback for other errors
-      return extractFromWebpage(url);
+      return extractFromWebpage(url, settings);
     }
     throw error;
   }
 }
 
 /**
- * Extract recipe from a webpage
+ * Extract recipe from a webpage via API route
  */
-async function extractFromWebpage(url: URL): Promise<ExtractedRecipe> {
-  const content = await fetchWebContent(url);
-  const provider = await getAIProvider();
-  return provider.extractRecipe(content, url);
-}
-
-/**
- * Fetch and clean webpage content
- */
-async function fetchWebContent(url: URL): Promise<string> {
-  const response = await fetch(url.toString(), {
+async function extractFromWebpage(
+  url: URL,
+  settings: { apiKey: string; provider: AIProviderType }
+): Promise<ExtractedRecipe> {
+  const response = await fetch(`${API_BASE}/api/extract`, {
+    method: 'POST',
     headers: {
-      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15',
+      'Content-Type': 'application/json',
     },
+    body: JSON.stringify({
+      url: url.toString(),
+      provider: settings.provider,
+      apiKey: settings.apiKey,
+    }),
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch page: ${response.status}`);
+    const error = await response.json();
+    throw new Error(error.error || `HTTP ${response.status}`);
   }
 
-  const html = await response.text();
-  return stripHTML(html);
-}
-
-/**
- * Strip HTML tags and clean content for AI processing
- */
-function stripHTML(html: string): string {
-  let result = html;
-
-  // Remove script tags and content
-  result = result.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
-
-  // Remove style tags and content
-  result = result.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
-
-  // Remove HTML tags
-  result = result.replace(/<[^>]+>/g, ' ');
-
-  // Clean up whitespace
-  result = result.replace(/\s+/g, ' ');
-
-  // Decode HTML entities
-  result = result.replace(/&nbsp;/g, ' ');
-  result = result.replace(/&amp;/g, '&');
-  result = result.replace(/&lt;/g, '<');
-  result = result.replace(/&gt;/g, '>');
-  result = result.replace(/&quot;/g, '"');
-  result = result.replace(/&#39;/g, "'");
-
-  // Limit content length to avoid token limits
-  if (result.length > 15000) {
-    result = result.substring(0, 15000);
-  }
-
-  return result.trim();
+  return await response.json();
 }
