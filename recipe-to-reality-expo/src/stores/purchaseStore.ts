@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Platform } from 'react-native';
+
 import storage from '../utils/storage';
 import { FREE_EXTRACTION_LIMIT, PREMIUM_ENTITLEMENT } from '../types';
 
@@ -102,7 +102,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       }
 
       // Configure RevenueCat
-      const apiKey = Platform.OS === 'ios' ? REVENUECAT_IOS_KEY : REVENUECAT_ANDROID_KEY;
+      const apiKey = process.env.EXPO_OS === 'ios' ? REVENUECAT_IOS_KEY : REVENUECAT_ANDROID_KEY;
 
       if (!apiKey) {
         console.warn('RevenueCat API key not configured. Set EXPO_PUBLIC_REVENUECAT_IOS_KEY or EXPO_PUBLIC_REVENUECAT_ANDROID_KEY in your .env file.');

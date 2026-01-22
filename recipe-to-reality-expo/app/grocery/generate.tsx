@@ -445,7 +445,7 @@ export default function GenerateGroceryListScreen() {
   ]);
 
   const handleStartDateChange = (_event: any, date?: Date) => {
-    if (Platform.OS === 'android') {
+    if (process.env.EXPO_OS === 'android') {
       setShowStartPicker(false);
     }
     if (date) {
@@ -460,7 +460,7 @@ export default function GenerateGroceryListScreen() {
   };
 
   const handleEndDateChange = (_event: any, date?: Date) => {
-    if (Platform.OS === 'android') {
+    if (process.env.EXPO_OS === 'android') {
       setShowEndPicker(false);
     }
     if (date && date >= startDate) {
@@ -640,7 +640,7 @@ export default function GenerateGroceryListScreen() {
             >
               <View style={styles.dateRow}>
                 <ThemedText style={styles.dateLabel}>Start Date</ThemedText>
-                {Platform.OS === 'ios' ? (
+                {process.env.EXPO_OS === 'ios' ? (
                   <DateTimePicker
                     value={startDate}
                     mode="date"
@@ -665,7 +665,7 @@ export default function GenerateGroceryListScreen() {
 
               <View style={styles.dateRow}>
                 <ThemedText style={styles.dateLabel}>End Date</ThemedText>
-                {Platform.OS === 'ios' ? (
+                {process.env.EXPO_OS === 'ios' ? (
                   <DateTimePicker
                     value={endDate}
                     mode="date"
@@ -689,7 +689,7 @@ export default function GenerateGroceryListScreen() {
             </Animated.View>
 
             {/* Android Date Pickers */}
-            {Platform.OS === 'android' && showStartPicker && (
+            {process.env.EXPO_OS === 'android' && showStartPicker && (
               <DateTimePicker
                 value={startDate}
                 mode="date"
@@ -697,7 +697,7 @@ export default function GenerateGroceryListScreen() {
                 onChange={handleStartDateChange}
               />
             )}
-            {Platform.OS === 'android' && showEndPicker && (
+            {process.env.EXPO_OS === 'android' && showEndPicker && (
               <DateTimePicker
                 value={endDate}
                 mode="date"

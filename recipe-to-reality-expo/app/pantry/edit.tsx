@@ -256,7 +256,7 @@ export default function EditPantryItemScreen() {
       />
       <KeyboardAvoidingView
         style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={process.env.EXPO_OS === 'ios' ? 'padding' : 'height'}
       >
         <ThemedView style={styles.container}>
           <ScrollView

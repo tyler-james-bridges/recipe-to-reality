@@ -347,7 +347,7 @@ export default function AddMealPlanScreen() {
 
       <KeyboardAvoidingView
         style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={process.env.EXPO_OS === 'ios' ? 'padding' : 'height'}
       >
         <ThemedView style={styles.container}>
           {/* Header Section */}
@@ -379,7 +379,7 @@ export default function AddMealPlanScreen() {
             </View>
 
             {/* Date Picker (iOS inline style) */}
-            {showDatePicker && Platform.OS === 'ios' && (
+            {showDatePicker && process.env.EXPO_OS === 'ios' && (
               <Animated.View entering={FadeIn.duration(200)} layout={Layout.springify()}>
                 <DateTimePicker
                   value={selectedDate}
@@ -408,7 +408,7 @@ export default function AddMealPlanScreen() {
             )}
 
             {/* Android Date Picker */}
-            {showDatePicker && Platform.OS === 'android' && (
+            {showDatePicker && process.env.EXPO_OS === 'android' && (
               <DateTimePicker
                 value={selectedDate}
                 mode="date"
@@ -655,7 +655,7 @@ export default function AddMealPlanScreen() {
                       </AnimatedPressable>
                     </View>
 
-                    {showTimePicker && Platform.OS === 'ios' && (
+                    {showTimePicker && process.env.EXPO_OS === 'ios' && (
                       <Animated.View entering={FadeIn.duration(200)}>
                         <DateTimePicker
                           value={reminderTime}
@@ -678,7 +678,7 @@ export default function AddMealPlanScreen() {
                       </Animated.View>
                     )}
 
-                    {showTimePicker && Platform.OS === 'android' && (
+                    {showTimePicker && process.env.EXPO_OS === 'android' && (
                       <DateTimePicker
                         value={reminderTime}
                         mode="time"
