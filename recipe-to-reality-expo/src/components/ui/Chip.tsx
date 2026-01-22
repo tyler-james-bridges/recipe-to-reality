@@ -1,6 +1,5 @@
 import React from 'react';
 import { StyleSheet, ViewStyle, StyleProp, useColorScheme, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -10,8 +9,9 @@ import Animated, {
 import AnimatedPressable from './AnimatedPressable';
 import Colors, { radius, typography, spacing, animation } from '@/constants/Colors';
 import { ThemedText } from '@/components/Themed';
+import { Icon, IconProps } from './Icon';
 
-type IconName = React.ComponentProps<typeof Ionicons>['name'];
+type IconName = IconProps['name'];
 
 interface ChipProps {
   label: string;
@@ -70,7 +70,7 @@ export default function Chip({
     >
       <Animated.View style={[styles.container, animatedContainerStyle, style]}>
         {icon && (
-          <Ionicons name={icon} size={14} color={iconColor} style={styles.icon} />
+          <Icon name={icon} size={14} color={iconColor} style={styles.icon} />
         )}
         <ThemedText style={[styles.label, { color: textColor }]}>{label}</ThemedText>
       </Animated.View>

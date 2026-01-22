@@ -1,6 +1,5 @@
 import React from 'react';
 import { StyleSheet, View, useColorScheme } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useAnimatedStyle,
@@ -15,6 +14,7 @@ import { MealPlan, MealType } from '../types';
 import Colors, { gradients, shadows, radius, spacing, typography } from '@/constants/Colors';
 import AnimatedPressable from './ui/AnimatedPressable';
 import Badge from './ui/Badge';
+import { Icon } from './ui/Icon';
 
 const MEAL_TYPE_ICONS: Record<MealType, { icon: string; gradient: readonly [string, string] }> = {
   Breakfast: { icon: 'sunny', gradient: ['#FFD700', '#FFA500'] },
@@ -94,7 +94,7 @@ export default function MealPlanCard({
             end={{ x: 1, y: 1 }}
             style={styles.iconGradient}
           >
-            <Ionicons name={mealConfig.icon as any} size={22} color="#FFFFFF" />
+            <Icon name={mealConfig.icon as any} size={22} color="#FFFFFF" />
           </LinearGradient>
         </View>
 
@@ -109,7 +109,7 @@ export default function MealPlanCard({
             />
             {mealPlan.reminder && (
               <View style={styles.reminderIcon}>
-                <Ionicons name="notifications" size={14} color={colors.warning} />
+                <Icon name="notifications" size={14} color={colors.warning} />
               </View>
             )}
           </View>
@@ -153,7 +153,7 @@ export default function MealPlanCard({
               ]}
             >
               {mealPlan.isCompleted && (
-                <Ionicons name="checkmark" size={18} color="#FFFFFF" />
+                <Icon name="checkmark" size={18} color="#FFFFFF" />
               )}
             </View>
           </Animated.View>

@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { StyleSheet, FlatList, View, Pressable, useColorScheme, Platform } from 'react-native';
 import { router, Stack } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import Animated, {
@@ -22,6 +21,7 @@ import RecipeRow from '@/src/components/RecipeRow';
 import EmptyState from '@/src/components/EmptyState';
 import { SkeletonRecipeList } from '@/src/components/ui/SkeletonLoader';
 import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
+import { Icon } from '@/src/components/ui/Icon';
 import Colors, { shadows, radius, spacing, typography, animation } from '@/constants/Colors';
 
 type SortOption = 'dateAdded' | 'name' | 'cookTime';
@@ -197,7 +197,7 @@ export default function RecipesScreen() {
                 }}
                 style={styles.sortMenuItem}
               >
-                <Ionicons
+                <Icon
                   name={option.icon as any}
                   size={18}
                   color={sortBy === option.key ? colors.tint : colors.textTertiary}
@@ -211,7 +211,7 @@ export default function RecipesScreen() {
                   {option.label}
                 </ThemedText>
                 {sortBy === option.key && (
-                  <Ionicons name="checkmark" size={18} color={colors.tint} />
+                  <Icon name="checkmark" size={18} color={colors.tint} />
                 )}
               </AnimatedPressable>
               {index < SORT_OPTIONS.length - 1 && (
@@ -244,7 +244,7 @@ export default function RecipesScreen() {
                 hapticType="selection"
                 style={styles.headerButton}
               >
-                <Ionicons name="swap-vertical" size={22} color={colors.tint} />
+                <Icon name="swap-vertical" size={22} color={colors.tint} />
               </AnimatedPressable>
             ) : null,
           headerRight: () => (
@@ -256,7 +256,7 @@ export default function RecipesScreen() {
               hapticType="medium"
               style={styles.headerButton}
             >
-              <Ionicons name="add" size={28} color={colors.tint} />
+              <Icon name="add" size={28} color={colors.tint} />
             </AnimatedPressable>
           ),
         }}

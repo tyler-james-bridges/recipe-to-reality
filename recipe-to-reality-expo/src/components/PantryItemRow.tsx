@@ -1,6 +1,5 @@
 import React from 'react';
 import { StyleSheet, View, useColorScheme } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -16,6 +15,7 @@ import { formatIngredient } from '../utils/quantity';
 import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors';
 import AnimatedPressable from './ui/AnimatedPressable';
 import Badge from './ui/Badge';
+import { Icon } from './ui/Icon';
 
 interface PantryItemRowProps {
   item: PantryItem;
@@ -85,7 +85,7 @@ export default function PantryItemRow({ item, onDelete, onPress, index = 0 }: Pa
       >
         {/* Category Icon */}
         <View style={[styles.iconContainer, { backgroundColor: colors.accentSubtle }]}>
-          <Ionicons
+          <Icon
             name={getCategoryIcon(item.category) as any}
             size={18}
             color={colors.tint}
@@ -127,7 +127,7 @@ export default function PantryItemRow({ item, onDelete, onPress, index = 0 }: Pa
         </View>
 
         {/* Chevron */}
-        <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
+        <Icon name="chevron-forward" size={18} color={colors.textTertiary} />
       </AnimatedPressable>
     </Animated.View>
   );

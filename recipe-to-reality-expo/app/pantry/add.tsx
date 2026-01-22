@@ -11,7 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import { router, Stack } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/src/components/ui/Icon';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeIn, FadeInDown, Layout } from 'react-native-reanimated';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -28,7 +28,7 @@ import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors
 interface QuickItem {
   name: string;
   category: IngredientCategory;
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: string;
 }
 
 const COMMON_ITEMS: QuickItem[] = [
@@ -232,7 +232,7 @@ export default function AddPantryItemScreen() {
                     <ThemedText style={[styles.pickerButtonText, { color: colors.text }]}>
                       {category}
                     </ThemedText>
-                    <Ionicons
+                    <Icon
                       name={showCategoryPicker ? 'chevron-up' : 'chevron-down'}
                       size={16}
                       color={colors.textTertiary}
@@ -265,7 +265,7 @@ export default function AddPantryItemScreen() {
                           {cat}
                         </ThemedText>
                         {category === cat && (
-                          <Ionicons name="checkmark" size={18} color={colors.tint} />
+                          <Icon name="checkmark" size={18} color={colors.tint} />
                         )}
                       </AnimatedPressable>
                     ))}
@@ -401,7 +401,7 @@ export default function AddPantryItemScreen() {
                         { backgroundColor: colors.accentSubtle },
                       ]}
                     >
-                      <Ionicons name={item.icon} size={20} color={colors.tint} />
+                      <Icon name={item.icon as any} size={20} color={colors.tint} />
                       <ThemedText style={[styles.quickAddText, { color: colors.tint }]}>
                         {item.name}
                       </ThemedText>

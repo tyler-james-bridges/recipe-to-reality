@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, FlatList, View, Pressable } from 'react-native';
 import { router } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialIcon } from '@/src/components/ui/Icon';
 
 import { ThemedView, ThemedText } from '@/components/Themed';
 import { useRecipeStore } from '@/src/stores/recipeStore';
@@ -62,7 +62,7 @@ export default function WhatCanIMakeScreen() {
         </View>
 
         <View style={styles.ingredientInfo}>
-          <MaterialCommunityIcons
+          <MaterialIcon
             name={item.matchPercentage === 100 ? 'check-circle' : 'alert-circle-outline'}
             size={16}
             color={item.matchPercentage === 100 ? '#22c55e' : '#f59e0b'}
@@ -86,12 +86,12 @@ export default function WhatCanIMakeScreen() {
 
         <View style={styles.recipeFooter}>
           <View style={styles.metaItem}>
-            <MaterialCommunityIcons name="food-variant" size={14} color="#666" />
+            <MaterialIcon name="food-variant" size={14} color="#666" />
             <ThemedText style={styles.metaText}>
               {item.recipe.ingredients.length} ingredients
             </ThemedText>
           </View>
-          <MaterialCommunityIcons name="chevron-right" size={20} color="#ccc" />
+          <MaterialIcon name="chevron-right" size={20} color="#ccc" />
         </View>
       </Pressable>
     );
@@ -130,7 +130,7 @@ export default function WhatCanIMakeScreen() {
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
-        <MaterialCommunityIcons name="chef-hat" size={24} color="#FF6B35" />
+        <MaterialIcon name="chef-hat" size={24} color="#FF6B35" />
         <ThemedText style={styles.headerText}>
           Based on {items.length} items in your pantry
         </ThemedText>

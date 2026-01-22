@@ -1,6 +1,5 @@
 import React from 'react';
 import { StyleSheet, ViewStyle, TextStyle, StyleProp, useColorScheme, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useAnimatedStyle,
@@ -11,10 +10,11 @@ import Animated, {
 import AnimatedPressable from './AnimatedPressable';
 import Colors, { gradients, shadows, radius, typography, spacing } from '@/constants/Colors';
 import { ThemedText } from '@/components/Themed';
+import { Icon, IconProps } from './Icon';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'success';
 type ButtonSize = 'small' | 'medium' | 'large';
-type IconName = React.ComponentProps<typeof Ionicons>['name'];
+type IconName = IconProps['name'];
 
 interface ModernButtonProps {
   title: string;
@@ -121,7 +121,7 @@ export default function ModernButton({
       ) : (
         <>
           {icon && iconPosition === 'left' && (
-            <Ionicons
+            <Icon
               name={icon}
               size={sizeStyles.icon}
               color={textColor}
@@ -130,7 +130,7 @@ export default function ModernButton({
           )}
           <ThemedText style={[sizeStyles.text, { color: textColor }]}>{title}</ThemedText>
           {icon && iconPosition === 'right' && (
-            <Ionicons
+            <Icon
               name={icon}
               size={sizeStyles.icon}
               color={textColor}

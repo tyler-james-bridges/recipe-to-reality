@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Icon, MaterialIcon } from '@/src/components/ui/Icon';
 import * as Haptics from 'expo-haptics';
 import Animated, {
   useSharedValue,
@@ -127,7 +127,7 @@ function FloatingIcon({
     opacity: opacity.value,
   }));
 
-  const IconComponent = family === 'material' ? MaterialCommunityIcons : Ionicons;
+  const IconComponent = family === 'material' ? MaterialIcon : Icon;
 
   return (
     <Animated.View style={animatedStyle}>
@@ -177,7 +177,7 @@ function SlideIllustration({ slide, isActive }: { slide: typeof SLIDES[0]; isAct
                 colors={[slide.accentColor, `${slide.accentColor}CC`]}
                 style={styles.heroIconGradient}
               >
-                <Ionicons name="restaurant" size={64} color="#FFFFFF" />
+                <Icon name="restaurant" size={64} color="#FFFFFF" />
               </LinearGradient>
             </Animated.View>
             {/* Floating decorative icons */}
@@ -204,7 +204,7 @@ function SlideIllustration({ slide, isActive }: { slide: typeof SLIDES[0]; isAct
                 colors={[slide.accentColor, `${slide.accentColor}CC`]}
                 style={styles.heroIconGradient}
               >
-                <Ionicons name="sparkles" size={64} color="#FFFFFF" />
+                <Icon name="sparkles" size={64} color="#FFFFFF" />
               </LinearGradient>
             </Animated.View>
             {/* Social media icons floating */}
@@ -231,7 +231,7 @@ function SlideIllustration({ slide, isActive }: { slide: typeof SLIDES[0]; isAct
                 colors={[slide.accentColor, `${slide.accentColor}CC`]}
                 style={styles.heroIconGradient}
               >
-                <Ionicons name="calendar" size={64} color="#FFFFFF" />
+                <Icon name="calendar" size={64} color="#FFFFFF" />
               </LinearGradient>
             </Animated.View>
             {/* Calendar-related floating icons */}
@@ -258,7 +258,7 @@ function SlideIllustration({ slide, isActive }: { slide: typeof SLIDES[0]; isAct
                 colors={[slide.accentColor, `${slide.accentColor}CC`]}
                 style={styles.heroIconGradient}
               >
-                <Ionicons name="cart" size={64} color="#FFFFFF" />
+                <Icon name="cart" size={64} color="#FFFFFF" />
               </LinearGradient>
             </Animated.View>
             {/* Grocery-related floating icons */}
@@ -285,7 +285,7 @@ function SlideIllustration({ slide, isActive }: { slide: typeof SLIDES[0]; isAct
                 colors={[slide.accentColor, `${slide.accentColor}CC`]}
                 style={styles.heroIconGradient}
               >
-                <Ionicons name="rocket" size={64} color="#FFFFFF" />
+                <Icon name="rocket" size={64} color="#FFFFFF" />
               </LinearGradient>
             </Animated.View>
             {/* Celebratory floating icons */}

@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, router, Stack, Href } from 'expo-router';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/src/components/ui/Icon';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
@@ -274,7 +274,7 @@ export default function RecipeDetailScreen() {
               style={styles.headerButton}
             >
               <View style={[styles.headerButtonBackground, { backgroundColor: colors.glass }]}>
-                <Ionicons name="ellipsis-horizontal-circle" size={26} color={colors.tint} />
+                <Icon name="ellipsis-horizontal-circle" size={26} color={colors.tint} />
               </View>
             </AnimatedPressable>
           ),
@@ -288,7 +288,7 @@ export default function RecipeDetailScreen() {
           style={styles.toastContainer}
         >
           <View style={[styles.toast, { backgroundColor: colors.card }, shadows.medium]}>
-            <Ionicons name="checkmark-circle" size={18} color={colors.success} />
+            <Icon name="checkmark-circle" size={18} color={colors.success} />
             <ThemedText style={styles.toastText}>Ingredients copied</ThemedText>
           </View>
         </Animated.View>
@@ -323,7 +323,7 @@ export default function RecipeDetailScreen() {
               end={{ x: 1, y: 1 }}
               style={styles.placeholderImage}
             >
-              <Ionicons name="restaurant" size={64} color={colors.tint} />
+              <Icon name="restaurant" size={64} color={colors.tint} />
             </LinearGradient>
           )}
         </View>
@@ -343,7 +343,7 @@ export default function RecipeDetailScreen() {
             <View style={styles.metaRow}>
               {recipe.servings && (
                 <View style={styles.metaItem}>
-                  <Ionicons name="people" size={16} color={colors.textTertiary} />
+                  <Icon name="people" size={16} color={colors.textTertiary} />
                   <ThemedText style={[styles.metaText, { color: colors.textTertiary }]}>
                     {recipe.servings} servings
                   </ThemedText>
@@ -351,7 +351,7 @@ export default function RecipeDetailScreen() {
               )}
               {recipe.prepTime && (
                 <View style={styles.metaItem}>
-                  <Ionicons name="time-outline" size={16} color={colors.textTertiary} />
+                  <Icon name="time-outline" size={16} color={colors.textTertiary} />
                   <ThemedText style={[styles.metaText, { color: colors.textTertiary }]}>
                     {recipe.prepTime}
                   </ThemedText>
@@ -359,7 +359,7 @@ export default function RecipeDetailScreen() {
               )}
               {recipe.cookTime && (
                 <View style={styles.metaItem}>
-                  <Ionicons name="flame" size={16} color={colors.tint} />
+                  <Icon name="flame" size={16} color={colors.tint} />
                   <ThemedText style={[styles.metaText, { color: colors.textTertiary }]}>
                     {recipe.cookTime}
                   </ThemedText>
@@ -393,7 +393,7 @@ export default function RecipeDetailScreen() {
             <View style={styles.sectionHeader}>
               <ThemedText style={styles.sectionTitle}>Ingredients</ThemedText>
               <AnimatedPressable onPress={handleCopyIngredients} hapticType="light">
-                <Ionicons name="copy-outline" size={20} color={colors.textTertiary} />
+                <Icon name="copy-outline" size={20} color={colors.textTertiary} />
               </AnimatedPressable>
             </View>
 
@@ -433,7 +433,7 @@ export default function RecipeDetailScreen() {
                     onPress={() => selectedServings > 1 && setSelectedServings(selectedServings - 1)}
                     disabled={selectedServings <= 1}
                   >
-                    <Ionicons
+                    <Icon
                       name="remove-circle"
                       size={28}
                       color={selectedServings <= 1 ? colors.textTertiary : colors.tint}
@@ -444,7 +444,7 @@ export default function RecipeDetailScreen() {
                     hapticType="light"
                     onPress={() => setSelectedServings(selectedServings + 1)}
                   >
-                    <Ionicons name="add-circle" size={28} color={colors.tint} />
+                    <Icon name="add-circle" size={28} color={colors.tint} />
                   </AnimatedPressable>
                 </View>
               </View>
@@ -509,14 +509,14 @@ export default function RecipeDetailScreen() {
                   onPress={handleOpenSource}
                   style={[styles.sourceLink, { backgroundColor: colors.accentSubtle }]}
                 >
-                  <Ionicons name={sourceIcon as any} size={20} color={colors.tint} />
+                  <Icon name={sourceIcon as any} size={20} color={colors.tint} />
                   <ThemedText
                     style={[styles.sourceLinkText, { color: colors.tint }]}
                     numberOfLines={1}
                   >
                     {new URL(recipe.sourceURL).hostname}
                   </ThemedText>
-                  <Ionicons name="open-outline" size={18} color={colors.tint} />
+                  <Icon name="open-outline" size={18} color={colors.tint} />
                 </AnimatedPressable>
               </View>
             </>

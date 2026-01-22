@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { StyleSheet, View, Pressable, SectionList, useColorScheme, Alert } from 'react-native';
 import { router, Stack, Href } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/src/components/ui/Icon';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown, Layout } from 'react-native-reanimated';
@@ -140,7 +140,7 @@ export default function GroceryScreen() {
                   hapticType="selection"
                   style={styles.headerButton}
                 >
-                  <Ionicons name="ellipsis-horizontal-circle" size={24} color={colors.tint} />
+                  <Icon name="ellipsis-horizontal-circle" size={24} color={colors.tint} />
                 </AnimatedPressable>
               )}
               <AnimatedPressable
@@ -148,7 +148,7 @@ export default function GroceryScreen() {
                 hapticType="medium"
                 style={styles.headerButton}
               >
-                <Ionicons name="sparkles" size={22} color={colors.tint} />
+                <Icon name="sparkles" size={22} color={colors.tint} />
               </AnimatedPressable>
             </View>
           ),

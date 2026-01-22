@@ -11,7 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/src/components/ui/Icon';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeIn, FadeInDown, FadeOut, Layout } from 'react-native-reanimated';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -208,7 +208,7 @@ export default function EditPantryItemScreen() {
           }}
         />
         <ThemedView style={[styles.container, styles.centerContent]}>
-          <Ionicons name="alert-circle-outline" size={64} color={colors.textTertiary} />
+          <Icon name="alert-circle-outline" size={64} color={colors.textTertiary} />
           <ThemedText style={[styles.errorText, { color: colors.textTertiary }]}>
             Item not found
           </ThemedText>
@@ -300,7 +300,7 @@ export default function EditPantryItemScreen() {
                     <ThemedText style={[styles.pickerButtonText, { color: colors.text }]}>
                       {category}
                     </ThemedText>
-                    <Ionicons
+                    <Icon
                       name={showCategoryPicker ? 'chevron-up' : 'chevron-down'}
                       size={16}
                       color={colors.textTertiary}
@@ -334,7 +334,7 @@ export default function EditPantryItemScreen() {
                           {cat}
                         </ThemedText>
                         {category === cat && (
-                          <Ionicons name="checkmark" size={18} color={colors.tint} />
+                          <Icon name="checkmark" size={18} color={colors.tint} />
                         )}
                       </AnimatedPressable>
                     ))}

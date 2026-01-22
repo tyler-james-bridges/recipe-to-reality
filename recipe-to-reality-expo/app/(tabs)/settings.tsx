@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet, ScrollView, View, Switch, Linking, Alert, useColorScheme } from 'react-native';
 import { router, Stack, Href } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -9,9 +8,10 @@ import { ThemedView, ThemedText } from '@/components/Themed';
 import { usePurchaseStore } from '@/src/stores/purchaseStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
+import { Icon, IconProps } from '@/src/components/ui/Icon';
 import Colors, { shadows, radius, spacing, typography, gradients } from '@/constants/Colors';
 
-type IconName = React.ComponentProps<typeof Ionicons>['name'];
+type IconName = IconProps['name'];
 
 interface SettingsRowProps {
   icon: IconName;
@@ -55,7 +55,7 @@ function SettingsRow({
       style={styles.row}
     >
       <View style={[styles.iconContainer, { backgroundColor: bgColor }]}>
-        <Ionicons name={icon} size={18} color={iconColorFinal} />
+        <Icon name={icon} size={18} color={iconColorFinal} />
       </View>
       <View style={styles.rowContent}>
         <ThemedText style={[styles.rowTitle, danger && { color: colors.error }]}>
@@ -72,7 +72,7 @@ function SettingsRow({
           {value}
         </ThemedText>
       )}
-      {rightElement || (onPress && <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />)}
+      {rightElement || (onPress && <Icon name="chevron-forward" size={18} color={colors.textTertiary} />)}
     </AnimatedPressable>
   );
 }
@@ -166,7 +166,7 @@ export default function SettingsScreen() {
             style={styles.headerGradient}
           >
             <View style={styles.headerIcon}>
-              <Ionicons name="restaurant" size={32} color="#FFFFFF" />
+              <Icon name="restaurant" size={32} color="#FFFFFF" />
             </View>
             <ThemedText style={styles.headerTitle}>Recipe to Reality</ThemedText>
             <ThemedText style={styles.headerVersion}>Version 1.0.0</ThemedText>

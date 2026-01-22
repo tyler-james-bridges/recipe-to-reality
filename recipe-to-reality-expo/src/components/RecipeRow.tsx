@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, useColorScheme } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -16,6 +15,7 @@ import { RecipeWithIngredients } from '../types';
 import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors';
 import AnimatedPressable from './ui/AnimatedPressable';
 import Badge from './ui/Badge';
+import { Icon } from './ui/Icon';
 
 interface RecipeRowProps {
   recipe: RecipeWithIngredients;
@@ -97,7 +97,7 @@ export default function RecipeRow({ recipe, onPress, pantryMatchPercentage, inde
             />
             {recipe.isInQueue && (
               <View style={styles.queueBadge}>
-                <Ionicons name="checkmark-circle" size={16} color="#FFFFFF" />
+                <Icon name="checkmark-circle" size={16} color="#FFFFFF" />
               </View>
             )}
           </View>
@@ -109,10 +109,10 @@ export default function RecipeRow({ recipe, onPress, pantryMatchPercentage, inde
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFillObject}
             />
-            <Ionicons name="restaurant" size={24} color={colors.tint} />
+            <Icon name="restaurant" size={24} color={colors.tint} />
             {recipe.isInQueue && (
               <View style={styles.queueBadge}>
-                <Ionicons name="checkmark-circle" size={16} color="#FFFFFF" />
+                <Icon name="checkmark-circle" size={16} color="#FFFFFF" />
               </View>
             )}
           </View>
@@ -127,7 +127,7 @@ export default function RecipeRow({ recipe, onPress, pantryMatchPercentage, inde
           <View style={styles.metaRow}>
             {recipe.servings && (
               <View style={styles.metaItem}>
-                <Ionicons name="people" size={12} color={colors.textTertiary} />
+                <Icon name="people" size={12} color={colors.textTertiary} />
                 <ThemedText style={[styles.metaText, { color: colors.textTertiary }]}>
                   {recipe.servings}
                 </ThemedText>
@@ -136,7 +136,7 @@ export default function RecipeRow({ recipe, onPress, pantryMatchPercentage, inde
 
             {recipe.cookTime && (
               <View style={styles.metaItem}>
-                <Ionicons name="time-outline" size={12} color={colors.textTertiary} />
+                <Icon name="time-outline" size={12} color={colors.textTertiary} />
                 <ThemedText style={[styles.metaText, { color: colors.textTertiary }]}>
                   {recipe.cookTime}
                 </ThemedText>
@@ -144,7 +144,7 @@ export default function RecipeRow({ recipe, onPress, pantryMatchPercentage, inde
             )}
 
             <View style={styles.metaItem}>
-              <Ionicons name={sourceIcon.name} size={12} color={sourceIcon.color} />
+              <Icon name={sourceIcon.name} size={12} color={sourceIcon.color} />
             </View>
           </View>
 
@@ -163,7 +163,7 @@ export default function RecipeRow({ recipe, onPress, pantryMatchPercentage, inde
 
         {/* Chevron */}
         <View style={styles.chevronContainer}>
-          <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
+          <Icon name="chevron-forward" size={18} color={colors.textTertiary} />
         </View>
       </View>
     </AnimatedPressable>

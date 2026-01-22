@@ -7,7 +7,7 @@ import {
   Platform,
 } from 'react-native';
 import { router, Stack } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/src/components/ui/Icon';
 import * as Haptics from 'expo-haptics';
 import Animated, {
   FadeIn,
@@ -167,7 +167,7 @@ function RecipeSelectItem({
           >
             {isSelected && (
               <Animated.View style={animatedCheckStyle}>
-                <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                <Icon name="checkmark" size={14} color="#FFFFFF" />
               </Animated.View>
             )}
           </View>
@@ -179,7 +179,7 @@ function RecipeSelectItem({
               {recipe.title}
             </ThemedText>
             {isInQueue && (
-              <Ionicons
+              <Icon
                 name="time"
                 size={14}
                 color={colors.tint}
@@ -207,7 +207,7 @@ function MealPlanItem({
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
-  const getMealTypeIcon = (mealType: string): React.ComponentProps<typeof Ionicons>['name'] => {
+  const getMealTypeIcon = (mealType: string): React.ComponentProps<typeof Icon>['name'] => {
     switch (mealType) {
       case 'Breakfast':
         return 'sunny-outline';
@@ -232,7 +232,7 @@ function MealPlanItem({
       ]}
     >
       <View style={[styles.mealTypeIcon, { backgroundColor: colors.accentSubtle }]}>
-        <Ionicons name={getMealTypeIcon(mealPlan.mealType)} size={16} color={colors.tint} />
+        <Icon name={getMealTypeIcon(mealPlan.mealType)} size={16} color={colors.tint} />
       </View>
       <View style={styles.mealPlanInfo}>
         <ThemedText style={[styles.mealTypeLabel, { color: colors.textTertiary }]}>
@@ -243,7 +243,7 @@ function MealPlanItem({
         </ThemedText>
       </View>
       {mealPlan.recipeId ? (
-        <Ionicons name="checkmark-circle" size={18} color={colors.success} />
+        <Icon name="checkmark-circle" size={18} color={colors.success} />
       ) : (
         <ThemedText style={[styles.noRecipeLabel, { color: colors.textTertiary }]}>
           No recipe
@@ -529,7 +529,7 @@ export default function GenerateGroceryListScreen() {
                 entering={FadeIn.duration(300)}
                 style={styles.emptyContainer}
               >
-                <Ionicons name="book-outline" size={48} color={colors.textTertiary} />
+                <Icon name="book-outline" size={48} color={colors.textTertiary} />
                 <ThemedText style={[styles.emptyTitle, { color: colors.textTertiary }]}>
                   No Recipes
                 </ThemedText>
@@ -555,7 +555,7 @@ export default function GenerateGroceryListScreen() {
                       shadows.small,
                     ]}
                   >
-                    <Ionicons
+                    <Icon
                       name="time-outline"
                       size={18}
                       color={queuedRecipes.length > 0 ? colors.tint : colors.textTertiary}
@@ -581,7 +581,7 @@ export default function GenerateGroceryListScreen() {
                       shadows.small,
                     ]}
                   >
-                    <Ionicons
+                    <Icon
                       name="close-circle-outline"
                       size={18}
                       color={selectedRecipeIds.size > 0 ? colors.text : colors.textTertiary}
@@ -603,7 +603,7 @@ export default function GenerateGroceryListScreen() {
                     entering={FadeInDown.duration(200)}
                     style={[styles.summaryCard, { backgroundColor: colors.accentSubtle }]}
                   >
-                    <Ionicons name="cart-outline" size={20} color={colors.tint} />
+                    <Icon name="cart-outline" size={20} color={colors.tint} />
                     <ThemedText style={[styles.summaryText, { color: colors.tint }]}>
                       {selectedRecipeIds.size} recipe{selectedRecipeIds.size !== 1 ? 's' : ''} selected ({selectedIngredientCount} ingredients)
                     </ThemedText>
@@ -713,7 +713,7 @@ export default function GenerateGroceryListScreen() {
                 entering={FadeIn.duration(300)}
                 style={styles.emptyContainer}
               >
-                <Ionicons name="calendar-outline" size={48} color={colors.textTertiary} />
+                <Icon name="calendar-outline" size={48} color={colors.textTertiary} />
                 <ThemedText style={[styles.emptyTitle, { color: colors.textTertiary }]}>
                   No Meals Planned
                 </ThemedText>
@@ -753,7 +753,7 @@ export default function GenerateGroceryListScreen() {
                   entering={FadeInUp.duration(300).delay(300)}
                   style={[styles.summaryCard, { backgroundColor: colors.accentSubtle }]}
                 >
-                  <Ionicons name="cart-outline" size={20} color={colors.tint} />
+                  <Icon name="cart-outline" size={20} color={colors.tint} />
                   <ThemedText style={[styles.summaryText, { color: colors.tint }]}>
                     {mealPlanRecipeIds.size} recipe{mealPlanRecipeIds.size !== 1 ? 's' : ''} to shop for
                   </ThemedText>

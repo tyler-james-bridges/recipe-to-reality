@@ -10,3 +10,4 @@ export { default as Badge } from './Badge';
 export { default as ProgressBar } from './ProgressBar';
 export { default as SectionHeader } from './SectionHeader';
 export { default as Chip } from './Chip';
+export { Icon, MaterialIcon } from './Icon';

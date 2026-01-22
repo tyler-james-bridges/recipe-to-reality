@@ -9,7 +9,7 @@ import {
   useColorScheme,
 } from 'react-native';
 import { Stack } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/src/components/ui/Icon';
 import Animated, { FadeIn, FadeInDown, SlideInRight } from 'react-native-reanimated';
 import * as Notifications from 'expo-notifications';
 import * as Haptics from 'expo-haptics';
@@ -184,7 +184,7 @@ export default function NotificationsSettingsScreen() {
           </ThemedText>
           <View style={[styles.statusCard, { backgroundColor: colors.card }, shadows.small]}>
             <View style={[styles.statusIconContainer, { backgroundColor: statusInfo.bgColor }]}>
-              <Ionicons name={statusInfo.icon} size={24} color={statusInfo.color} />
+              <Icon name={statusInfo.icon} size={24} color={statusInfo.color} />
             </View>
             <View style={styles.statusContent}>
               <ThemedText style={styles.statusTitle}>{statusInfo.text}</ThemedText>
@@ -216,7 +216,7 @@ export default function NotificationsSettingsScreen() {
             ) : (
               <>
                 <View style={[styles.deniedCard, { backgroundColor: colors.warningBackground }]}>
-                  <Ionicons name="information-circle" size={20} color={colors.warning} />
+                  <Icon name="information-circle" size={20} color={colors.warning} />
                   <ThemedText style={[styles.deniedText, { color: colors.text }]}>
                     Notifications are disabled in your device settings. To receive meal reminders,
                     you'll need to enable them in Settings.
@@ -249,7 +249,7 @@ export default function NotificationsSettingsScreen() {
             {/* Enable Toggle */}
             <View style={styles.settingRow}>
               <View style={[styles.settingIconContainer, { backgroundColor: colors.accentSubtle }]}>
-                <Ionicons name="notifications" size={18} color={colors.tint} />
+                <Icon name="notifications" size={18} color={colors.tint} />
               </View>
               <View style={styles.settingContent}>
                 <ThemedText style={styles.settingTitle}>Meal Reminders</ThemedText>
@@ -288,7 +288,7 @@ export default function NotificationsSettingsScreen() {
                   (!notificationsEnabled || permissionStatus !== 'granted') && { opacity: 0.5 },
                 ]}
               >
-                <Ionicons name="time" size={18} color={colors.info} />
+                <Icon name="time" size={18} color={colors.info} />
               </View>
               <View style={styles.settingContent}>
                 <ThemedText
@@ -319,7 +319,7 @@ export default function NotificationsSettingsScreen() {
                 >
                   {formatTime(reminderTimeHour, reminderTimeMinute)}
                 </ThemedText>
-                <Ionicons
+                <Icon
                   name="chevron-forward"
                   size={18}
                   color={colors.textTertiary}
@@ -338,7 +338,7 @@ export default function NotificationsSettingsScreen() {
           style={styles.section}
         >
           <View style={[styles.infoCard, { backgroundColor: colors.infoBackground }]}>
-            <Ionicons name="information-circle" size={20} color={colors.info} />
+            <Icon name="information-circle" size={20} color={colors.info} />
             <ThemedText style={[styles.infoText, { color: colors.text }]}>
               Meal reminders help you stay on track with your cooking schedule. You'll receive a
               notification at your chosen time when you have meals planned for the day.

@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, TextInput, Pressable, useColorScheme } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
+import { Icon } from './ui/Icon';
 
 interface SearchBarProps {
   value: string;
@@ -21,7 +21,7 @@ export default function SearchBar({ value, onChangeText, placeholder = 'Search' 
       styles.container,
       { backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#E5E5EA' },
     ]}>
-      <Ionicons
+      <Icon
         name="search"
         size={18}
         color="#8E8E93"
@@ -40,7 +40,7 @@ export default function SearchBar({ value, onChangeText, placeholder = 'Search' 
       />
       {value.length > 0 && (
         <Pressable onPress={() => onChangeText('')} style={styles.clearButton}>
-          <Ionicons name="close-circle" size={18} color="#8E8E93" />
+          <Icon name="close-circle" size={18} color="#8E8E93" />
         </Pressable>
       )}
     </View>
