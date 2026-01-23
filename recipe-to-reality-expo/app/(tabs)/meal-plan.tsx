@@ -1,6 +1,7 @@
 import React, { useCallback, useState, useMemo } from 'react';
 import { StyleSheet, FlatList, View, ScrollView, useColorScheme, Dimensions } from 'react-native';
 import { router, Stack } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '@/src/components/ui/Icon';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
@@ -27,6 +28,7 @@ type ViewMode = 'week' | 'month';
 export default function MealPlanScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const insets = useSafeAreaInsets();
   const { mealPlans, loadMealPlans, deleteMealPlan, toggleCompleted } = useMealPlanStore();
   const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -590,7 +592,7 @@ export default function MealPlanScreen() {
           ),
         }}
       />
-      <ThemedView style={styles.container}>
+      <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
         {/* View Mode Toggle */}
         <View style={styles.segmentedWrapper}>
           <SegmentedControl />
