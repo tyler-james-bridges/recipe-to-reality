@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   useColorScheme,
   Image,
+  Alert,
 } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Icon, MaterialIcon } from '@/src/components/ui/Icon';
@@ -49,7 +50,7 @@ export default function AddMealPlanScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const params = useLocalSearchParams<{ date?: string; mealType?: MealType }>();
 
-  const { addMealPlan } = useMealPlanStore();
+  const { addMealPlan, requestNotificationPermissions } = useMealPlanStore();
   const { recipes } = useRecipeStore();
   const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
 
@@ -240,8 +241,20 @@ export default function AddMealPlanScreen() {
           </View>
           <Switch
             value={enableReminder}
-            onValueChange={(value) => {
+            onValueChange={async (value) => {
               triggerHaptic('selection');
+              if (value) {
+                // Request notification permissions when enabling reminder
+                const granted = await requestNotificationPermissions();
+                if (!granted) {
+                  Alert.alert(
+                    'Notifications Disabled',
+                    'Please enable notifications in Settings to receive meal reminders.',
+                    [{ text: 'OK' }]
+                  );
+                  return;
+                }
+              }
               setEnableReminder(value);
             }}
             trackColor={{ false: colors.border, true: colors.tint + '80' }}
