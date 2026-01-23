@@ -208,7 +208,7 @@ function SlideIllustration({ slide, isActive }: { slide: typeof SLIDES[0]; isAct
             </Animated.View>
             {/* Social media icons floating */}
             <View style={[styles.floatingIcon, { top: 10, left: 20 }]}>
-              <FloatingIcon name="logo-tiktok" color="#000000" size={26} delay={100} />
+              <FloatingIcon name="logo-tiktok" color={colorScheme === 'dark' ? '#FFFFFF' : '#000000'} size={26} delay={100} />
             </View>
             <View style={[styles.floatingIcon, { top: 30, right: 25 }]}>
               <FloatingIcon name="logo-instagram" color="#E1306C" size={28} delay={200} />

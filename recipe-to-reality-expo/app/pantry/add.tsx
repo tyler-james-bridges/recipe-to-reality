@@ -211,7 +211,6 @@ export default function AddPantryItemScreen() {
                     placeholder="e.g., Eggs, Milk, Flour"
                     placeholderTextColor={colors.textTertiary}
                     autoCapitalize="words"
-                    autoFocus
                   />
                 </View>
 
