@@ -62,8 +62,6 @@ export const shadows = {
     default: {},
   }),
 };
-  },
-};
 
 // Modern spacing scale (4px base)
 export const spacing = {
