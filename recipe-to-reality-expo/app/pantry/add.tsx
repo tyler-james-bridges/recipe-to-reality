@@ -196,8 +196,40 @@ export default function AddPantryItemScreen() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            {/* Item Details Section */}
+            {/* Quick Add Section */}
             <Animated.View entering={FadeInDown.delay(100).duration(300)}>
+              <SectionHeader
+                title="Quick Add"
+                subtitle="Tap to add common items instantly"
+                icon="flash-outline"
+              />
+              <View style={styles.quickAddGrid}>
+                {COMMON_ITEMS.map((item, index) => (
+                  <Animated.View
+                    key={item.name}
+                    entering={FadeInDown.delay(150 + index * 50).duration(200)}
+                  >
+                    <AnimatedPressable
+                      onPress={() => handleQuickAdd(item)}
+                      hapticType="medium"
+                      scaleOnPress={0.95}
+                      style={[
+                        styles.quickAddButton,
+                        { backgroundColor: colors.accentSubtle },
+                      ]}
+                    >
+                      <Icon name={item.icon as any} size={20} color={colors.tint} />
+                      <ThemedText style={[styles.quickAddText, { color: colors.tint }]}>
+                        {item.name}
+                      </ThemedText>
+                    </AnimatedPressable>
+                  </Animated.View>
+                ))}
+              </View>
+            </Animated.View>
+
+            {/* Item Details Section */}
+            <Animated.View entering={FadeInDown.delay(200).duration(300)}>
               <SectionHeader title="Item Details" icon="information-circle-outline" />
               <View style={[styles.inputGroup, { backgroundColor: colors.card }, shadows.small]}>
                 <View style={styles.inputRow}>
@@ -274,7 +306,7 @@ export default function AddPantryItemScreen() {
             </Animated.View>
 
             {/* Quantity Section */}
-            <Animated.View entering={FadeInDown.delay(200).duration(300)}>
+            <Animated.View entering={FadeInDown.delay(300).duration(300)}>
               <SectionHeader title="Quantity (Optional)" icon="calculator-outline" />
               <View style={[styles.inputGroup, { backgroundColor: colors.card }, shadows.small]}>
                 <View style={styles.quantityRow}>
@@ -310,7 +342,7 @@ export default function AddPantryItemScreen() {
             </Animated.View>
 
             {/* Expiration Section */}
-            <Animated.View entering={FadeInDown.delay(300).duration(300)}>
+            <Animated.View entering={FadeInDown.delay(400).duration(300)}>
               <SectionHeader title="Expiration" icon="time-outline" />
               <View style={[styles.inputGroup, { backgroundColor: colors.card }, shadows.small]}>
                 <View style={styles.switchRow}>
@@ -362,7 +394,7 @@ export default function AddPantryItemScreen() {
             </Animated.View>
 
             {/* Notes Section */}
-            <Animated.View entering={FadeInDown.delay(400).duration(300)}>
+            <Animated.View entering={FadeInDown.delay(500).duration(300)}>
               <SectionHeader title="Notes (Optional)" icon="document-text-outline" />
               <View style={[styles.inputGroup, { backgroundColor: colors.card }, shadows.small]}>
                 <TextInput
@@ -375,38 +407,6 @@ export default function AddPantryItemScreen() {
                   numberOfLines={3}
                   textAlignVertical="top"
                 />
-              </View>
-            </Animated.View>
-
-            {/* Quick Add Section */}
-            <Animated.View entering={FadeInDown.delay(500).duration(300)}>
-              <SectionHeader
-                title="Quick Add"
-                subtitle="Tap to add common items instantly"
-                icon="flash-outline"
-              />
-              <View style={styles.quickAddGrid}>
-                {COMMON_ITEMS.map((item, index) => (
-                  <Animated.View
-                    key={item.name}
-                    entering={FadeInDown.delay(550 + index * 50).duration(200)}
-                  >
-                    <AnimatedPressable
-                      onPress={() => handleQuickAdd(item)}
-                      hapticType="medium"
-                      scaleOnPress={0.95}
-                      style={[
-                        styles.quickAddButton,
-                        { backgroundColor: colors.accentSubtle },
-                      ]}
-                    >
-                      <Icon name={item.icon as any} size={20} color={colors.tint} />
-                      <ThemedText style={[styles.quickAddText, { color: colors.tint }]}>
-                        {item.name}
-                      </ThemedText>
-                    </AnimatedPressable>
-                  </Animated.View>
-                ))}
               </View>
             </Animated.View>
 
