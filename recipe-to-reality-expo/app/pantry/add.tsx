@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingTop: spacing.md,
+    paddingTop: spacing.lg,
     paddingBottom: spacing['4xl'],
   },
   headerButtonText: {

@@ -605,8 +605,8 @@ const styles = StyleSheet.create({
   },
   headerSection: {
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xl,
   },
   mealHeader: {
     flexDirection: 'row',
@@ -673,6 +673,7 @@ const styles = StyleSheet.create({
   recipeList: {
     paddingHorizontal: spacing.lg,
     paddingBottom: 120,
+    gap: spacing.sm,
   },
   recipeRowWrapper: {
     marginBottom: spacing.sm,
@@ -753,7 +754,7 @@ const styles = StyleSheet.create({
   },
   reminderTimeContainer: {
     marginTop: spacing.md,
-    paddingTop: spacing.md,
+    paddingTop: spacing.lg,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: 'rgba(0,0,0,0.1)',
   },

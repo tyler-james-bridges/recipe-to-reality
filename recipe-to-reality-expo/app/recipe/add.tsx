@@ -20,7 +20,7 @@ import { usePurchaseStore } from '@/src/stores/purchaseStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 import { extractRecipe } from '@/src/services/extraction/recipeExtraction';
 import { ExtractedRecipe, Ingredient, IngredientCategory } from '@/src/types';
-import Colors from '@/constants/Colors';
+import Colors, { spacing, radius } from '@/constants/Colors';
 
 type InputMode = 'url' | 'manual';
 
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 16,
+    padding: spacing.lg,
     paddingBottom: 40,
   },
   headerButtonText: {
@@ -408,10 +408,10 @@ const styles = StyleSheet.create({
   limitBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 16,
-    gap: 8,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    marginBottom: spacing.lg,
+    gap: spacing.sm,
   },
   limitText: {
     flex: 1,
@@ -419,9 +419,9 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   inputGroup: {
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 12,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
   },
   inputLabel: {
     fontSize: 13,
@@ -449,9 +449,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 16,
-    borderRadius: 10,
+    gap: spacing.sm,
+    paddingVertical: spacing.lg,
+    borderRadius: radius.md,
   },
   extractButtonDisabled: {
     opacity: 0.7,
@@ -464,14 +464,14 @@ const styles = StyleSheet.create({
   manualSection: {},
   row: {
     flexDirection: 'row',
-    gap: 12,
+    gap: spacing.md,
   },
   halfWidth: {
     flex: 1,
   },
   manualEntryLink: {
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: spacing.lg,
     marginTop: 8,
   },
   manualEntryLinkText: {
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   backToUrlLinkText: {
     fontSize: 15,
