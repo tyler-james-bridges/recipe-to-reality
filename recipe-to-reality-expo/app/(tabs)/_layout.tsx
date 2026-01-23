@@ -1,29 +1,124 @@
 import React from 'react';
-import { NativeTabs, Icon, Label } from 'expo-router/unstable-native-tabs';
+import { Platform, useColorScheme } from 'react-native';
+import { Tabs } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { SymbolView } from 'expo-symbols';
+import Colors from '@/constants/Colors';
+
+type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
+
+interface TabBarIconProps {
+  focused: boolean;
+  color: string;
+  size: number;
+  ionIcon: IoniconsName;
+  sfSymbol: string;
+}
+
+function TabBarIcon({ focused, color, size, ionIcon, sfSymbol }: TabBarIconProps) {
+  if (Platform.OS === 'ios') {
+    return (
+      <SymbolView
+        name={sfSymbol as any}
+        size={size}
+        tintColor={color}
+      />
+    );
+  }
+  return <Ionicons name={ionIcon} size={size} color={color} />;
+}
 
 export default function TabLayout() {
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
+
   return (
-    <NativeTabs>
-      <NativeTabs.Trigger name="index">
-        <Icon sf="book.fill" />
-        <Label>Recipes</Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="pantry">
-        <Icon sf="refrigerator.fill" />
-        <Label>Pantry</Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="meal-plan">
-        <Icon sf="calendar" />
-        <Label>Meal Plan</Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="grocery">
-        <Icon sf="cart.fill" />
-        <Label>Grocery</Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="settings">
-        <Icon sf="gearshape.fill" />
-        <Label>Settings</Label>
-      </NativeTabs.Trigger>
-    </NativeTabs>
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: colors.tabIconSelected,
+        tabBarInactiveTintColor: colors.tabIconDefault,
+        tabBarStyle: {
+          backgroundColor: colorScheme === 'dark' ? colors.card : '#FFFFFF',
+          borderTopColor: colors.border,
+        },
+        headerShown: false,
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Recipes',
+          tabBarIcon: ({ focused, color, size }) => (
+            <TabBarIcon
+              focused={focused}
+              color={color}
+              size={size}
+              ionIcon="book"
+              sfSymbol="book.fill"
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="pantry"
+        options={{
+          title: 'Pantry',
+          tabBarIcon: ({ focused, color, size }) => (
+            <TabBarIcon
+              focused={focused}
+              color={color}
+              size={size}
+              ionIcon="snow"
+              sfSymbol="refrigerator.fill"
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="meal-plan"
+        options={{
+          title: 'Meal Plan',
+          tabBarIcon: ({ focused, color, size }) => (
+            <TabBarIcon
+              focused={focused}
+              color={color}
+              size={size}
+              ionIcon="calendar"
+              sfSymbol="calendar"
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="grocery"
+        options={{
+          title: 'Grocery',
+          tabBarIcon: ({ focused, color, size }) => (
+            <TabBarIcon
+              focused={focused}
+              color={color}
+              size={size}
+              ionIcon="cart"
+              sfSymbol="cart.fill"
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: 'Settings',
+          tabBarIcon: ({ focused, color, size }) => (
+            <TabBarIcon
+              focused={focused}
+              color={color}
+              size={size}
+              ionIcon="settings"
+              sfSymbol="gearshape.fill"
+            />
+          ),
+        }}
+      />
+    </Tabs>
   );
 }
