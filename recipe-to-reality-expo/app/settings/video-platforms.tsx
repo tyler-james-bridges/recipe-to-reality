@@ -9,6 +9,7 @@ import {
   useColorScheme,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { Icon } from '@/src/components/ui/Icon';
@@ -21,6 +22,7 @@ import {
   saveSupadataAPIKey,
   hasSupadataAPIKey,
   deleteSupadataAPIKey,
+  testSupadataAPIKey,
 } from '@/src/services/video/videoTranscript';
 import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
 import ModernButton from '@/src/components/ui/ModernButton';
@@ -53,6 +55,9 @@ const VIDEO_PLATFORMS = [
     requiresKey: true,
   },
 ];
+
+// Minimum API key length for validation
+const MIN_API_KEY_LENGTH = 10;
 
 interface PlatformRowProps {
   platform: (typeof VIDEO_PLATFORMS)[0];
@@ -136,6 +141,9 @@ export default function VideoPlatformsSettingsScreen() {
   const [hasKey, setHasKey] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
+  const [validationStatus, setValidationStatus] = useState<'none' | 'valid' | 'invalid'>('none');
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   // Load key status
   const loadKeyStatus = useCallback(async () => {
@@ -147,15 +155,84 @@ export default function VideoPlatformsSettingsScreen() {
     loadKeyStatus();
   }, [loadKeyStatus]);
 
+  // Reset validation status when API key changes
+  useEffect(() => {
+    setValidationStatus('none');
+    setValidationError(null);
+  }, [apiKey]);
+
+  // Validate API key format (basic check before sending)
+  const isApiKeyValid = (key: string): boolean => {
+    const trimmed = key.trim();
+    return trimmed.length >= MIN_API_KEY_LENGTH;
+  };
+
+  // Get input border color based on validation status
+  const getInputBorderColor = (): string | undefined => {
+    if (validationStatus === 'valid') {
+      return colors.success;
+    }
+    if (validationStatus === 'invalid') {
+      return colors.error;
+    }
+    return undefined;
+  };
+
+  const handleTestKey = async () => {
+    const trimmedKey = apiKey.trim();
+
+    if (!isApiKeyValid(trimmedKey)) {
+      if (hapticFeedback) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      }
+      Alert.alert('Invalid Key', 'API key must be at least 10 characters long.');
+      return;
+    }
+
+    setIsTesting(true);
+    setValidationStatus('none');
+    setValidationError(null);
+
+    try {
+      const result = await testSupadataAPIKey(trimmedKey);
+
+      if (result.valid) {
+        setValidationStatus('valid');
+        if (hapticFeedback) {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+      } else {
+        setValidationStatus('invalid');
+        setValidationError(result.error || 'Invalid API key');
+        if (hapticFeedback) {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        }
+      }
+    } catch (error) {
+      setValidationStatus('invalid');
+      setValidationError('Could not validate key. Check your connection.');
+      if (hapticFeedback) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
   const handleSaveKey = async () => {
-    if (!apiKey.trim()) {
-      Alert.alert('Error', 'Please enter an API key.');
+    const trimmedKey = apiKey.trim();
+
+    if (!isApiKeyValid(trimmedKey)) {
+      if (hapticFeedback) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      }
+      Alert.alert('Invalid Key', 'API key must be at least 10 characters long.');
       return;
     }
 
     setIsSaving(true);
     try {
-      await saveSupadataAPIKey(apiKey.trim());
+      await saveSupadataAPIKey(trimmedKey);
       await loadKeyStatus();
 
       if (hapticFeedback) {
@@ -169,7 +246,8 @@ export default function VideoPlatformsSettingsScreen() {
       if (hapticFeedback) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
-      Alert.alert('Error', 'Failed to save API key. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      Alert.alert('Error', `Failed to save API key: ${errorMessage}`);
     } finally {
       setIsSaving(false);
     }
@@ -190,6 +268,8 @@ export default function VideoPlatformsSettingsScreen() {
               await deleteSupadataAPIKey();
               await loadKeyStatus();
               setApiKey('');
+              setValidationStatus('none');
+              setValidationError(null);
 
               if (hapticFeedback) {
                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -230,7 +310,7 @@ export default function VideoPlatformsSettingsScreen() {
         options={{
           title: 'Video Platforms',
           headerRight: () =>
-            apiKey.trim() ? (
+            apiKey.trim() && isApiKeyValid(apiKey) ? (
               <AnimatedPressable onPress={handleSaveKey} disabled={isSaving} hapticType="medium">
                 <ThemedText
                   style={[
@@ -283,7 +363,17 @@ export default function VideoPlatformsSettingsScreen() {
             <ThemedText style={[styles.sectionDescription, { color: colors.textTertiary }]}>
               Required for TikTok and Instagram video transcripts.
             </ThemedText>
-            <View style={[styles.inputCard, { backgroundColor: colors.card }, shadows.small]}>
+            <View
+              style={[
+                styles.inputCard,
+                { backgroundColor: colors.card },
+                shadows.small,
+                getInputBorderColor() && {
+                  borderWidth: 2,
+                  borderColor: getInputBorderColor(),
+                },
+              ]}
+            >
               <View style={styles.inputContainer}>
                 <TextInput
                   style={[styles.input, { color: colors.text }]}
@@ -313,8 +403,60 @@ export default function VideoPlatformsSettingsScreen() {
               Your key is stored securely using expo-secure-store.
             </ThemedText>
 
-            {/* Status indicator */}
-            {hasKey && !apiKey.trim() && (
+            {/* Test API Key Button */}
+            {apiKey.trim().length > 0 && (
+              <Animated.View entering={FadeIn.duration(200)} style={styles.testButtonContainer}>
+                <AnimatedPressable
+                  onPress={handleTestKey}
+                  disabled={isTesting || !isApiKeyValid(apiKey)}
+                  hapticType="medium"
+                  style={[
+                    styles.testButton,
+                    { backgroundColor: colors.card, borderColor: colors.borderSubtle },
+                    (isTesting || !isApiKeyValid(apiKey)) && { opacity: 0.5 },
+                  ]}
+                >
+                  {isTesting ? (
+                    <ActivityIndicator size="small" color={colors.tint} />
+                  ) : (
+                    <Icon name="shield-checkmark-outline" size={18} color={colors.tint} />
+                  )}
+                  <ThemedText style={[styles.testButtonText, { color: colors.tint }]}>
+                    {isTesting ? 'Testing...' : 'Test API Key'}
+                  </ThemedText>
+                </AnimatedPressable>
+              </Animated.View>
+            )}
+
+            {/* Validation Status */}
+            {validationStatus === 'valid' && (
+              <Animated.View
+                entering={FadeIn.duration(200)}
+                style={[styles.statusCard, { backgroundColor: colors.successBackground }]}
+              >
+                <Icon name="checkmark-circle" size={20} color={colors.success} />
+                <ThemedText style={[styles.statusText, { color: colors.success }]}>
+                  API key is valid
+                </ThemedText>
+              </Animated.View>
+            )}
+
+            {validationStatus === 'invalid' && (
+              <Animated.View
+                entering={FadeIn.duration(200)}
+                style={[styles.statusCard, { backgroundColor: colors.errorBackground }]}
+              >
+                <Icon name="close-circle" size={20} color={colors.error} />
+                <View style={styles.statusTextContainer}>
+                  <ThemedText style={[styles.statusText, { color: colors.error }]}>
+                    {validationError || 'Invalid API key'}
+                  </ThemedText>
+                </View>
+              </Animated.View>
+            )}
+
+            {/* Existing key status indicator */}
+            {hasKey && !apiKey.trim() && validationStatus === 'none' && (
               <Animated.View
                 entering={FadeIn.duration(200)}
                 style={[styles.statusCard, { backgroundColor: colors.successBackground }]}
@@ -393,7 +535,7 @@ export default function VideoPlatformsSettingsScreen() {
           </Animated.View>
 
           {/* Save Button (visible when key entered) */}
-          {apiKey.trim() && (
+          {apiKey.trim() && isApiKeyValid(apiKey) && (
             <Animated.View entering={SlideInRight.duration(300)} style={styles.saveSection}>
               <ModernButton
                 title={isSaving ? 'Saving...' : 'Save API Key'}
@@ -503,6 +645,23 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     marginLeft: spacing.sm,
   },
+  testButtonContainer: {
+    marginTop: spacing.md,
+  },
+  testButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    gap: spacing.sm,
+  },
+  testButtonText: {
+    ...typography.labelMedium,
+    fontWeight: '600',
+  },
   statusCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -513,6 +672,9 @@ const styles = StyleSheet.create({
   },
   statusText: {
     ...typography.labelMedium,
+  },
+  statusTextContainer: {
+    flex: 1,
   },
   linksCard: {
     borderRadius: radius.xl,
