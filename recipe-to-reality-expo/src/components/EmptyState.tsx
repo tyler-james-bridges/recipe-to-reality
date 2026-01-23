@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, View, useColorScheme } from 'react-native';
+import { StyleSheet, useColorScheme } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useAnimatedStyle,
@@ -10,8 +10,7 @@ import Animated, {
   Extrapolation,
 } from 'react-native-reanimated';
 import { ThemedText, ThemedView } from '@/components/Themed';
-import Colors, { gradients, radius, spacing, typography, shadows } from '@/constants/Colors';
-import AnimatedPressable from './ui/AnimatedPressable';
+import Colors, { radius, spacing, typography } from '@/constants/Colors';
 import ModernButton from './ui/ModernButton';
 import { Icon, IconProps } from './ui/Icon';
 
@@ -36,7 +35,6 @@ export default function EmptyState({
 }: EmptyStateProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const themeGradients = gradients[colorScheme ?? 'light'];
 
   const iconProgress = useSharedValue(0);
   const contentProgress = useSharedValue(0);
@@ -108,24 +106,6 @@ export default function EmptyState({
           />
         </Animated.View>
       )}
-
-      {/* Decorative Elements */}
-      <View style={styles.decorativeContainer}>
-        <View
-          style={[
-            styles.decorativeCircle,
-            styles.decorativeCircle1,
-            { backgroundColor: colors.accentSubtle },
-          ]}
-        />
-        <View
-          style={[
-            styles.decorativeCircle,
-            styles.decorativeCircle2,
-            { backgroundColor: colors.tint + '10' },
-          ]}
-        />
-      </View>
     </ThemedView>
   );
 }
@@ -136,8 +116,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing['3xl'],
-    position: 'relative',
-    overflow: 'hidden',
   },
   iconWrapper: {
     marginBottom: spacing['2xl'],
@@ -170,27 +148,5 @@ const styles = StyleSheet.create({
   },
   buttonWrapper: {
     marginTop: spacing['2xl'],
-  },
-  decorativeContainer: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: -1,
-  },
-  decorativeCircle: {
-    position: 'absolute',
-    borderRadius: radius.full,
-  },
-  decorativeCircle1: {
-    width: 200,
-    height: 200,
-    top: '10%',
-    right: '-20%',
-    opacity: 0.5,
-  },
-  decorativeCircle2: {
-    width: 150,
-    height: 150,
-    bottom: '15%',
-    left: '-15%',
-    opacity: 0.4,
   },
 });
