@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { StyleSheet, View, ScrollView, SectionList, useColorScheme } from 'react-native';
 import { router, Stack, Href } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '@/src/components/ui/Icon';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
@@ -19,6 +20,7 @@ type FilterOption = 'all' | 'expiring' | IngredientCategory;
 export default function PantryScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const insets = useSafeAreaInsets();
   const { items, loadItems, deleteItem } = usePantryStore();
   const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
   const [searchQuery, setSearchQuery] = useState('');
@@ -139,7 +141,7 @@ export default function PantryScreen() {
           ),
         }}
       />
-      <ThemedView style={styles.container}>
+      <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
         {items.length === 0 ? (
           <EmptyState
             icon="snow-outline"
