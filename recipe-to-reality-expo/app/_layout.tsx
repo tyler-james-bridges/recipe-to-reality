@@ -3,11 +3,12 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Stack, router, useSegments, useRootNavigationState } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import * as Linking from 'expo-linking';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import { useSettingsStore } from '@/src/stores/settingsStore';
@@ -42,6 +43,25 @@ const queryClient = new QueryClient({
 
 setupNetworkListener();
 
+/**
+ * Parse deep link URL and extract recipe URL parameter.
+ * Handles URLs like: recipetoreality://add-recipe?url=https://example.com/recipe
+ */
+function parseDeepLink(url: string): { recipeUrl: string | null } {
+  try {
+    const parsed = Linking.parse(url);
+    if (parsed.path === 'add-recipe' && parsed.queryParams?.url) {
+      const recipeUrl = parsed.queryParams.url;
+      // Ensure we return a string, not an array
+      return { recipeUrl: Array.isArray(recipeUrl) ? recipeUrl[0] : recipeUrl };
+    }
+    return { recipeUrl: null };
+  } catch (error) {
+    console.error('Failed to parse deep link:', error);
+    return { recipeUrl: null };
+  }
+}
+
 const LightTheme = {
   ...DefaultTheme,
   colors: {
@@ -73,6 +93,24 @@ export default function RootLayout() {
   const initializeApp = useSettingsStore((state) => state.initializeApp);
   const initializePurchases = usePurchaseStore((state) => state.initialize);
 
+  // Track pending deep link URL to handle after navigation is ready
+  const pendingDeepLink = useRef<string | null>(null);
+
+  // Handle deep link navigation
+  const handleDeepLink = useCallback((url: string) => {
+    const { recipeUrl } = parseDeepLink(url);
+    if (recipeUrl) {
+      // Navigate to add recipe screen with the URL and auto-extract flag
+      router.push({
+        pathname: '/recipe/add',
+        params: {
+          deepLinkUrl: recipeUrl,
+          autoExtract: 'true',
+        },
+      });
+    }
+  }, []);
+
   useEffect(() => {
     if (error) throw error;
   }, [error]);
@@ -90,6 +128,46 @@ export default function RootLayout() {
     }
     initialize();
   }, [initializeApp, initializePurchases]);
+
+  // Handle cold start deep links (app was not running)
+  useEffect(() => {
+    async function handleInitialURL() {
+      const initialUrl = await Linking.getInitialURL();
+      if (initialUrl) {
+        // Store for later processing when navigation is ready
+        pendingDeepLink.current = initialUrl;
+      }
+    }
+    handleInitialURL();
+  }, []);
+
+  // Handle warm start deep links (app is in background)
+  useEffect(() => {
+    const subscription = Linking.addEventListener('url', (event) => {
+      if (appReady) {
+        handleDeepLink(event.url);
+      } else {
+        // Store for later if app is not ready
+        pendingDeepLink.current = event.url;
+      }
+    });
+
+    return () => subscription.remove();
+  }, [appReady, handleDeepLink]);
+
+  // Process pending deep link once app is ready
+  useEffect(() => {
+    if (appReady && pendingDeepLink.current) {
+      // Small delay to ensure navigation is fully ready
+      const timer = setTimeout(() => {
+        if (pendingDeepLink.current) {
+          handleDeepLink(pendingDeepLink.current);
+          pendingDeepLink.current = null;
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [appReady, handleDeepLink]);
 
   useEffect(() => {
     if (loaded && appReady) {
