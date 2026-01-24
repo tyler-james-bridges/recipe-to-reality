@@ -4,11 +4,19 @@ import { mealPlans } from '../db/schema';
 import { eq, gte, lte, and } from 'drizzle-orm';
 import { MealPlan, MealType } from '../types';
 import * as crypto from 'expo-crypto';
+import {
+  scheduleReminder,
+  cancelReminder,
+  formatMealReminderBody,
+  requestPermissions,
+  checkPermissions,
+} from '../services/notifications';
 
 interface MealPlanState {
   mealPlans: MealPlan[];
   isLoading: boolean;
   error: string | null;
+  notificationPermissionGranted: boolean | null;
 
   // Actions
   loadMealPlans: () => Promise<void>;
@@ -18,12 +26,55 @@ interface MealPlanState {
   deleteMealPlan: (id: string) => Promise<void>;
   toggleCompleted: (id: string) => Promise<void>;
   getMealsForDate: (date: Date) => MealPlan[];
+  requestNotificationPermissions: () => Promise<boolean>;
+  checkNotificationPermissions: () => Promise<boolean>;
+}
+
+/**
+ * Helper function to schedule or cancel notification for a meal plan.
+ */
+async function handleMealPlanNotification(
+  mealPlan: MealPlan & { id: string },
+  shouldSchedule: boolean
+): Promise<void> {
+  if (shouldSchedule && mealPlan.reminder && mealPlan.reminderTime) {
+    const reminderDate = new Date(mealPlan.reminderTime);
+    const recipeName = mealPlan.recipeName || 'your meal';
+
+    await scheduleReminder({
+      id: mealPlan.id,
+      title: mealPlan.mealType + ' Reminder',
+      body: formatMealReminderBody(recipeName, mealPlan.mealType),
+      triggerTime: reminderDate,
+      data: {
+        mealPlanId: mealPlan.id,
+        recipeId: mealPlan.recipeId,
+        mealType: mealPlan.mealType,
+      },
+    });
+  } else {
+    // Cancel any existing notification
+    await cancelReminder(mealPlan.id);
+  }
 }
 
 export const useMealPlanStore = create<MealPlanState>((set, get) => ({
   mealPlans: [],
   isLoading: false,
   error: null,
+  notificationPermissionGranted: null,
+
+  requestNotificationPermissions: async () => {
+    const granted = await requestPermissions();
+    set({ notificationPermissionGranted: granted });
+    return granted;
+  },
+
+  checkNotificationPermissions: async () => {
+    const granted = await checkPermissions();
+    set({ notificationPermissionGranted: granted });
+    return granted;
+  },
 
   loadMealPlans: async () => {
     set({ isLoading: true, error: null });
@@ -77,6 +128,15 @@ export const useMealPlanStore = create<MealPlanState>((set, get) => ({
         reminderTime: mealPlanData.reminderTime,
       });
 
+      // Schedule notification if reminder is enabled
+      const newMealPlan: MealPlan = {
+        id,
+        ...mealPlanData,
+        isCompleted: mealPlanData.isCompleted || false,
+        reminder: mealPlanData.reminder || false,
+      };
+      await handleMealPlanNotification(newMealPlan, mealPlanData.reminder || false);
+
       await get().loadMealPlans();
       return id;
     } catch (error) {
@@ -102,6 +162,26 @@ export const useMealPlanStore = create<MealPlanState>((set, get) => ({
         await db.update(mealPlans).set(updateValues).where(eq(mealPlans.id, id));
       }
 
+      // Handle notification updates
+      const existingPlan = get().mealPlans.find((mp) => mp.id === id);
+      if (existingPlan) {
+        const updatedPlan: MealPlan = {
+          ...existingPlan,
+          ...updates,
+        };
+
+        // Reschedule or cancel notification based on reminder settings
+        const reminderChanged =
+          updates.reminder !== undefined ||
+          updates.reminderTime !== undefined ||
+          updates.recipeName !== undefined ||
+          updates.mealType !== undefined;
+
+        if (reminderChanged) {
+          await handleMealPlanNotification(updatedPlan, updatedPlan.reminder);
+        }
+      }
+
       await get().loadMealPlans();
     } catch (error) {
       set({ error: (error as Error).message });
@@ -111,6 +191,9 @@ export const useMealPlanStore = create<MealPlanState>((set, get) => ({
 
   deleteMealPlan: async (id) => {
     try {
+      // Cancel any scheduled notification before deleting
+      await cancelReminder(id);
+
       await db.delete(mealPlans).where(eq(mealPlans.id, id));
       set({ mealPlans: get().mealPlans.filter((mp) => mp.id !== id) });
     } catch (error) {
@@ -122,7 +205,12 @@ export const useMealPlanStore = create<MealPlanState>((set, get) => ({
   toggleCompleted: async (id) => {
     const mealPlan = get().mealPlans.find((mp) => mp.id === id);
     if (mealPlan) {
-      await get().updateMealPlan(id, { isCompleted: !mealPlan.isCompleted });
+      // When marking as completed, also cancel the reminder
+      const isCompleting = !mealPlan.isCompleted;
+      if (isCompleting && mealPlan.reminder) {
+        await cancelReminder(id);
+      }
+      await get().updateMealPlan(id, { isCompleted: isCompleting });
     }
   },
 

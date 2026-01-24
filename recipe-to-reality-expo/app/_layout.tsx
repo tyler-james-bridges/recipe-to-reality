@@ -14,6 +14,10 @@ import { useColorScheme } from '@/components/useColorScheme';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 import { usePurchaseStore } from '@/src/stores/purchaseStore';
 import { setupNetworkListener } from '@/src/hooks/useNetwork';
+import {
+  setupNotificationResponseListener,
+  registerForPushNotificationsAsync,
+} from '@/src/services/notifications';
 import Colors from '@/constants/Colors';
 
 export {
@@ -120,6 +124,8 @@ export default function RootLayout() {
       try {
         await initializeApp();
         await initializePurchases();
+        // Register for push notifications (sets up Android channel)
+        await registerForPushNotificationsAsync();
         setAppReady(true);
       } catch (err) {
         console.error('Failed to initialize app:', err);
@@ -169,6 +175,11 @@ export default function RootLayout() {
     }
   }, [appReady, handleDeepLink]);
 
+  // Set up notification response listener
+  useEffect(() => {
+    const cleanup = setupNotificationResponseListener();
+    return cleanup;
+  }, []);
   useEffect(() => {
     if (loaded && appReady) {
       SplashScreen.hideAsync();
