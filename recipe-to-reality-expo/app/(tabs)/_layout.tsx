@@ -1,9 +1,32 @@
 import React from 'react';
+import { Platform, useColorScheme } from 'react-native';
 import { Tabs } from 'expo-router';
-import { Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { SymbolView } from 'expo-symbols';
 import Colors from '@/constants/Colors';
-import { useColorScheme } from 'react-native';
+
+type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
+
+interface TabBarIconProps {
+  focused: boolean;
+  color: string;
+  size: number;
+  ionIcon: IoniconsName;
+  sfSymbol: string;
+}
+
+function TabBarIcon({ focused, color, size, ionIcon, sfSymbol }: TabBarIconProps) {
+  if (Platform.OS === 'ios') {
+    return (
+      <SymbolView
+        name={sfSymbol as any}
+        size={size}
+        tintColor={color}
+      />
+    );
+  }
+  return <Ionicons name={ionIcon} size={size} color={color} />;
+}
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -12,10 +35,10 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.tint,
+        tabBarActiveTintColor: colors.tabIconSelected,
         tabBarInactiveTintColor: colors.tabIconDefault,
         tabBarStyle: {
-          backgroundColor: colors.card,
+          backgroundColor: colorScheme === 'dark' ? colors.card : '#FFFFFF',
           borderTopColor: colors.border,
           borderTopWidth: 0.5,
           paddingBottom: Platform.OS === 'ios' ? 0 : 8,
@@ -33,8 +56,14 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Recipes',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="book" size={size} color={color} />
+          tabBarIcon: ({ focused, color, size }) => (
+            <TabBarIcon
+              focused={focused}
+              color={color}
+              size={size}
+              ionIcon="book"
+              sfSymbol="book.fill"
+            />
           ),
         }}
       />
@@ -42,8 +71,14 @@ export default function TabLayout() {
         name="pantry"
         options={{
           title: 'Pantry',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="cube" size={size} color={color} />
+          tabBarIcon: ({ focused, color, size }) => (
+            <TabBarIcon
+              focused={focused}
+              color={color}
+              size={size}
+              ionIcon="snow"
+              sfSymbol="refrigerator.fill"
+            />
           ),
         }}
       />
@@ -51,8 +86,14 @@ export default function TabLayout() {
         name="meal-plan"
         options={{
           title: 'Meal Plan',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar" size={size} color={color} />
+          tabBarIcon: ({ focused, color, size }) => (
+            <TabBarIcon
+              focused={focused}
+              color={color}
+              size={size}
+              ionIcon="calendar"
+              sfSymbol="calendar"
+            />
           ),
         }}
       />
@@ -60,8 +101,14 @@ export default function TabLayout() {
         name="grocery"
         options={{
           title: 'Grocery',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="cart" size={size} color={color} />
+          tabBarIcon: ({ focused, color, size }) => (
+            <TabBarIcon
+              focused={focused}
+              color={color}
+              size={size}
+              ionIcon="cart"
+              sfSymbol="cart.fill"
+            />
           ),
         }}
       />
@@ -69,8 +116,14 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: 'Settings',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings" size={size} color={color} />
+          tabBarIcon: ({ focused, color, size }) => (
+            <TabBarIcon
+              focused={focused}
+              color={color}
+              size={size}
+              ionIcon="settings"
+              sfSymbol="gearshape.fill"
+            />
           ),
         }}
       />
