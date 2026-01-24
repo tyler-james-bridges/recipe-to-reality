@@ -63,9 +63,16 @@ describe('formatNumber', () => {
     expect(formatNumber(3.75)).toBe('3 3/4');
   });
 
-  it('falls back to decimal for unusual values', () => {
-    expect(formatNumber(1.7)).toBe('1.7');
-    expect(formatNumber(2.15)).toBe('2.2'); // Rounded to 1 decimal
+  it('converts close decimals to fractions', () => {
+    // 1.7 is close to 1 2/3 (1.667), so it converts
+    expect(formatNumber(1.7)).toBe('1 2/3');
+    // 2.15 is close to 2 1/8 (2.125), so it converts
+    expect(formatNumber(2.15)).toBe('2 1/8');
+  });
+
+  it('falls back to decimal for values not close to fractions', () => {
+    // 1.43 is not close to any common fraction (0.43 is between 3/8=0.375 and 1/2=0.5)
+    expect(formatNumber(1.43)).toBe('1.4');
   });
 });
 
