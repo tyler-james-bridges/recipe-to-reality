@@ -2,46 +2,69 @@
 
 ## Project Overview
 
-iOS app that extracts recipes from URLs and videos, organizing them into a cooking queue with smart grocery list generation.
+Mobile app (iOS/Android) that extracts recipes from URLs and videos, organizing them into a cooking queue with smart grocery list generation.
 
 ## Tech Stack
 
-- **SwiftUI** (iOS 17+)
-- **SwiftData** for persistence
+- **Expo** (SDK 52) with Expo Router
+- **React Native** with TypeScript
+- **Zustand** for state management
 - **RevenueCat** for subscriptions
-- **OpenAI API** for recipe extraction
+- **OpenAI/Anthropic/Google AI** for recipe extraction
 
 ## Key Files
 
-- `RecipeExtractionService.swift` - AI-powered recipe extraction
-- `PurchaseManager.swift` - RevenueCat integration
-- `GroceryList.swift` - Smart list consolidation logic
+- `src/services/extraction/recipeExtraction.ts` - AI-powered recipe extraction
+- `src/services/video/videoTranscript.ts` - Video transcript extraction (YouTube, TikTok, Instagram)
+- `src/stores/` - Zustand stores for recipes, pantry, meal plans, purchases
+- `src/utils/quantity.ts` - Quantity parsing and combination logic
 
-## Build Commands
+## Commands
 
 ```bash
-# Open in Xcode
-open RecipeToReality.xcodeproj
+# Install dependencies
+npm install
 
-# Build from command line
-xcodebuild -project RecipeToReality.xcodeproj -scheme RecipeToReality -destination 'platform=iOS Simulator,name=iPhone 15' build
+# Start development
+npx expo start
+
+# Run on iOS simulator
+npx expo run:ios
+
+# Run on Android emulator
+npx expo run:android
+
+# Run tests
+npm test
+
+# Build for testing (EAS)
+eas build --platform android --profile preview
+eas build --platform ios --profile preview
+
+# Build for production
+eas build --platform all --profile production
 ```
 
 ## Architecture
 
-- **Models**: SwiftData @Model classes for Recipe, Ingredient, GroceryList
-- **Views**: SwiftUI views following MVVM-lite pattern
-- **Services**: Actor-based services for thread-safe API calls
+- **app/** - Expo Router screens and layouts
+- **components/** - Reusable UI components
+- **src/stores/** - Zustand state management
+- **src/services/** - API and business logic
+- **src/utils/** - Helper functions
+- **src/types/** - TypeScript interfaces
 
 ## Important Notes
 
-- API key stored in iOS Keychain (never commit keys)
-- Share Extension requires App Group for data sharing
-- Free tier limits tracked in UserDefaults
+- API keys stored in expo-secure-store (never commit keys)
 - RevenueCat entitlement ID: `premium`
+- Free tier limits tracked in settings store
+- Deep linking: `recipetoreality://add-recipe?url=...`
 
 ## Testing
 
-- Use Xcode Previews for UI iteration
-- Sandbox tester for IAP testing
-- Recipe extraction requires valid OpenAI key
+```bash
+npm test              # Run tests
+npm run test:watch    # Watch mode
+npm run test:coverage # With coverage
+```
