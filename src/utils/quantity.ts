@@ -19,6 +19,8 @@ export function parseNumber(str: string): number | null {
       if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
         return numerator / denominator;
       }
+      // Invalid fraction (e.g., division by zero)
+      return null;
     }
   }
 
