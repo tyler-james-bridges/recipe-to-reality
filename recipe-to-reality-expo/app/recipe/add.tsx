@@ -177,7 +177,7 @@ export default function AddRecipeScreen() {
         options={{
           title: 'Add Recipe',
           headerLeft: () => (
-            <Pressable onPress={() => router.back()}>
+            <Pressable onPress={() => router.back()} style={styles.headerButton}>
               <ThemedText style={[styles.headerButtonText, { color: colors.tint }]}>
                 Cancel
               </ThemedText>
@@ -185,7 +185,7 @@ export default function AddRecipeScreen() {
           ),
           headerRight: () =>
             mode === 'manual' ? (
-              <Pressable onPress={handleSaveManual}>
+              <Pressable onPress={handleSaveManual} style={styles.headerButton}>
                 <ThemedText style={[styles.headerButtonText, styles.headerButtonBold, { color: colors.tint }]}>
                   Save
                 </ThemedText>
@@ -397,6 +397,10 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.lg,
     paddingBottom: 40,
+  },
+  headerButton: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
   },
   headerButtonText: {
     fontSize: 17,

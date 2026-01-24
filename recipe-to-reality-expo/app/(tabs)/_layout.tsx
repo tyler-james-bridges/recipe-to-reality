@@ -40,6 +40,14 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: colorScheme === 'dark' ? colors.card : '#FFFFFF',
           borderTopColor: colors.border,
+          borderTopWidth: 0.5,
+          paddingBottom: Platform.OS === 'ios' ? 0 : 8,
+          paddingTop: 8,
+          height: Platform.OS === 'ios' ? 88 : 64,
+        },
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: '500',
         },
         headerShown: false,
       }}
