@@ -59,6 +59,7 @@ export default function EditPantryItemScreen() {
   });
   const [notes, setNotes] = useState('');
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -409,24 +410,55 @@ export default function EditPantryItemScreen() {
                     layout={Layout.springify()}
                   >
                     <View style={[styles.divider, { backgroundColor: colors.borderSubtle }]} />
-                    <View style={styles.datePickerRow}>
+                    <AnimatedPressable
+                      onPress={() => {
+                        triggerHaptic('selection');
+                        setShowDatePicker(true);
+                      }}
+                      hapticType="none"
+                      style={styles.datePickerRow}
+                    >
                       <ThemedText style={[styles.inputLabel, { color: colors.textTertiary }]}>
                         Expires
                       </ThemedText>
+                      {Platform.OS === 'ios' ? (
+                        <DateTimePicker
+                          value={expirationDate}
+                          mode="date"
+                          display="default"
+                          onChange={(event, date) => {
+                            if (date) {
+                              triggerHaptic('selection');
+                              setExpirationDate(date);
+                            }
+                          }}
+                          minimumDate={new Date()}
+                          accentColor={colors.tint}
+                        />
+                      ) : (
+                        <View style={styles.dateDisplay}>
+                          <ThemedText style={[styles.dateText, { color: colors.text }]}>
+                            {expirationDate.toLocaleDateString()}
+                          </ThemedText>
+                          <Icon name="calendar-outline" size={20} color={colors.tint} />
+                        </View>
+                      )}
+                    </AnimatedPressable>
+                    {Platform.OS === 'android' && showDatePicker && (
                       <DateTimePicker
                         value={expirationDate}
                         mode="date"
                         display="default"
                         onChange={(event, date) => {
-                          if (date) {
+                          setShowDatePicker(false);
+                          if (event.type === 'set' && date) {
                             triggerHaptic('selection');
                             setExpirationDate(date);
                           }
                         }}
                         minimumDate={new Date()}
-                        accentColor={colors.tint}
                       />
-                    </View>
+                    )}
                   </Animated.View>
                 )}
               </View>
@@ -590,6 +622,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
+    minHeight: 50,
+  },
+  dateDisplay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  dateText: {
+    ...typography.bodyLarge,
   },
   textArea: {
     minHeight: 80,
