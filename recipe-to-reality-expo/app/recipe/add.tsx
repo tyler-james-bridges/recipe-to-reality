@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   StyleSheet,
   ScrollView,
@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
   useColorScheme,
 } from 'react-native';
-import { router, Stack } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Icon } from '@/src/components/ui/Icon';
 import * as Haptics from 'expo-haptics';
 
@@ -25,6 +25,15 @@ import Colors, { spacing, radius } from '@/constants/Colors';
 type InputMode = 'url' | 'manual';
 
 export default function AddRecipeScreen() {
+  // Get deep link parameters if navigated from a deep link
+  const { deepLinkUrl, autoExtract } = useLocalSearchParams<{
+    deepLinkUrl?: string;
+    autoExtract?: string;
+  }>();
+
+  // Track if auto-extraction has been triggered to prevent multiple extractions
+  const hasAutoExtracted = useRef(false);
+
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const { addRecipe } = useRecipeStore();
@@ -32,7 +41,8 @@ export default function AddRecipeScreen() {
   const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
 
   const [mode, setMode] = useState<InputMode>('url');
-  const [url, setUrl] = useState('');
+  // Initialize URL state with deep link URL if provided
+  const [url, setUrl] = useState(deepLinkUrl || '');
   const [isExtracting, setIsExtracting] = useState(false);
 
   // Manual input fields
@@ -90,6 +100,18 @@ export default function AddRecipeScreen() {
       setIsExtracting(false);
     }
   };
+
+  // Auto-extract when navigated from deep link
+  useEffect(() => {
+    if (deepLinkUrl && autoExtract === 'true' && !hasAutoExtracted.current && !isExtracting) {
+      hasAutoExtracted.current = true;
+      // Small delay to ensure UI is ready
+      const timer = setTimeout(() => {
+        handleExtractFromURL();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [deepLinkUrl, autoExtract]);
 
   const saveExtractedRecipe = async (extracted: ExtractedRecipe) => {
     const ingredients: Ingredient[] = extracted.ingredients.map((ing, index) => ({
