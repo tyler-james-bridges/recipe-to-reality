@@ -1,11 +1,9 @@
 import { create } from 'zustand';
 import storage from '../utils/storage';
-import { AIProviderType } from '../types';
 import { initializeDatabase, sqliteDB } from '../db/client';
 
 const SETTINGS_KEYS = {
   HAPTIC_FEEDBACK: 'settings_haptic_feedback',
-  AI_PROVIDER: 'settings_ai_provider',
   NOTIFICATIONS_ENABLED: 'settings_notifications_enabled',
   REMINDER_TIME_HOUR: 'settings_reminder_time_hour',
   REMINDER_TIME_MINUTE: 'settings_reminder_time_minute',
@@ -14,7 +12,6 @@ const SETTINGS_KEYS = {
 
 interface SettingsState {
   hapticFeedback: boolean;
-  aiProvider: AIProviderType;
   notificationsEnabled: boolean;
   reminderTimeHour: number;
   reminderTimeMinute: number;
@@ -25,7 +22,6 @@ interface SettingsState {
   // Actions
   loadSettings: () => Promise<void>;
   setHapticFeedback: (enabled: boolean) => Promise<void>;
-  setAIProvider: (provider: AIProviderType) => Promise<void>;
   setNotificationsEnabled: (enabled: boolean) => Promise<void>;
   setReminderTime: (hour: number, minute: number) => Promise<void>;
   setHasCompletedOnboarding: (completed: boolean) => Promise<void>;
@@ -35,7 +31,6 @@ interface SettingsState {
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
   hapticFeedback: true,
-  aiProvider: 'openai',
   notificationsEnabled: true,
   reminderTimeHour: 18, // Default 6:00 PM
   reminderTimeMinute: 0,
@@ -45,9 +40,8 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
   loadSettings: async () => {
     try {
-      const [haptic, provider, notifications, reminderHour, reminderMinute, hasOnboarded] = await Promise.all([
+      const [haptic, notifications, reminderHour, reminderMinute, hasOnboarded] = await Promise.all([
         storage.getItemAsync(SETTINGS_KEYS.HAPTIC_FEEDBACK),
-        storage.getItemAsync(SETTINGS_KEYS.AI_PROVIDER),
         storage.getItemAsync(SETTINGS_KEYS.NOTIFICATIONS_ENABLED),
         storage.getItemAsync(SETTINGS_KEYS.REMINDER_TIME_HOUR),
         storage.getItemAsync(SETTINGS_KEYS.REMINDER_TIME_MINUTE),
@@ -56,7 +50,6 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
       set({
         hapticFeedback: haptic !== 'false',
-        aiProvider: (provider as AIProviderType) || 'openai',
         notificationsEnabled: notifications !== 'false',
         reminderTimeHour: reminderHour ? parseInt(reminderHour, 10) : 18,
         reminderTimeMinute: reminderMinute ? parseInt(reminderMinute, 10) : 0,
@@ -72,11 +65,6 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   setHapticFeedback: async (enabled) => {
     await storage.setItemAsync(SETTINGS_KEYS.HAPTIC_FEEDBACK, enabled.toString());
     set({ hapticFeedback: enabled });
-  },
-
-  setAIProvider: async (provider) => {
-    await storage.setItemAsync(SETTINGS_KEYS.AI_PROVIDER, provider);
-    set({ aiProvider: provider });
   },
 
   setNotificationsEnabled: async (enabled) => {
