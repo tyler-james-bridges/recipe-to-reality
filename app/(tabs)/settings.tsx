@@ -303,15 +303,8 @@ export default function SettingsScreen() {
           )}
         </SettingsSection>
 
-        {/* AI Configuration */}
-        <SettingsSection title="AI Provider" index={1}>
-          <SettingsRow
-            icon="flash"
-            iconColor="#5856D6"
-            title="AI Provider"
-            subtitle="Configure your AI extraction service"
-            onPress={() => router.push('/settings/ai-provider' as Href)}
-          />
+        {/* Video Configuration */}
+        <SettingsSection title="Video Platforms" index={1}>
           <SettingsRow
             icon="videocam"
             iconColor="#FF2D55"

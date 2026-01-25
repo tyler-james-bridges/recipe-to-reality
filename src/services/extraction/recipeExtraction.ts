@@ -3,9 +3,7 @@
  * Uses server-side API routes for extraction with retry logic and proper error handling
  */
 
-import { ExtractedRecipe, AIProviderType } from '../../types';
-import { useSettingsStore } from '../../stores/settingsStore';
-import { getAPIKey } from '../ai';
+import { ExtractedRecipe } from '../../types';
 import { extractVideoTranscript, isVideoURL, getVideoPlatform } from '../video/videoTranscript';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || '';
@@ -29,7 +27,6 @@ const REQUEST_TIMEOUT_MS = 30000;
  */
 export enum ExtractionErrorType {
   NETWORK = 'NETWORK',
-  API_KEY = 'API_KEY',
   RATE_LIMIT = 'RATE_LIMIT',
   TIMEOUT = 'TIMEOUT',
   SERVER = 'SERVER',
@@ -95,7 +92,7 @@ function categorizeError(error: unknown, statusCode?: number): ExtractionError {
     );
   }
 
-  // Check for API key errors
+  // Check for API key / server configuration errors
   if (
     statusCode === 401 ||
     statusCode === 403 ||
@@ -103,13 +100,14 @@ function categorizeError(error: unknown, statusCode?: number): ExtractionError {
     lowerMessage.includes('apikey') ||
     lowerMessage.includes('invalid key') ||
     lowerMessage.includes('unauthorized') ||
-    lowerMessage.includes('authentication')
+    lowerMessage.includes('authentication') ||
+    lowerMessage.includes('server configuration')
   ) {
     return new ExtractionError(
       errorMessage,
-      ExtractionErrorType.API_KEY,
-      'Invalid API key. Please check your API key in Settings.',
-      false
+      ExtractionErrorType.SERVER,
+      'Service temporarily unavailable. Please try again later.',
+      true
     );
   }
 
@@ -280,34 +278,20 @@ async function fetchWithRetry(
  */
 export async function extractRecipe(urlString: string): Promise<ExtractedRecipe> {
   const url = new URL(urlString);
-  const provider = useSettingsStore.getState().aiProvider;
-  const apiKey = await getAPIKey(provider);
-
-  if (!apiKey) {
-    throw new ExtractionError(
-      `No API key configured for ${provider}`,
-      ExtractionErrorType.API_KEY,
-      `No API key configured for ${provider}. Please add your API key in Settings.`,
-      false
-    );
-  }
 
   // Check if this is a video platform URL
   if (isVideoURL(url)) {
-    return extractFromVideo(url, { apiKey, provider });
+    return extractFromVideo(url);
   }
 
   // Standard webpage extraction via API route
-  return extractFromWebpage(url, { apiKey, provider });
+  return extractFromWebpage(url);
 }
 
 /**
  * Extract recipe from a video transcript via API route
  */
-async function extractFromVideo(
-  url: URL,
-  settings: { apiKey: string; provider: AIProviderType }
-): Promise<ExtractedRecipe> {
+async function extractFromVideo(url: URL): Promise<ExtractedRecipe> {
   const platform = getVideoPlatform(url);
 
   try {
@@ -324,8 +308,6 @@ async function extractFromVideo(
         },
         body: JSON.stringify({
           url: url.toString(),
-          provider: settings.provider,
-          apiKey: settings.apiKey,
           isTranscript: true,
           transcript,
         }),
@@ -338,22 +320,13 @@ async function extractFromVideo(
   } catch (error) {
     // For TikTok/Instagram, fall back to HTML scraping if transcript fails
     if (platform === 'tiktok' || platform === 'instagram') {
-      // Re-throw API key errors - user needs to configure
-      if (
-        error instanceof ExtractionError &&
-        error.type === ExtractionErrorType.API_KEY
-      ) {
-        throw error;
-      }
-
-      // Check for API key errors in the message
-      const errorMessage = error instanceof Error ? error.message : '';
-      if (errorMessage.includes('API key required')) {
+      // Re-throw ExtractionError as-is
+      if (error instanceof ExtractionError) {
         throw error;
       }
 
       // Try HTML fallback for other errors
-      return extractFromWebpage(url, settings);
+      return extractFromWebpage(url);
     }
 
     // Re-throw ExtractionError as-is
@@ -369,10 +342,7 @@ async function extractFromVideo(
 /**
  * Extract recipe from a webpage via API route
  */
-async function extractFromWebpage(
-  url: URL,
-  settings: { apiKey: string; provider: AIProviderType }
-): Promise<ExtractedRecipe> {
+async function extractFromWebpage(url: URL): Promise<ExtractedRecipe> {
   try {
     const response = await fetchWithRetry(
       `${API_BASE}/api/extract`,
@@ -383,8 +353,6 @@ async function extractFromWebpage(
         },
         body: JSON.stringify({
           url: url.toString(),
-          provider: settings.provider,
-          apiKey: settings.apiKey,
         }),
       },
       REQUEST_TIMEOUT_MS

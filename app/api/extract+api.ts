@@ -1,16 +1,11 @@
 /**
  * Recipe Extraction API Route
- * Server-side recipe extraction to:
- * - Hide API endpoints from client
- * - Enable server-side rate limiting
- * - Support server-managed API keys in the future
+ * Server-side recipe extraction using Claude API
  */
 
 // Types for the request/response
 interface ExtractRequest {
   url: string;
-  provider: 'openai' | 'anthropic' | 'google';
-  apiKey: string;
   isTranscript?: boolean;
   transcript?: string;
 }
@@ -80,12 +75,22 @@ Only return valid JSON, no other text.`;
 export async function POST(request: Request) {
   try {
     const body: ExtractRequest = await request.json();
-    const { url, provider, apiKey, isTranscript, transcript } = body;
+    const { url, isTranscript, transcript } = body;
 
-    if (!url || !provider || !apiKey) {
+    if (!url) {
       return Response.json(
-        { error: 'Missing required fields: url, provider, apiKey' },
+        { error: 'Missing required field: url' },
         { status: 400 }
+      );
+    }
+
+    // Use server-side Anthropic API key
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      console.error('ANTHROPIC_API_KEY environment variable not set');
+      return Response.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
       );
     }
 
@@ -100,21 +105,7 @@ export async function POST(request: Request) {
       systemPrompt = SYSTEM_PROMPT;
     }
 
-    let result: string;
-    switch (provider) {
-      case 'openai':
-        result = await callOpenAI(apiKey, systemPrompt, content);
-        break;
-      case 'anthropic':
-        result = await callAnthropic(apiKey, systemPrompt, content);
-        break;
-      case 'google':
-        result = await callGoogle(apiKey, systemPrompt, content);
-        break;
-      default:
-        return Response.json({ error: 'Unknown provider' }, { status: 400 });
-    }
-
+    const result = await callAnthropic(apiKey, systemPrompt, content);
     const recipe = parseRecipeJSON(result, url);
     return Response.json(recipe);
   } catch (error) {
@@ -150,32 +141,6 @@ function stripHTML(html: string): string {
   return result.trim();
 }
 
-async function callOpenAI(apiKey: string, systemPrompt: string, content: string): Promise<string> {
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: `Extract the recipe from this content:\n\n${content}` },
-      ],
-      temperature: 0.1,
-      response_format: { type: 'json_object' },
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    if (response.status === 401) throw new Error('Invalid API key');
-    if (response.status === 429) throw new Error('Rate limited. Try again later.');
-    throw new Error(error.error?.message || `HTTP ${response.status}`);
-  }
-
-  const data = await response.json();
-  return data.choices?.[0]?.message?.content || '';
-}
-
 async function callAnthropic(apiKey: string, systemPrompt: string, content: string): Promise<string> {
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -198,28 +163,6 @@ async function callAnthropic(apiKey: string, systemPrompt: string, content: stri
   const data = await response.json();
   const textBlock = data.content?.find((block: Record<string, unknown>) => block.type === 'text');
   return textBlock?.text || '';
-}
-
-async function callGoogle(apiKey: string, systemPrompt: string, content: string): Promise<string> {
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: `${systemPrompt}\n\nExtract the recipe from this content:\n\n${content}` }] }],
-      generationConfig: { temperature: 0.1, responseMimeType: 'application/json' },
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    if (response.status === 401) throw new Error('Invalid API key');
-    if (response.status === 429) throw new Error('Rate limited. Try again later.');
-    throw new Error(error.error?.message || `HTTP ${response.status}`);
-  }
-
-  const data = await response.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 }
 
 function parseRecipeJSON(jsonString: string, urlString: string): ExtractedRecipe {

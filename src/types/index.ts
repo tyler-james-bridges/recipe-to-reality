@@ -112,14 +112,6 @@ export interface GroceryListWithItems extends GroceryList {
   items: GroceryItem[];
 }
 
-// AI Provider types
-export type AIProviderType = 'openai' | 'anthropic' | 'google';
-
-export interface AIProviderConfig {
-  type: AIProviderType;
-  apiKey: string;
-}
-
 // Video platform types
 export type VideoPlatform = 'youtube' | 'tiktok' | 'instagram' | 'unknown';
 
