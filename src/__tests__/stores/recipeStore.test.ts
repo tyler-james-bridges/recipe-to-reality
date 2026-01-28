@@ -186,11 +186,11 @@ describe('recipeStore', () => {
         servings: mockRecipe.servings,
         prepTime: mockRecipe.prepTime,
         cookTime: mockRecipe.cookTime,
-        instructions: ['Step 1', 'Step 2'],
+        instructions: JSON.stringify(['Step 1', 'Step 2']),
         notes: mockRecipe.notes,
         isInQueue: false,
         dateCooked: null,
-        ingredients: mockRecipe.ingredients.map(({ id, recipeId, ...rest }) => rest),
+        ingredients: mockRecipe.ingredients,
       }
 
       const recipeId = await useRecipeStore.getState().addRecipe(recipeData)
@@ -223,6 +223,8 @@ describe('recipeStore', () => {
         cookTime: null,
         instructions: JSON.stringify(['Step 1']),
         notes: null,
+        isInQueue: false,
+        dateCooked: null,
         ingredients: [],
       }
 
@@ -247,8 +249,10 @@ describe('recipeStore', () => {
         servings: null,
         prepTime: null,
         cookTime: null,
-        instructions: [],
+        instructions: '[]',
         notes: null,
+        isInQueue: false,
+        dateCooked: null,
         ingredients: [],
       }
 
