@@ -7,129 +7,103 @@ Built for the [RevenueCat Shipyard 2026 Hackathon](https://revenuecat-shipyard-2
 ## Features
 
 - **Save recipes from anywhere** - Paste URLs from food blogs, YouTube, TikTok, Instagram
-- **AI-powered extraction** - Automatically extracts ingredients and instructions using GPT-4
+- **AI-powered extraction** - Automatically extracts ingredients and instructions using OpenAI, Claude, or Gemini
+- **Video transcript support** - Extract recipes from YouTube (free) or TikTok/Instagram (via Supadata API)
 - **Smart grocery lists** - Generate consolidated shopping lists from multiple recipes
-- **Cooking queue** - Mark recipes you want to make this week
+- **Meal planning** - Schedule recipes with push notification reminders
+- **Pantry tracking** - Track what you have on hand to auto-exclude from grocery lists
 - **Serving adjustments** - Scale ingredients up or down
-- **Share Extension** - Save recipes directly from Safari or social apps
+- **Deep linking** - Share URLs directly to the app via `recipetoreality://add-recipe?url=...`
+- **Cross-platform** - Available for iOS and Android
 
 ## Tech Stack
 
-- **SwiftUI** - Modern declarative UI framework
-- **SwiftData** - Apple's new persistence framework
-- **RevenueCat** - Subscription management and in-app purchases
-- **OpenAI API** - Recipe extraction from webpage content
+- **Expo SDK 54** - React Native framework with Expo Router
+- **TypeScript** - Type-safe development
+- **Zustand** - State management
+- **Expo SQLite + Drizzle ORM** - Local persistence
+- **RevenueCat** - Subscription management
+- **OpenAI / Anthropic / Google AI** - Recipe extraction
 
 ## Requirements
 
-- Xcode 15.0+
-- iOS 17.0+
-- Apple Developer Account (for TestFlight)
-- OpenAI API Key
-- RevenueCat Account
+- Node.js 18+
+- Expo CLI
+- iOS Simulator or Android Emulator (or physical device)
+- EAS CLI (for builds)
 
 ## Setup
 
-### 1. Clone and Open Project
+### 1. Clone and Install
 
 ```bash
+git clone https://github.com/tyler-james-bridges/recipe-to-reality.git
 cd recipe-to-reality
-open RecipeToReality.xcodeproj
+npm install
 ```
 
-### 2. Configure Signing
+### 2. Environment Variables
 
-1. Open the project in Xcode
-2. Select the `RecipeToReality` target
-3. Go to "Signing & Capabilities"
-4. Select your Development Team
-5. Update the Bundle Identifier to something unique (e.g., `com.yourname.RecipeToReality`)
+Copy the example environment file:
 
-### 3. Set Up RevenueCat
+```bash
+cp .env.example .env
+```
 
-The app uses RevenueCat SDK with **PaywallView** (pre-built paywall UI) and **CustomerCenter** (subscription management).
+Configure the required API keys in `.env`:
+- `CLAUDE_API_KEY` - For AI recipe extraction (server-side)
 
-**SDK Installation:**
-- SPM Package: `https://github.com/RevenueCat/purchases-ios-spm.git`
-- Products: `RevenueCat` + `RevenueCatUI`
+### 3. Start Development
 
-**Dashboard Setup:**
+```bash
+npx expo start
+```
 
-1. Create an account at [RevenueCat](https://www.revenuecat.com/)
-2. Create a new project and iOS app
-3. The API key is already configured in `PurchaseManager.swift`:
-   ```swift
-   static let revenueCatAPIKey = "test_LotNVyIpuyniwsEkDEsqOxwybyw"
-   ```
+Press `i` for iOS simulator, `a` for Android emulator, or scan the QR code with Expo Go.
 
-4. In App Store Connect, create subscription products:
-   - `recipe_to_reality_monthly` - Monthly subscription ($4.99)
-   - `recipe_to_reality_yearly` - Annual subscription ($29.99)
+### 4. Build for Testing
 
-5. In RevenueCat Dashboard:
-   - Create `premium` entitlement
-   - Link products to entitlement
-   - Create `default` offering with packages
-   - **Configure a Paywall** for the offering (the app uses `PaywallView`)
-   - **Enable Customer Center** for subscription management
+```bash
+# Install EAS CLI
+npm install -g eas-cli
 
-See `docs/REVENUECAT_SETUP.md` for detailed configuration instructions.
-
-### 4. Set Up App Groups (for Share Extension)
-
-1. In Xcode, select the main app target
-2. Go to "Signing & Capabilities"
-3. Add "App Groups" capability
-4. Add group: `group.com.yourcompany.RecipeToReality`
-5. Repeat for the Share Extension target
-6. Update `SharedURLManager.swift` and `ShareViewController.swift` with your group ID
-
-### 5. Build and Run
-
-1. Select a simulator or connected device
-2. Build and run (Cmd + R)
-
-## OpenAI API Key Setup
-
-The app requires an OpenAI API key for recipe extraction:
-
-1. Get an API key from [platform.openai.com](https://platform.openai.com/api-keys)
-2. In the app, go to Settings → OpenAI API Key
-3. Enter your API key (stored securely in iOS Keychain)
-
-**Note:** For production, consider:
-- Using a backend proxy to hide the API key
-- Implementing rate limiting
-- Using a cheaper model for initial parsing
+# Build for internal testing
+eas build --platform ios --profile preview
+eas build --platform android --profile preview
+```
 
 ## Project Structure
 
 ```
-RecipeToReality/
-├── RecipeToRealityApp.swift    # App entry point
-├── ContentView.swift           # Main tab view
-├── Models/
-│   ├── Recipe.swift            # Recipe and Ingredient models
-│   └── GroceryList.swift       # Grocery list models
-├── Views/
-│   ├── RecipeListView.swift    # Recipe list and search
-│   ├── AddRecipeView.swift     # Add/extract recipe
-│   ├── RecipeDetailView.swift  # Recipe detail with scaling
-│   ├── GroceryListView.swift   # Shopping list view
-│   └── SettingsView.swift      # Settings and paywall
-├── Services/
-│   ├── RecipeExtractionService.swift  # OpenAI integration
-│   ├── APIKeyManager.swift            # Keychain storage
-│   ├── PurchaseManager.swift          # RevenueCat integration
-│   └── SharedURLManager.swift         # Share extension handler
-└── Assets.xcassets/
-
-ShareExtension/
-├── ShareViewController.swift   # Share extension UI
-└── Info.plist
+recipe-to-reality/
+├── app/                    # Expo Router screens and layouts
+│   ├── (tabs)/            # Tab-based navigation screens
+│   ├── recipe/            # Recipe detail screens
+│   └── _layout.tsx        # Root layout
+├── components/            # Reusable UI components
+├── src/
+│   ├── services/          # API and business logic
+│   │   ├── extraction/    # AI recipe extraction
+│   │   └── video/         # Video transcript extraction
+│   ├── stores/            # Zustand state management
+│   ├── types/             # TypeScript interfaces
+│   └── utils/             # Helper functions
+├── assets/                # Images and fonts
+├── app.json              # Expo configuration
+└── eas.json              # EAS Build configuration
 ```
 
-## Monetization Strategy
+## API Key Setup
+
+The app supports multiple AI providers for recipe extraction. Configure your preferred provider in the app's Settings screen:
+
+- **OpenAI** - Get key from [platform.openai.com](https://platform.openai.com/api-keys)
+- **Anthropic (Claude)** - Get key from [console.anthropic.com](https://console.anthropic.com/)
+- **Google (Gemini)** - Get key from [aistudio.google.com](https://aistudio.google.com/)
+
+For video transcripts from TikTok/Instagram, configure a Supadata API key in Settings > Video Platforms.
+
+## Monetization
 
 **Free Tier:**
 - 5 recipe extractions
@@ -139,42 +113,34 @@ ShareExtension/
 **Premium ($4.99/month or $29.99/year):**
 - Unlimited recipe extractions
 - Unlimited saved recipes
-- Smart list consolidation (combines duplicate ingredients)
+- Smart list consolidation
 - Serving adjustments
-- Cloud sync (future)
-
-## Roadmap
-
-### MVP (Hackathon)
-- [x] Recipe URL extraction
-- [x] Ingredient parsing
-- [x] Grocery list generation
-- [x] RevenueCat integration
-- [x] Share Extension
-
-### Post-Hackathon
-- [ ] Video transcript extraction (YouTube, TikTok)
-- [ ] Cookbook OCR scanning
-- [ ] Pantry tracking
-- [ ] Meal planning calendar
-- [ ] Recipe recommendations
-- [ ] Social sharing
-- [ ] Cloud sync
+- Meal plan notifications
 
 ## Testing
 
-### TestFlight Deployment
+```bash
+# Run tests
+npm test
 
-1. Archive the app (Product → Archive)
-2. Upload to App Store Connect
-3. Add external testers
-4. Share TestFlight link
+# Watch mode
+npm run test:watch
 
-### RevenueCat Testing
+# With coverage
+npm run test:coverage
+```
 
-1. Create a Sandbox tester in App Store Connect
-2. Use sandbox tester account on device
-3. Subscriptions renew quickly in sandbox (monthly = 5 min)
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `npx expo start` | Start development server |
+| `npx expo run:ios` | Run on iOS simulator |
+| `npx expo run:android` | Run on Android emulator |
+| `npm test` | Run tests |
+| `eas build --platform ios --profile preview` | Build iOS for testing |
+| `eas build --platform android --profile preview` | Build Android for testing |
+| `eas build --platform all --profile production` | Production build |
 
 ## License
 
