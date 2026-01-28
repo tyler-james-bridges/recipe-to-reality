@@ -1,186 +1,183 @@
-import React, { useCallback, useState, useMemo } from 'react';
-import { StyleSheet, FlatList, View, ScrollView, useColorScheme, Dimensions } from 'react-native';
-import { router, Stack } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Icon } from '@/src/components/ui/Icon';
-import { useFocusEffect } from '@react-navigation/native';
-import * as Haptics from 'expo-haptics';
-import Animated, {
-  FadeIn,
-  FadeInDown,
-} from 'react-native-reanimated';
+import React, { useCallback, useState, useMemo } from 'react'
+import { StyleSheet, FlatList, View, ScrollView, useColorScheme, Dimensions } from 'react-native'
+import { router, Stack } from 'expo-router'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Icon } from '@/src/components/ui/Icon'
+import { useFocusEffect } from '@react-navigation/native'
+import * as Haptics from 'expo-haptics'
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated'
 
-import { ThemedView, ThemedText } from '@/components/Themed';
-import { useMealPlanStore } from '@/src/stores/mealPlanStore';
-import { useSettingsStore } from '@/src/stores/settingsStore';
-import { MealPlan, MealType } from '@/src/types';
-import MealPlanCard from '@/src/components/MealPlanCard';
-import EmptyState from '@/src/components/EmptyState';
-import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
-import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors';
+import { ThemedView, ThemedText } from '@/components/Themed'
+import { useMealPlanStore } from '@/src/stores/mealPlanStore'
+import { useSettingsStore } from '@/src/stores/settingsStore'
+import { MealPlan, MealType } from '@/src/types'
+import MealPlanCard from '@/src/components/MealPlanCard'
+import EmptyState from '@/src/components/EmptyState'
+import AnimatedPressable from '@/src/components/ui/AnimatedPressable'
+import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors'
 
-const MEAL_ORDER: MealType[] = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
-const WEEKDAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-const SCREEN_WIDTH = Dimensions.get('window').width;
+const MEAL_ORDER: MealType[] = ['Breakfast', 'Lunch', 'Dinner', 'Snack']
+const WEEKDAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+const SCREEN_WIDTH = Dimensions.get('window').width
 
-type ViewMode = 'week' | 'month';
+type ViewMode = 'week' | 'month'
 
 export default function MealPlanScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const insets = useSafeAreaInsets();
-  const { mealPlans, loadMealPlans, deleteMealPlan, toggleCompleted } = useMealPlanStore();
-  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<ViewMode>('week');
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const insets = useSafeAreaInsets()
+  const { mealPlans, loadMealPlans, deleteMealPlan, toggleCompleted } = useMealPlanStore()
+  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback)
+  const [selectedDate, setSelectedDate] = useState(new Date())
+  const [viewMode, setViewMode] = useState<ViewMode>('week')
 
   useFocusEffect(
     useCallback(() => {
-      loadMealPlans();
+      loadMealPlans()
     }, [loadMealPlans])
-  );
+  )
 
   const triggerHaptic = (type: 'selection' | 'success' | 'light') => {
-    if (!hapticFeedback) return;
+    if (!hapticFeedback) return
     if (type === 'selection') {
-      Haptics.selectionAsync();
+      Haptics.selectionAsync()
     } else if (type === 'success') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
     } else {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     }
-  };
+  }
 
   const getWeekDates = (date: Date): Date[] => {
-    const startOfWeek = new Date(date);
-    const day = startOfWeek.getDay();
-    startOfWeek.setDate(startOfWeek.getDate() - day);
+    const startOfWeek = new Date(date)
+    const day = startOfWeek.getDay()
+    startOfWeek.setDate(startOfWeek.getDate() - day)
 
-    const dates: Date[] = [];
+    const dates: Date[] = []
     for (let i = 0; i < 7; i++) {
-      const d = new Date(startOfWeek);
-      d.setDate(d.getDate() + i);
-      dates.push(d);
+      const d = new Date(startOfWeek)
+      d.setDate(d.getDate() + i)
+      dates.push(d)
     }
-    return dates;
-  };
+    return dates
+  }
 
-  const weekDates = getWeekDates(selectedDate);
+  const weekDates = getWeekDates(selectedDate)
 
-  const getMealsForDate = useCallback((date: Date): MealPlan[] => {
-    const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
+  const getMealsForDate = useCallback(
+    (date: Date): MealPlan[] => {
+      const startOfDay = new Date(date)
+      startOfDay.setHours(0, 0, 0, 0)
+      const endOfDay = new Date(date)
+      endOfDay.setHours(23, 59, 59, 999)
 
-    return mealPlans.filter((mp) => {
-      const mpDate = new Date(mp.date);
-      return mpDate >= startOfDay && mpDate <= endOfDay;
-    });
-  }, [mealPlans]);
+      return mealPlans.filter((mp) => {
+        const mpDate = new Date(mp.date)
+        return mpDate >= startOfDay && mpDate <= endOfDay
+      })
+    },
+    [mealPlans]
+  )
 
   const isToday = (date: Date): boolean => {
-    const today = new Date();
+    const today = new Date()
     return (
       date.getDate() === today.getDate() &&
       date.getMonth() === today.getMonth() &&
       date.getFullYear() === today.getFullYear()
-    );
-  };
+    )
+  }
 
   const isSameDay = (d1: Date, d2: Date): boolean => {
     return (
       d1.getDate() === d2.getDate() &&
       d1.getMonth() === d2.getMonth() &&
       d1.getFullYear() === d2.getFullYear()
-    );
-  };
+    )
+  }
 
   const isSameMonth = (d1: Date, d2: Date): boolean => {
-    return (
-      d1.getMonth() === d2.getMonth() &&
-      d1.getFullYear() === d2.getFullYear()
-    );
-  };
+    return d1.getMonth() === d2.getMonth() && d1.getFullYear() === d2.getFullYear()
+  }
 
   const navigateWeek = (direction: number) => {
-    triggerHaptic('selection');
-    const newDate = new Date(selectedDate);
-    newDate.setDate(newDate.getDate() + direction * 7);
-    setSelectedDate(newDate);
-  };
+    triggerHaptic('selection')
+    const newDate = new Date(selectedDate)
+    newDate.setDate(newDate.getDate() + direction * 7)
+    setSelectedDate(newDate)
+  }
 
   const navigateMonth = (direction: number) => {
-    triggerHaptic('selection');
-    const newDate = new Date(selectedDate);
-    newDate.setMonth(newDate.getMonth() + direction);
-    setSelectedDate(newDate);
-  };
+    triggerHaptic('selection')
+    const newDate = new Date(selectedDate)
+    newDate.setMonth(newDate.getMonth() + direction)
+    setSelectedDate(newDate)
+  }
 
   const goToToday = () => {
-    triggerHaptic('selection');
-    setSelectedDate(new Date());
-  };
+    triggerHaptic('selection')
+    setSelectedDate(new Date())
+  }
 
   const todayMeals = getMealsForDate(selectedDate).sort((a, b) => {
-    return MEAL_ORDER.indexOf(a.mealType as MealType) - MEAL_ORDER.indexOf(b.mealType as MealType);
-  });
+    return MEAL_ORDER.indexOf(a.mealType as MealType) - MEAL_ORDER.indexOf(b.mealType as MealType)
+  })
 
   const formatWeekRange = (): string => {
-    const startMonth = weekDates[0].toLocaleDateString('en-US', { month: 'short' });
-    const endMonth = weekDates[6].toLocaleDateString('en-US', { month: 'short' });
+    const startMonth = weekDates[0].toLocaleDateString('en-US', { month: 'short' })
+    const endMonth = weekDates[6].toLocaleDateString('en-US', { month: 'short' })
     if (startMonth === endMonth) {
-      return `${startMonth} ${weekDates[0].getDate()} - ${weekDates[6].getDate()}`;
+      return `${startMonth} ${weekDates[0].getDate()} - ${weekDates[6].getDate()}`
     }
-    return `${startMonth} ${weekDates[0].getDate()} - ${endMonth} ${weekDates[6].getDate()}`;
-  };
+    return `${startMonth} ${weekDates[0].getDate()} - ${endMonth} ${weekDates[6].getDate()}`
+  }
 
   const formatMonthYear = (): string => {
-    return selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  };
+    return selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  }
 
   // Generate month dates including padding days from prev/next months
   const generateMonthDates = useMemo((): Date[] => {
-    const year = selectedDate.getFullYear();
-    const month = selectedDate.getMonth();
+    const year = selectedDate.getFullYear()
+    const month = selectedDate.getMonth()
 
     // First day of the month
-    const firstDayOfMonth = new Date(year, month, 1);
+    const firstDayOfMonth = new Date(year, month, 1)
     // Last day of the month
-    const lastDayOfMonth = new Date(year, month + 1, 0);
+    const lastDayOfMonth = new Date(year, month + 1, 0)
 
     // Day of week for first day (0 = Sunday)
-    const startDayOfWeek = firstDayOfMonth.getDay();
+    const startDayOfWeek = firstDayOfMonth.getDay()
 
     // Start from the Sunday of the week containing the first day
-    const startDate = new Date(firstDayOfMonth);
-    startDate.setDate(startDate.getDate() - startDayOfWeek);
+    const startDate = new Date(firstDayOfMonth)
+    startDate.setDate(startDate.getDate() - startDayOfWeek)
 
     // Calculate how many weeks we need (to include all days of the month)
-    const endDayOfWeek = lastDayOfMonth.getDay();
-    const endDate = new Date(lastDayOfMonth);
-    endDate.setDate(endDate.getDate() + (6 - endDayOfWeek));
+    const endDayOfWeek = lastDayOfMonth.getDay()
+    const endDate = new Date(lastDayOfMonth)
+    endDate.setDate(endDate.getDate() + (6 - endDayOfWeek))
 
-    const dates: Date[] = [];
-    const currentDate = new Date(startDate);
+    const dates: Date[] = []
+    const currentDate = new Date(startDate)
 
     while (currentDate <= endDate) {
-      dates.push(new Date(currentDate));
-      currentDate.setDate(currentDate.getDate() + 1);
+      dates.push(new Date(currentDate))
+      currentDate.setDate(currentDate.getDate() + 1)
     }
 
-    return dates;
-  }, [selectedDate]);
+    return dates
+  }, [selectedDate])
 
   const handleViewModeChange = (mode: ViewMode) => {
-    triggerHaptic('selection');
-    setViewMode(mode);
-  };
+    triggerHaptic('selection')
+    setViewMode(mode)
+  }
 
   const handleDaySelect = (date: Date) => {
-    triggerHaptic('light');
-    setSelectedDate(date);
-  };
+    triggerHaptic('light')
+    setSelectedDate(date)
+  }
 
   // Segmented Control Component
   const SegmentedControl = () => (
@@ -202,10 +199,7 @@ export default function MealPlanScreen() {
         hapticType="none"
       >
         <ThemedText
-          style={[
-            styles.segmentedText,
-            viewMode === 'week' && styles.segmentedTextActive,
-          ]}
+          style={[styles.segmentedText, viewMode === 'week' && styles.segmentedTextActive]}
         >
           Week
         </ThemedText>
@@ -222,16 +216,13 @@ export default function MealPlanScreen() {
         hapticType="none"
       >
         <ThemedText
-          style={[
-            styles.segmentedText,
-            viewMode === 'month' && styles.segmentedTextActive,
-          ]}
+          style={[styles.segmentedText, viewMode === 'month' && styles.segmentedTextActive]}
         >
           Month
         </ThemedText>
       </AnimatedPressable>
     </View>
-  );
+  )
 
   // Calendar Day Cell Component
   const CalendarDayCell = ({
@@ -242,14 +233,14 @@ export default function MealPlanScreen() {
     mealCount,
     onPress,
   }: {
-    date: Date;
-    isCurrentMonth: boolean;
-    isSelected: boolean;
-    isTodayDate: boolean;
-    mealCount: number;
-    onPress: () => void;
+    date: Date
+    isCurrentMonth: boolean
+    isSelected: boolean
+    isTodayDate: boolean
+    mealCount: number
+    onPress: () => void
   }) => {
-    const cellWidth = (SCREEN_WIDTH - spacing.lg * 2 - spacing.md * 2) / 7;
+    const cellWidth = (SCREEN_WIDTH - spacing.lg * 2 - spacing.md * 2) / 7
 
     return (
       <AnimatedPressable
@@ -285,19 +276,14 @@ export default function MealPlanScreen() {
           )}
         </View>
       </AnimatedPressable>
-    );
-  };
+    )
+  }
 
   // Month View Component
   const MonthView = () => (
-    <Animated.View
-      entering={FadeIn.duration(250)}
-      style={styles.monthViewContainer}
-    >
+    <Animated.View entering={FadeIn.duration(250)} style={styles.monthViewContainer}>
       {/* Month Navigation */}
-      <View
-        style={[styles.monthNavHeader, { backgroundColor: colors.card }, shadows.small]}
-      >
+      <View style={[styles.monthNavHeader, { backgroundColor: colors.card }, shadows.small]}>
         <AnimatedPressable
           onPress={() => navigateMonth(-1)}
           hapticType="selection"
@@ -335,10 +321,10 @@ export default function MealPlanScreen() {
         {/* Calendar Days Grid */}
         <View style={styles.calendarGrid}>
           {generateMonthDates.map((date, index) => {
-            const meals = getMealsForDate(date);
-            const isCurrentMonth = isSameMonth(date, selectedDate);
-            const isSelected = isSameDay(date, selectedDate);
-            const isTodayDate = isToday(date);
+            const meals = getMealsForDate(date)
+            const isCurrentMonth = isSameMonth(date, selectedDate)
+            const isSelected = isSameDay(date, selectedDate)
+            const isTodayDate = isToday(date)
 
             return (
               <CalendarDayCell
@@ -350,7 +336,7 @@ export default function MealPlanScreen() {
                 mealCount={meals.length}
                 onPress={() => handleDaySelect(date)}
               />
-            );
+            )
           })}
         </View>
       </View>
@@ -367,7 +353,11 @@ export default function MealPlanScreen() {
           <ThemedText style={styles.selectedDayTitle}>
             {isToday(selectedDate)
               ? 'Today'
-              : selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+              : selectedDate.toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  month: 'short',
+                  day: 'numeric',
+                })}
           </ThemedText>
           <ThemedText style={[styles.mealCount, { color: colors.textTertiary }]}>
             {todayMeals.length} {todayMeals.length === 1 ? 'meal' : 'meals'}
@@ -383,8 +373,11 @@ export default function MealPlanScreen() {
             </ThemedText>
             <AnimatedPressable
               onPress={() => {
-                triggerHaptic('selection');
-                router.push({ pathname: '/meal-plan/add', params: { date: selectedDate.toISOString() } } as any);
+                triggerHaptic('selection')
+                router.push({
+                  pathname: '/meal-plan/add',
+                  params: { date: selectedDate.toISOString() },
+                } as any)
               }}
               hapticType="selection"
               style={[styles.addMealButton, { backgroundColor: colors.tint }]}
@@ -405,14 +398,12 @@ export default function MealPlanScreen() {
                 mealPlan={item}
                 onToggleComplete={() => {
                   if (!item.isCompleted) {
-                    triggerHaptic('success');
+                    triggerHaptic('success')
                   }
-                  toggleCompleted(item.id);
+                  toggleCompleted(item.id)
                 }}
                 onDelete={() => deleteMealPlan(item.id)}
-                onPress={() =>
-                  item.recipeId ? router.push(`/recipe/${item.recipeId}`) : null
-                }
+                onPress={() => (item.recipeId ? router.push(`/recipe/${item.recipeId}`) : null)}
                 index={index}
               />
             ))}
@@ -420,7 +411,7 @@ export default function MealPlanScreen() {
         )}
       </Animated.View>
     </Animated.View>
-  );
+  )
 
   // Week View Component (existing implementation)
   const WeekView = () => (
@@ -459,9 +450,9 @@ export default function MealPlanScreen() {
           contentContainerStyle={styles.daySelector}
         >
           {weekDates.map((date, index) => {
-            const meals = getMealsForDate(date);
-            const isSelected = isSameDay(date, selectedDate);
-            const todayStyle = isToday(date);
+            const meals = getMealsForDate(date)
+            const isSelected = isSameDay(date, selectedDate)
+            const todayStyle = isToday(date)
 
             return (
               <AnimatedPressable
@@ -488,10 +479,7 @@ export default function MealPlanScreen() {
                     {date.toLocaleDateString('en-US', { weekday: 'short' })}
                   </ThemedText>
                   <ThemedText
-                    style={[
-                      styles.dayNumber,
-                      { color: isSelected ? '#FFFFFF' : colors.text },
-                    ]}
+                    style={[styles.dayNumber, { color: isSelected ? '#FFFFFF' : colors.text }]}
                   >
                     {date.getDate()}
                   </ThemedText>
@@ -505,7 +493,7 @@ export default function MealPlanScreen() {
                   )}
                 </View>
               </AnimatedPressable>
-            );
+            )
           })}
         </ScrollView>
       </Animated.View>
@@ -518,7 +506,11 @@ export default function MealPlanScreen() {
         <ThemedText style={styles.selectedDayTitle}>
           {isToday(selectedDate)
             ? 'Today'
-            : selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+            : selectedDate.toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'short',
+                day: 'numeric',
+              })}
         </ThemedText>
         <ThemedText style={[styles.mealCount, { color: colors.textTertiary }]}>
           {todayMeals.length} {todayMeals.length === 1 ? 'meal' : 'meals'}
@@ -532,7 +524,12 @@ export default function MealPlanScreen() {
           title="No Meals Planned"
           message={`Plan your meals for ${isToday(selectedDate) ? 'today' : selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}.`}
           actionLabel="Add Meal"
-          onAction={() => router.push({ pathname: '/meal-plan/add', params: { date: selectedDate.toISOString() } } as any)}
+          onAction={() =>
+            router.push({
+              pathname: '/meal-plan/add',
+              params: { date: selectedDate.toISOString() },
+            } as any)
+          }
         />
       ) : (
         <FlatList
@@ -542,14 +539,12 @@ export default function MealPlanScreen() {
               mealPlan={item}
               onToggleComplete={() => {
                 if (!item.isCompleted) {
-                  triggerHaptic('success');
+                  triggerHaptic('success')
                 }
-                toggleCompleted(item.id);
+                toggleCompleted(item.id)
               }}
               onDelete={() => deleteMealPlan(item.id)}
-              onPress={() =>
-                item.recipeId ? router.push(`/recipe/${item.recipeId}`) : null
-              }
+              onPress={() => (item.recipeId ? router.push(`/recipe/${item.recipeId}`) : null)}
               index={index}
             />
           )}
@@ -559,7 +554,7 @@ export default function MealPlanScreen() {
         />
       )}
     </>
-  );
+  )
 
   return (
     <>
@@ -581,8 +576,11 @@ export default function MealPlanScreen() {
           headerRight: () => (
             <AnimatedPressable
               onPress={() => {
-                triggerHaptic('selection');
-                router.push({ pathname: '/meal-plan/add', params: { date: selectedDate.toISOString() } } as any);
+                triggerHaptic('selection')
+                router.push({
+                  pathname: '/meal-plan/add',
+                  params: { date: selectedDate.toISOString() },
+                } as any)
               }}
               hapticType="medium"
               style={styles.headerButton}
@@ -602,7 +600,7 @@ export default function MealPlanScreen() {
         {viewMode === 'week' ? <WeekView /> : <MonthView />}
       </ThemedView>
     </>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -811,4 +809,4 @@ const styles = StyleSheet.create({
   monthMealsListContent: {
     paddingBottom: 120,
   },
-});
+})

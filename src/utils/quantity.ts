@@ -8,39 +8,39 @@
  * Handles: "1/2", "1 1/2", "2.5", "2"
  */
 export function parseNumber(str: string): number | null {
-  const trimmed = str.trim();
+  const trimmed = str.trim()
 
   // Handle fractions like "1/2"
   if (trimmed.includes('/') && !trimmed.includes(' ')) {
-    const parts = trimmed.split('/');
+    const parts = trimmed.split('/')
     if (parts.length === 2) {
-      const numerator = parseFloat(parts[0]);
-      const denominator = parseFloat(parts[1]);
+      const numerator = parseFloat(parts[0])
+      const denominator = parseFloat(parts[1])
       if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
-        return numerator / denominator;
+        return numerator / denominator
       }
       // Invalid fraction (e.g., division by zero)
-      return null;
+      return null
     }
   }
 
   // Handle mixed numbers like "1 1/2"
-  const components = trimmed.split(' ');
+  const components = trimmed.split(' ')
   if (components.length === 2 && components[1].includes('/')) {
-    const whole = parseFloat(components[0]);
-    const fracParts = components[1].split('/');
+    const whole = parseFloat(components[0])
+    const fracParts = components[1].split('/')
     if (fracParts.length === 2) {
-      const numerator = parseFloat(fracParts[0]);
-      const denominator = parseFloat(fracParts[1]);
+      const numerator = parseFloat(fracParts[0])
+      const denominator = parseFloat(fracParts[1])
       if (!isNaN(whole) && !isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
-        return whole + numerator / denominator;
+        return whole + numerator / denominator
       }
     }
   }
 
   // Handle regular numbers
-  const parsed = parseFloat(trimmed);
-  return isNaN(parsed) ? null : parsed;
+  const parsed = parseFloat(trimmed)
+  return isNaN(parsed) ? null : parsed
 }
 
 /**
@@ -50,7 +50,7 @@ export function parseNumber(str: string): number | null {
 export function formatNumber(num: number): string {
   // Check if it's a whole number
   if (num === Math.floor(num)) {
-    return num.toString();
+    return num.toString()
   }
 
   // Common fractions
@@ -64,32 +64,32 @@ export function formatNumber(num: number): string {
     0.667: '2/3',
     0.75: '3/4',
     0.875: '7/8',
-  };
+  }
 
-  const wholePart = Math.floor(num);
-  const decimalPart = num - wholePart;
+  const wholePart = Math.floor(num)
+  const decimalPart = num - wholePart
 
   // Find closest fraction
-  let closestFraction = '';
-  let closestDiff = 1;
+  let closestFraction = ''
+  let closestDiff = 1
 
   for (const [decimal, fraction] of Object.entries(fractions)) {
-    const diff = Math.abs(decimalPart - parseFloat(decimal));
+    const diff = Math.abs(decimalPart - parseFloat(decimal))
     if (diff < closestDiff && diff < 0.05) {
-      closestDiff = diff;
-      closestFraction = fraction;
+      closestDiff = diff
+      closestFraction = fraction
     }
   }
 
   if (closestFraction) {
     if (wholePart === 0) {
-      return closestFraction;
+      return closestFraction
     }
-    return `${wholePart} ${closestFraction}`;
+    return `${wholePart} ${closestFraction}`
   }
 
   // Fall back to decimal with one decimal place
-  return num.toFixed(1).replace(/\.0$/, '');
+  return num.toFixed(1).replace(/\.0$/, '')
 }
 
 /**
@@ -97,29 +97,29 @@ export function formatNumber(num: number): string {
  * Returns a combined string or lists both if they can't be combined
  */
 export function combineQuantities(q1: string, q2: string): string {
-  const n1 = parseNumber(q1);
-  const n2 = parseNumber(q2);
+  const n1 = parseNumber(q1)
+  const n2 = parseNumber(q2)
 
   if (n1 !== null && n2 !== null) {
-    const sum = n1 + n2;
-    return formatNumber(sum);
+    const sum = n1 + n2
+    return formatNumber(sum)
   }
 
   // Can't combine numerically, just list both
-  return `${q1} + ${q2}`;
+  return `${q1} + ${q2}`
 }
 
 /**
  * Scale a quantity by a multiplier (for serving size changes)
  */
 export function scaleQuantity(quantity: string, multiplier: number): string {
-  const num = parseNumber(quantity);
+  const num = parseNumber(quantity)
 
   if (num !== null) {
-    return formatNumber(num * multiplier);
+    return formatNumber(num * multiplier)
   }
 
-  return quantity;
+  return quantity
 }
 
 /**
@@ -130,17 +130,17 @@ export function formatIngredient(
   quantity: string | null,
   unit: string | null
 ): string {
-  const parts: string[] = [];
+  const parts: string[] = []
 
   if (quantity) {
-    parts.push(quantity);
+    parts.push(quantity)
   }
 
   if (unit) {
-    parts.push(unit);
+    parts.push(unit)
   }
 
-  parts.push(name);
+  parts.push(name)
 
-  return parts.join(' ');
+  return parts.join(' ')
 }

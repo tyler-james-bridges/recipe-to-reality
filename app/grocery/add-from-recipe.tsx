@@ -1,13 +1,8 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import {
-  StyleSheet,
-  View,
-  ScrollView,
-  useColorScheme,
-} from 'react-native';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { Icon } from '@/src/components/ui/Icon';
-import * as Haptics from 'expo-haptics';
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import { StyleSheet, View, ScrollView, useColorScheme } from 'react-native'
+import { router, Stack, useLocalSearchParams } from 'expo-router'
+import { Icon } from '@/src/components/ui/Icon'
+import * as Haptics from 'expo-haptics'
 import Animated, {
   FadeIn,
   FadeInDown,
@@ -16,17 +11,17 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
-} from 'react-native-reanimated';
+} from 'react-native-reanimated'
 
-import { ThemedView, ThemedText } from '@/components/Themed';
-import { useRecipeStore } from '@/src/stores/recipeStore';
-import { useGroceryStore } from '@/src/stores/groceryStore';
-import { useSettingsStore } from '@/src/stores/settingsStore';
-import { Ingredient, RecipeWithIngredients } from '@/src/types';
-import { formatIngredient } from '@/src/utils/quantity';
-import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
-import ModernButton from '@/src/components/ui/ModernButton';
-import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors';
+import { ThemedView, ThemedText } from '@/components/Themed'
+import { useRecipeStore } from '@/src/stores/recipeStore'
+import { useGroceryStore } from '@/src/stores/groceryStore'
+import { useSettingsStore } from '@/src/stores/settingsStore'
+import { Ingredient, RecipeWithIngredients } from '@/src/types'
+import { formatIngredient } from '@/src/utils/quantity'
+import AnimatedPressable from '@/src/components/ui/AnimatedPressable'
+import ModernButton from '@/src/components/ui/ModernButton'
+import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors'
 
 // Ingredient Selection Item Component
 function IngredientSelectItem({
@@ -35,28 +30,28 @@ function IngredientSelectItem({
   onToggle,
   index,
 }: {
-  ingredient: Ingredient;
-  isSelected: boolean;
-  onToggle: () => void;
-  index: number;
+  ingredient: Ingredient
+  isSelected: boolean
+  onToggle: () => void
+  index: number
 }) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
 
-  const selectedValue = useSharedValue(isSelected ? 1 : 0);
+  const selectedValue = useSharedValue(isSelected ? 1 : 0)
 
   useEffect(() => {
     selectedValue.value = withSpring(isSelected ? 1 : 0, {
       damping: 15,
       stiffness: 200,
-    });
-  }, [isSelected]);
+    })
+  }, [isSelected])
 
   const animatedCheckStyle = useAnimatedStyle(() => ({
     transform: [{ scale: selectedValue.value }],
-  }));
+  }))
 
-  const displayText = formatIngredient(ingredient.name, ingredient.quantity, ingredient.unit);
+  const displayText = formatIngredient(ingredient.name, ingredient.quantity, ingredient.unit)
 
   return (
     <Animated.View
@@ -114,134 +109,132 @@ function IngredientSelectItem({
         )}
       </AnimatedPressable>
     </Animated.View>
-  );
+  )
 }
 
 export default function AddFromRecipeScreen() {
-  const { recipeId } = useLocalSearchParams<{ recipeId: string }>();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
+  const { recipeId } = useLocalSearchParams<{ recipeId: string }>()
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback)
 
   // Stores
-  const { recipes, loadRecipes, getRecipe } = useRecipeStore();
-  const { currentList, loadCurrentList, createList, addItem } = useGroceryStore();
+  const { recipes, loadRecipes, getRecipe } = useRecipeStore()
+  const { currentList, loadCurrentList, createList, addItem } = useGroceryStore()
 
   // State
-  const [recipe, setRecipe] = useState<RecipeWithIngredients | undefined>();
-  const [selectedIngredientIds, setSelectedIngredientIds] = useState<Set<string>>(new Set());
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAdding, setIsAdding] = useState(false);
+  const [recipe, setRecipe] = useState<RecipeWithIngredients | undefined>()
+  const [selectedIngredientIds, setSelectedIngredientIds] = useState<Set<string>>(new Set())
+  const [isLoading, setIsLoading] = useState(true)
+  const [isAdding, setIsAdding] = useState(false)
 
   // Load recipe data
   useEffect(() => {
     const loadData = async () => {
-      setIsLoading(true);
-      await loadRecipes();
-      await loadCurrentList();
+      setIsLoading(true)
+      await loadRecipes()
+      await loadCurrentList()
 
-      const foundRecipe = getRecipe(recipeId);
-      setRecipe(foundRecipe);
+      const foundRecipe = getRecipe(recipeId)
+      setRecipe(foundRecipe)
 
       // Select all ingredients by default
       if (foundRecipe) {
-        setSelectedIngredientIds(new Set(foundRecipe.ingredients.map((i) => i.id)));
+        setSelectedIngredientIds(new Set(foundRecipe.ingredients.map((i) => i.id)))
       }
 
-      setIsLoading(false);
-    };
+      setIsLoading(false)
+    }
 
-    loadData();
-  }, [recipeId, loadRecipes, loadCurrentList, getRecipe]);
+    loadData()
+  }, [recipeId, loadRecipes, loadCurrentList, getRecipe])
 
   // Computed values
-  const selectedCount = selectedIngredientIds.size;
-  const totalCount = recipe?.ingredients.length ?? 0;
-  const canAdd = selectedCount > 0;
+  const selectedCount = selectedIngredientIds.size
+  const totalCount = recipe?.ingredients.length ?? 0
+  const canAdd = selectedCount > 0
 
   // Handlers
   const triggerHaptic = useCallback(
     (type: 'selection' | 'success' | 'warning' | 'light') => {
-      if (!hapticFeedback) return;
+      if (!hapticFeedback) return
       switch (type) {
         case 'selection':
-          Haptics.selectionAsync();
-          break;
+          Haptics.selectionAsync()
+          break
         case 'success':
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          break;
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+          break
         case 'warning':
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-          break;
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
+          break
         case 'light':
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          break;
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+          break
       }
     },
     [hapticFeedback]
-  );
+  )
 
   const toggleIngredient = useCallback(
     (id: string) => {
-      triggerHaptic('selection');
+      triggerHaptic('selection')
       setSelectedIngredientIds((prev) => {
-        const next = new Set(prev);
+        const next = new Set(prev)
         if (next.has(id)) {
-          next.delete(id);
+          next.delete(id)
         } else {
-          next.add(id);
+          next.add(id)
         }
-        return next;
-      });
+        return next
+      })
     },
     [triggerHaptic]
-  );
+  )
 
   const selectAll = useCallback(() => {
-    triggerHaptic('light');
+    triggerHaptic('light')
     if (recipe) {
-      setSelectedIngredientIds(new Set(recipe.ingredients.map((i) => i.id)));
+      setSelectedIngredientIds(new Set(recipe.ingredients.map((i) => i.id)))
     }
-  }, [recipe, triggerHaptic]);
+  }, [recipe, triggerHaptic])
 
   const selectNone = useCallback(() => {
-    triggerHaptic('light');
-    setSelectedIngredientIds(new Set());
-  }, [triggerHaptic]);
+    triggerHaptic('light')
+    setSelectedIngredientIds(new Set())
+  }, [triggerHaptic])
 
   const handleAddToList = useCallback(async () => {
-    if (!canAdd || !recipe) return;
+    if (!canAdd || !recipe) return
 
-    setIsAdding(true);
-    triggerHaptic('success');
+    setIsAdding(true)
+    triggerHaptic('success')
 
     try {
       // Get or create grocery list
-      let listId = currentList?.id;
+      let listId = currentList?.id
       if (!listId) {
-        listId = await createList('Shopping List');
+        listId = await createList('Shopping List')
       }
 
       // Get existing item names for duplicate checking
       const existingItemNames = new Set(
         (currentList?.items ?? []).map((item) => item.name.toLowerCase().trim())
-      );
+      )
 
       // Add selected ingredients
-      const selectedIngredients = recipe.ingredients.filter((i) =>
-        selectedIngredientIds.has(i.id)
-      );
+      const selectedIngredients = recipe.ingredients.filter((i) => selectedIngredientIds.has(i.id))
 
-      let addedCount = 0;
-      let skippedCount = 0;
+      let addedCount = 0
+      let skippedCount = 0
 
       for (const ingredient of selectedIngredients) {
-        const normalizedName = ingredient.name.toLowerCase().trim();
+        const normalizedName = ingredient.name.toLowerCase().trim()
 
         // Check for duplicates
         if (existingItemNames.has(normalizedName)) {
-          skippedCount++;
-          continue;
+          skippedCount++
+          continue
         }
 
         await addItem(listId!, {
@@ -249,25 +242,25 @@ export default function AddFromRecipeScreen() {
           quantity: ingredient.quantity,
           unit: ingredient.unit,
           category: ingredient.category,
-        });
+        })
 
-        existingItemNames.add(normalizedName);
-        addedCount++;
+        existingItemNames.add(normalizedName)
+        addedCount++
       }
 
-      router.back();
+      router.back()
     } catch (error) {
-      console.error('Failed to add ingredients to grocery list:', error);
-      triggerHaptic('warning');
+      console.error('Failed to add ingredients to grocery list:', error)
+      triggerHaptic('warning')
     } finally {
-      setIsAdding(false);
+      setIsAdding(false)
     }
-  }, [canAdd, recipe, selectedIngredientIds, currentList, createList, addItem, triggerHaptic]);
+  }, [canAdd, recipe, selectedIngredientIds, currentList, createList, addItem, triggerHaptic])
 
   const handleCancel = useCallback(() => {
-    triggerHaptic('light');
-    router.back();
-  }, [triggerHaptic]);
+    triggerHaptic('light')
+    router.back()
+  }, [triggerHaptic])
 
   if (isLoading || !recipe) {
     return (
@@ -298,7 +291,7 @@ export default function AddFromRecipeScreen() {
           </Animated.View>
         </ThemedView>
       </>
-    );
+    )
   }
 
   return (
@@ -351,10 +344,7 @@ export default function AddFromRecipeScreen() {
         </Animated.View>
 
         {/* Select All / Select None Actions */}
-        <Animated.View
-          entering={FadeIn.duration(300).delay(100)}
-          style={styles.selectionActions}
-        >
+        <Animated.View entering={FadeIn.duration(300).delay(100)} style={styles.selectionActions}>
           <AnimatedPressable
             onPress={selectAll}
             hapticType="light"
@@ -447,7 +437,11 @@ export default function AddFromRecipeScreen() {
           style={[styles.bottomButtonContainer, { backgroundColor: colors.background }]}
         >
           <ModernButton
-            title={isAdding ? 'Adding...' : `Add ${selectedCount} Item${selectedCount !== 1 ? 's' : ''} to List`}
+            title={
+              isAdding
+                ? 'Adding...'
+                : `Add ${selectedCount} Item${selectedCount !== 1 ? 's' : ''} to List`
+            }
             onPress={handleAddToList}
             variant="primary"
             size="large"
@@ -459,7 +453,7 @@ export default function AddFromRecipeScreen() {
         </Animated.View>
       </ThemedView>
     </>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -593,4 +587,4 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: 'rgba(0,0,0,0.1)',
   },
-});
+})

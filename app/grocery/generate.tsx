@@ -1,14 +1,8 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import {
-  StyleSheet,
-  View,
-  ScrollView,
-  useColorScheme,
-  Platform,
-} from 'react-native';
-import { router, Stack } from 'expo-router';
-import { Icon } from '@/src/components/ui/Icon';
-import * as Haptics from 'expo-haptics';
+import React, { useState, useMemo, useCallback, useEffect } from 'react'
+import { StyleSheet, View, ScrollView, useColorScheme, Platform } from 'react-native'
+import { router, Stack } from 'expo-router'
+import { Icon } from '@/src/components/ui/Icon'
+import * as Haptics from 'expo-haptics'
 import Animated, {
   FadeIn,
   FadeInDown,
@@ -19,21 +13,21 @@ import Animated, {
   withSpring,
   withTiming,
   interpolateColor,
-} from 'react-native-reanimated';
-import DateTimePicker from '@react-native-community/datetimepicker';
+} from 'react-native-reanimated'
+import DateTimePicker from '@react-native-community/datetimepicker'
 
-import { ThemedView, ThemedText } from '@/components/Themed';
-import { useGroceryStore } from '@/src/stores/groceryStore';
-import { useRecipeStore } from '@/src/stores/recipeStore';
-import { useMealPlanStore } from '@/src/stores/mealPlanStore';
-import { useSettingsStore } from '@/src/stores/settingsStore';
-import { RecipeWithIngredients, MealPlan, MEAL_TYPES } from '@/src/types';
-import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
-import ModernButton from '@/src/components/ui/ModernButton';
-import Badge from '@/src/components/ui/Badge';
-import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors';
+import { ThemedView, ThemedText } from '@/components/Themed'
+import { useGroceryStore } from '@/src/stores/groceryStore'
+import { useRecipeStore } from '@/src/stores/recipeStore'
+import { useMealPlanStore } from '@/src/stores/mealPlanStore'
+import { useSettingsStore } from '@/src/stores/settingsStore'
+import { RecipeWithIngredients, MealPlan, MEAL_TYPES } from '@/src/types'
+import AnimatedPressable from '@/src/components/ui/AnimatedPressable'
+import ModernButton from '@/src/components/ui/ModernButton'
+import Badge from '@/src/components/ui/Badge'
+import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors'
 
-type GenerateMode = 'recipes' | 'mealPlan';
+type GenerateMode = 'recipes' | 'mealPlan'
 
 // Segmented Control Component
 function SegmentedControl({
@@ -41,29 +35,29 @@ function SegmentedControl({
   selectedIndex,
   onChange,
 }: {
-  options: { key: GenerateMode; label: string }[];
-  selectedIndex: number;
-  onChange: (index: number) => void;
+  options: { key: GenerateMode; label: string }[]
+  selectedIndex: number
+  onChange: (index: number) => void
 }) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback)
 
-  const selectedPosition = useSharedValue(selectedIndex);
+  const selectedPosition = useSharedValue(selectedIndex)
 
   useEffect(() => {
     selectedPosition.value = withSpring(selectedIndex, {
       damping: 20,
       stiffness: 200,
-    });
-  }, [selectedIndex]);
+    })
+  }, [selectedIndex])
 
   const handlePress = (index: number) => {
     if (hapticFeedback) {
-      Haptics.selectionAsync();
+      Haptics.selectionAsync()
     }
-    onChange(index);
-  };
+    onChange(index)
+  }
 
   return (
     <View
@@ -103,7 +97,7 @@ function SegmentedControl({
         </AnimatedPressable>
       ))}
     </View>
-  );
+  )
 }
 
 // Recipe Selection Item
@@ -114,27 +108,27 @@ function RecipeSelectItem({
   onToggle,
   index,
 }: {
-  recipe: RecipeWithIngredients;
-  isSelected: boolean;
-  isInQueue: boolean;
-  onToggle: () => void;
-  index: number;
+  recipe: RecipeWithIngredients
+  isSelected: boolean
+  isInQueue: boolean
+  onToggle: () => void
+  index: number
 }) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
 
-  const selectedValue = useSharedValue(isSelected ? 1 : 0);
+  const selectedValue = useSharedValue(isSelected ? 1 : 0)
 
   useEffect(() => {
     selectedValue.value = withSpring(isSelected ? 1 : 0, {
       damping: 15,
       stiffness: 200,
-    });
-  }, [isSelected]);
+    })
+  }, [isSelected])
 
   const animatedCheckStyle = useAnimatedStyle(() => ({
     transform: [{ scale: selectedValue.value }],
-  }));
+  }))
 
   return (
     <Animated.View
@@ -178,12 +172,7 @@ function RecipeSelectItem({
               {recipe.title}
             </ThemedText>
             {isInQueue && (
-              <Icon
-                name="time"
-                size={14}
-                color={colors.tint}
-                style={styles.queueIcon}
-              />
+              <Icon name="time" size={14} color={colors.tint} style={styles.queueIcon} />
             )}
           </View>
           <ThemedText style={[styles.recipeSubtitle, { color: colors.textTertiary }]}>
@@ -192,43 +181,33 @@ function RecipeSelectItem({
         </View>
       </AnimatedPressable>
     </Animated.View>
-  );
+  )
 }
 
 // Meal Plan Item for date range view
-function MealPlanItem({
-  mealPlan,
-  index,
-}: {
-  mealPlan: MealPlan;
-  index: number;
-}) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+function MealPlanItem({ mealPlan, index }: { mealPlan: MealPlan; index: number }) {
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
 
   const getMealTypeIcon = (mealType: string): React.ComponentProps<typeof Icon>['name'] => {
     switch (mealType) {
       case 'Breakfast':
-        return 'sunny-outline';
+        return 'sunny-outline'
       case 'Lunch':
-        return 'partly-sunny-outline';
+        return 'partly-sunny-outline'
       case 'Dinner':
-        return 'moon-outline';
+        return 'moon-outline'
       case 'Snack':
-        return 'leaf-outline';
+        return 'leaf-outline'
       default:
-        return 'restaurant-outline';
+        return 'restaurant-outline'
     }
-  };
+  }
 
   return (
     <Animated.View
       entering={FadeInDown.duration(250).delay(index * 40)}
-      style={[
-        styles.mealPlanItem,
-        { backgroundColor: colors.card },
-        shadows.small,
-      ]}
+      style={[styles.mealPlanItem, { backgroundColor: colors.card }, shadows.small]}
     >
       <View style={[styles.mealTypeIcon, { backgroundColor: colors.accentSubtle }]}>
         <Icon name={getMealTypeIcon(mealPlan.mealType)} size={16} color={colors.tint} />
@@ -249,19 +228,19 @@ function MealPlanItem({
         </ThemedText>
       )}
     </Animated.View>
-  );
+  )
 }
 
 // Date Section Header
 function DateSectionHeader({ date }: { date: Date }) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
 
   const formattedDate = date.toLocaleDateString('en-US', {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
-  });
+  })
 
   return (
     <View style={styles.dateSectionHeader}>
@@ -269,167 +248,162 @@ function DateSectionHeader({ date }: { date: Date }) {
         {formattedDate}
       </ThemedText>
     </View>
-  );
+  )
 }
 
 export default function GenerateGroceryListScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback)
 
   // Stores
-  const { recipes, loadRecipes } = useRecipeStore();
-  const { mealPlans, loadMealPlans } = useMealPlanStore();
-  const { generateFromRecipes } = useGroceryStore();
+  const { recipes, loadRecipes } = useRecipeStore()
+  const { mealPlans, loadMealPlans } = useMealPlanStore()
+  const { generateFromRecipes } = useGroceryStore()
 
   // State
-  const [generateMode, setGenerateMode] = useState<GenerateMode>('recipes');
-  const [selectedRecipeIds, setSelectedRecipeIds] = useState<Set<string>>(new Set());
-  const [startDate, setStartDate] = useState<Date>(new Date());
+  const [generateMode, setGenerateMode] = useState<GenerateMode>('recipes')
+  const [selectedRecipeIds, setSelectedRecipeIds] = useState<Set<string>>(new Set())
+  const [startDate, setStartDate] = useState<Date>(new Date())
   const [endDate, setEndDate] = useState<Date>(() => {
-    const date = new Date();
-    date.setDate(date.getDate() + 6);
-    return date;
-  });
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [showStartPicker, setShowStartPicker] = useState(false);
-  const [showEndPicker, setShowEndPicker] = useState(false);
+    const date = new Date()
+    date.setDate(date.getDate() + 6)
+    return date
+  })
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [showStartPicker, setShowStartPicker] = useState(false)
+  const [showEndPicker, setShowEndPicker] = useState(false)
 
   // Load data on mount
   useEffect(() => {
-    loadRecipes();
-    loadMealPlans();
-  }, [loadRecipes, loadMealPlans]);
+    loadRecipes()
+    loadMealPlans()
+  }, [loadRecipes, loadMealPlans])
 
   // Computed values
-  const queuedRecipes = useMemo(
-    () => recipes.filter((r) => r.isInQueue),
-    [recipes]
-  );
+  const queuedRecipes = useMemo(() => recipes.filter((r) => r.isInQueue), [recipes])
 
   const mealPlansInRange = useMemo(() => {
-    const start = new Date(startDate);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(endDate);
-    end.setHours(23, 59, 59, 999);
+    const start = new Date(startDate)
+    start.setHours(0, 0, 0, 0)
+    const end = new Date(endDate)
+    end.setHours(23, 59, 59, 999)
 
     return mealPlans.filter((mp) => {
-      const mpDate = new Date(mp.date);
-      return mpDate >= start && mpDate <= end;
-    });
-  }, [mealPlans, startDate, endDate]);
+      const mpDate = new Date(mp.date)
+      return mpDate >= start && mpDate <= end
+    })
+  }, [mealPlans, startDate, endDate])
 
   const mealPlanRecipeIds = useMemo(() => {
-    return new Set(mealPlansInRange.filter((mp) => mp.recipeId).map((mp) => mp.recipeId!));
-  }, [mealPlansInRange]);
+    return new Set(mealPlansInRange.filter((mp) => mp.recipeId).map((mp) => mp.recipeId!))
+  }, [mealPlansInRange])
 
   const groupedMealPlans = useMemo(() => {
-    const grouped: Record<string, MealPlan[]> = {};
+    const grouped: Record<string, MealPlan[]> = {}
 
     mealPlansInRange.forEach((mp) => {
-      const date = new Date(mp.date);
-      date.setHours(0, 0, 0, 0);
-      const key = date.toISOString();
+      const date = new Date(mp.date)
+      date.setHours(0, 0, 0, 0)
+      const key = date.toISOString()
 
       if (!grouped[key]) {
-        grouped[key] = [];
+        grouped[key] = []
       }
-      grouped[key].push(mp);
-    });
+      grouped[key].push(mp)
+    })
 
     // Sort by meal type order
-    const mealTypeOrder = { Breakfast: 0, Lunch: 1, Dinner: 2, Snack: 3 };
+    const mealTypeOrder = { Breakfast: 0, Lunch: 1, Dinner: 2, Snack: 3 }
     Object.keys(grouped).forEach((key) => {
       grouped[key].sort(
         (a, b) => (mealTypeOrder[a.mealType] ?? 4) - (mealTypeOrder[b.mealType] ?? 4)
-      );
-    });
+      )
+    })
 
-    return grouped;
-  }, [mealPlansInRange]);
+    return grouped
+  }, [mealPlansInRange])
 
   const selectedIngredientCount = useMemo(() => {
-    const selectedRecipes = recipes.filter((r) => selectedRecipeIds.has(r.id));
-    return selectedRecipes.reduce((sum, r) => sum + r.ingredients.length, 0);
-  }, [recipes, selectedRecipeIds]);
+    const selectedRecipes = recipes.filter((r) => selectedRecipeIds.has(r.id))
+    return selectedRecipes.reduce((sum, r) => sum + r.ingredients.length, 0)
+  }, [recipes, selectedRecipeIds])
 
   const canGenerate =
-    generateMode === 'recipes'
-      ? selectedRecipeIds.size > 0
-      : mealPlanRecipeIds.size > 0;
+    generateMode === 'recipes' ? selectedRecipeIds.size > 0 : mealPlanRecipeIds.size > 0
 
   // Handlers
   const triggerHaptic = useCallback(
     (type: 'selection' | 'success' | 'warning') => {
-      if (!hapticFeedback) return;
+      if (!hapticFeedback) return
       switch (type) {
         case 'selection':
-          Haptics.selectionAsync();
-          break;
+          Haptics.selectionAsync()
+          break
         case 'success':
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          break;
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+          break
         case 'warning':
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-          break;
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
+          break
       }
     },
     [hapticFeedback]
-  );
+  )
 
   const toggleRecipe = useCallback(
     (id: string) => {
-      triggerHaptic('selection');
+      triggerHaptic('selection')
       setSelectedRecipeIds((prev) => {
-        const next = new Set(prev);
+        const next = new Set(prev)
         if (next.has(id)) {
-          next.delete(id);
+          next.delete(id)
         } else {
-          next.add(id);
+          next.add(id)
         }
-        return next;
-      });
+        return next
+      })
     },
     [triggerHaptic]
-  );
+  )
 
   const selectQueue = useCallback(() => {
-    triggerHaptic('selection');
-    setSelectedRecipeIds(new Set(queuedRecipes.map((r) => r.id)));
-  }, [queuedRecipes, triggerHaptic]);
+    triggerHaptic('selection')
+    setSelectedRecipeIds(new Set(queuedRecipes.map((r) => r.id)))
+  }, [queuedRecipes, triggerHaptic])
 
   const clearSelection = useCallback(() => {
-    triggerHaptic('selection');
-    setSelectedRecipeIds(new Set());
-  }, [triggerHaptic]);
+    triggerHaptic('selection')
+    setSelectedRecipeIds(new Set())
+  }, [triggerHaptic])
 
   const handleGenerate = useCallback(async () => {
-    if (!canGenerate) return;
+    if (!canGenerate) return
 
-    setIsGenerating(true);
-    triggerHaptic('success');
+    setIsGenerating(true)
+    triggerHaptic('success')
 
     try {
-      let recipesToUse: RecipeWithIngredients[];
+      let recipesToUse: RecipeWithIngredients[]
 
       if (generateMode === 'recipes') {
-        recipesToUse = recipes.filter((r) => selectedRecipeIds.has(r.id));
+        recipesToUse = recipes.filter((r) => selectedRecipeIds.has(r.id))
       } else {
-        recipesToUse = recipes.filter((r) => mealPlanRecipeIds.has(r.id));
+        recipesToUse = recipes.filter((r) => mealPlanRecipeIds.has(r.id))
       }
 
       const listName =
         generateMode === 'recipes'
           ? 'Shopping List'
-          : `Shopping List (${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()})`;
+          : `Shopping List (${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()})`
 
-      await generateFromRecipes(recipesToUse, listName);
-      router.back();
+      await generateFromRecipes(recipesToUse, listName)
+      router.back()
     } catch (error) {
-      console.error('Failed to generate grocery list:', error);
-      triggerHaptic('warning');
+      console.error('Failed to generate grocery list:', error)
+      triggerHaptic('warning')
     } finally {
-      setIsGenerating(false);
+      setIsGenerating(false)
     }
   }, [
     canGenerate,
@@ -441,31 +415,31 @@ export default function GenerateGroceryListScreen() {
     endDate,
     generateFromRecipes,
     triggerHaptic,
-  ]);
+  ])
 
   const handleStartDateChange = (_event: any, date?: Date) => {
     if (process.env.EXPO_OS === 'android') {
-      setShowStartPicker(false);
+      setShowStartPicker(false)
     }
     if (date) {
-      setStartDate(date);
+      setStartDate(date)
       // Ensure end date is after start date
       if (date > endDate) {
-        const newEnd = new Date(date);
-        newEnd.setDate(newEnd.getDate() + 6);
-        setEndDate(newEnd);
+        const newEnd = new Date(date)
+        newEnd.setDate(newEnd.getDate() + 6)
+        setEndDate(newEnd)
       }
     }
-  };
+  }
 
   const handleEndDateChange = (_event: any, date?: Date) => {
     if (process.env.EXPO_OS === 'android') {
-      setShowEndPicker(false);
+      setShowEndPicker(false)
     }
     if (date && date >= startDate) {
-      setEndDate(date);
+      setEndDate(date)
     }
-  };
+  }
 
   return (
     <>
@@ -488,7 +462,10 @@ export default function GenerateGroceryListScreen() {
               onPress={handleGenerate}
               hapticType="medium"
               disabled={!canGenerate || isGenerating}
-              style={[styles.headerButton, (!canGenerate || isGenerating) && styles.headerButtonDisabled]}
+              style={[
+                styles.headerButton,
+                (!canGenerate || isGenerating) && styles.headerButtonDisabled,
+              ]}
             >
               <ThemedText
                 style={[
@@ -524,10 +501,7 @@ export default function GenerateGroceryListScreen() {
             showsVerticalScrollIndicator={false}
           >
             {recipes.length === 0 ? (
-              <Animated.View
-                entering={FadeIn.duration(300)}
-                style={styles.emptyContainer}
-              >
+              <Animated.View entering={FadeIn.duration(300)} style={styles.emptyContainer}>
                 <Icon name="book-outline" size={48} color={colors.textTertiary} />
                 <ThemedText style={[styles.emptyTitle, { color: colors.textTertiary }]}>
                   No Recipes
@@ -539,10 +513,7 @@ export default function GenerateGroceryListScreen() {
             ) : (
               <>
                 {/* Quick Actions */}
-                <Animated.View
-                  entering={FadeInDown.duration(300)}
-                  style={styles.quickActions}
-                >
+                <Animated.View entering={FadeInDown.duration(300)} style={styles.quickActions}>
                   <AnimatedPressable
                     onPress={selectQueue}
                     hapticType="selection"
@@ -604,7 +575,8 @@ export default function GenerateGroceryListScreen() {
                   >
                     <Icon name="cart-outline" size={20} color={colors.tint} />
                     <ThemedText style={[styles.summaryText, { color: colors.tint }]}>
-                      {selectedRecipeIds.size} recipe{selectedRecipeIds.size !== 1 ? 's' : ''} selected ({selectedIngredientCount} ingredients)
+                      {selectedRecipeIds.size} recipe{selectedRecipeIds.size !== 1 ? 's' : ''}{' '}
+                      selected ({selectedIngredientCount} ingredients)
                     </ThemedText>
                   </Animated.View>
                 )}
@@ -708,10 +680,7 @@ export default function GenerateGroceryListScreen() {
 
             {/* Meal Plan Summary */}
             {mealPlansInRange.length === 0 ? (
-              <Animated.View
-                entering={FadeIn.duration(300)}
-                style={styles.emptyContainer}
-              >
+              <Animated.View entering={FadeIn.duration(300)} style={styles.emptyContainer}>
                 <Icon name="calendar-outline" size={48} color={colors.textTertiary} />
                 <ThemedText style={[styles.emptyTitle, { color: colors.textTertiary }]}>
                   No Meals Planned
@@ -726,8 +695,8 @@ export default function GenerateGroceryListScreen() {
                 {Object.keys(groupedMealPlans)
                   .sort()
                   .map((dateKey, groupIndex) => {
-                    const date = new Date(dateKey);
-                    const meals = groupedMealPlans[dateKey];
+                    const date = new Date(dateKey)
+                    const meals = groupedMealPlans[dateKey]
 
                     return (
                       <Animated.View
@@ -737,14 +706,10 @@ export default function GenerateGroceryListScreen() {
                       >
                         <DateSectionHeader date={date} />
                         {meals.map((meal, mealIndex) => (
-                          <MealPlanItem
-                            key={meal.id}
-                            mealPlan={meal}
-                            index={mealIndex}
-                          />
+                          <MealPlanItem key={meal.id} mealPlan={meal} index={mealIndex} />
                         ))}
                       </Animated.View>
-                    );
+                    )
                   })}
 
                 {/* Summary Footer */}
@@ -754,7 +719,8 @@ export default function GenerateGroceryListScreen() {
                 >
                   <Icon name="cart-outline" size={20} color={colors.tint} />
                   <ThemedText style={[styles.summaryText, { color: colors.tint }]}>
-                    {mealPlanRecipeIds.size} recipe{mealPlanRecipeIds.size !== 1 ? 's' : ''} to shop for
+                    {mealPlanRecipeIds.size} recipe{mealPlanRecipeIds.size !== 1 ? 's' : ''} to shop
+                    for
                   </ThemedText>
                 </Animated.View>
               </>
@@ -780,7 +746,7 @@ export default function GenerateGroceryListScreen() {
         </Animated.View>
       </ThemedView>
     </>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -991,4 +957,4 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: 'rgba(0,0,0,0.1)',
   },
-});
+})

@@ -1,24 +1,24 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, ViewStyle, StyleProp, useColorScheme, View } from 'react-native';
+import React, { useEffect } from 'react'
+import { StyleSheet, ViewStyle, StyleProp, useColorScheme, View } from 'react-native'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
   interpolate,
-} from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
-import Colors, { gradients, radius, spacing, animation } from '@/constants/Colors';
+} from 'react-native-reanimated'
+import { LinearGradient } from 'expo-linear-gradient'
+import Colors, { gradients, radius, spacing, animation } from '@/constants/Colors'
 
 interface ProgressBarProps {
-  progress: number; // 0-1
-  animated?: boolean;
-  showGlow?: boolean;
-  height?: number;
-  style?: StyleProp<ViewStyle>;
+  progress: number // 0-1
+  animated?: boolean
+  showGlow?: boolean
+  height?: number
+  style?: StyleProp<ViewStyle>
 }
 
-const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
+const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient)
 
 export default function ProgressBar({
   progress,
@@ -27,30 +27,30 @@ export default function ProgressBar({
   height = 6,
   style,
 }: ProgressBarProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const themeGradients = gradients[colorScheme ?? 'light'];
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const themeGradients = gradients[colorScheme ?? 'light']
 
-  const progressValue = useSharedValue(0);
+  const progressValue = useSharedValue(0)
 
   useEffect(() => {
     if (animated) {
       progressValue.value = withSpring(progress, {
         damping: animation.spring.damping,
         stiffness: 80,
-      });
+      })
     } else {
-      progressValue.value = progress;
+      progressValue.value = progress
     }
-  }, [progress, animated]);
+  }, [progress, animated])
 
   const animatedWidth = useAnimatedStyle(() => ({
     width: `${progressValue.value * 100}%`,
-  }));
+  }))
 
   const animatedGlow = useAnimatedStyle(() => ({
     opacity: interpolate(progressValue.value, [0, 0.5, 1], [0, 0.6, 1]),
-  }));
+  }))
 
   return (
     <View
@@ -68,11 +68,7 @@ export default function ProgressBar({
         colors={themeGradients.primary}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
-        style={[
-          styles.progress,
-          { borderRadius: height / 2 },
-          animatedWidth,
-        ]}
+        style={[styles.progress, { borderRadius: height / 2 }, animatedWidth]}
       />
       {showGlow && progress > 0 && (
         <Animated.View
@@ -90,7 +86,7 @@ export default function ProgressBar({
         />
       )}
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -114,4 +110,4 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 8,
   },
-});
+})

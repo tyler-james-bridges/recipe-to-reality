@@ -51,6 +51,7 @@ cp .env.example .env
 ```
 
 Configure the required API keys in `.env`:
+
 - `CLAUDE_API_KEY` - For AI recipe extraction (server-side)
 
 ### 3. Start Development
@@ -106,11 +107,13 @@ For video transcripts from TikTok/Instagram, configure a Supadata API key in Set
 ## Monetization
 
 **Free Tier:**
+
 - 5 recipe extractions
 - 10 saved recipes
 - Basic grocery lists
 
 **Premium ($4.99/month or $29.99/year):**
+
 - Unlimited recipe extractions
 - Unlimited saved recipes
 - Smart list consolidation
@@ -132,15 +135,15 @@ npm run test:coverage
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `npx expo start` | Start development server |
-| `npx expo run:ios` | Run on iOS simulator |
-| `npx expo run:android` | Run on Android emulator |
-| `npm test` | Run tests |
-| `eas build --platform ios --profile preview` | Build iOS for testing |
+| Command                                          | Description               |
+| ------------------------------------------------ | ------------------------- |
+| `npx expo start`                                 | Start development server  |
+| `npx expo run:ios`                               | Run on iOS simulator      |
+| `npx expo run:android`                           | Run on Android emulator   |
+| `npm test`                                       | Run tests                 |
+| `eas build --platform ios --profile preview`     | Build iOS for testing     |
 | `eas build --platform android --profile preview` | Build Android for testing |
-| `eas build --platform all --profile production` | Production build |
+| `eas build --platform all --profile production`  | Production build          |
 
 ## License
 

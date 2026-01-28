@@ -1,34 +1,34 @@
-import React from 'react';
-import { StyleSheet, ScrollView, View, Switch, Linking, Alert, useColorScheme } from 'react-native';
-import { router, Stack, Href } from 'expo-router';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
-import { File, Paths } from 'expo-file-system';
-import { shareAsync, isAvailableAsync } from 'expo-sharing';
+import React from 'react'
+import { StyleSheet, ScrollView, View, Switch, Linking, Alert, useColorScheme } from 'react-native'
+import { router, Stack, Href } from 'expo-router'
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated'
+import { LinearGradient } from 'expo-linear-gradient'
+import { File, Paths } from 'expo-file-system'
+import { shareAsync, isAvailableAsync } from 'expo-sharing'
 
-import { ThemedView, ThemedText } from '@/components/Themed';
-import { usePurchaseStore } from '@/src/stores/purchaseStore';
-import { useSettingsStore } from '@/src/stores/settingsStore';
-import { useRecipeStore } from '@/src/stores/recipeStore';
-import { useMealPlanStore } from '@/src/stores/mealPlanStore';
-import { useGroceryStore } from '@/src/stores/groceryStore';
-import { usePantryStore } from '@/src/stores/pantryStore';
-import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
-import { Icon, IconProps } from '@/src/components/ui/Icon';
-import Colors, { shadows, radius, spacing, typography, gradients } from '@/constants/Colors';
+import { ThemedView, ThemedText } from '@/components/Themed'
+import { usePurchaseStore } from '@/src/stores/purchaseStore'
+import { useSettingsStore } from '@/src/stores/settingsStore'
+import { useRecipeStore } from '@/src/stores/recipeStore'
+import { useMealPlanStore } from '@/src/stores/mealPlanStore'
+import { useGroceryStore } from '@/src/stores/groceryStore'
+import { usePantryStore } from '@/src/stores/pantryStore'
+import AnimatedPressable from '@/src/components/ui/AnimatedPressable'
+import { Icon, IconProps } from '@/src/components/ui/Icon'
+import Colors, { shadows, radius, spacing, typography, gradients } from '@/constants/Colors'
 
-type IconName = IconProps['name'];
+type IconName = IconProps['name']
 
 interface SettingsRowProps {
-  icon: IconName;
-  iconColor?: string;
-  title: string;
-  subtitle?: string;
-  value?: string;
-  onPress?: () => void;
-  rightElement?: React.ReactNode;
-  danger?: boolean;
-  index?: number;
+  icon: IconName
+  iconColor?: string
+  title: string
+  subtitle?: string
+  value?: string
+  onPress?: () => void
+  rightElement?: React.ReactNode
+  danger?: boolean
+  index?: number
 }
 
 function SettingsRow({
@@ -42,15 +42,15 @@ function SettingsRow({
   danger,
   index = 0,
 }: SettingsRowProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
 
   const bgColor = danger
     ? colors.errorBackground
     : iconColor
-    ? iconColor + '20'
-    : colors.accentSubtle;
-  const iconColorFinal = danger ? colors.error : iconColor || colors.tint;
+      ? iconColor + '20'
+      : colors.accentSubtle
+  const iconColorFinal = danger ? colors.error : iconColor || colors.tint
 
   return (
     <AnimatedPressable
@@ -74,33 +74,27 @@ function SettingsRow({
         )}
       </View>
       {value && (
-        <ThemedText style={[styles.rowValue, { color: colors.textTertiary }]}>
-          {value}
-        </ThemedText>
+        <ThemedText style={[styles.rowValue, { color: colors.textTertiary }]}>{value}</ThemedText>
       )}
-      {rightElement || (onPress && <Icon name="chevron-forward" size={18} color={colors.textTertiary} />)}
+      {rightElement ||
+        (onPress && <Icon name="chevron-forward" size={18} color={colors.textTertiary} />)}
     </AnimatedPressable>
-  );
+  )
 }
 
 interface SettingsSectionProps {
-  title: string;
-  children: React.ReactNode;
-  index?: number;
+  title: string
+  children: React.ReactNode
+  index?: number
 }
 
 function SettingsSection({ title, children, index = 0 }: SettingsSectionProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
 
   return (
-    <Animated.View
-      entering={FadeIn.delay(100 * index).duration(300)}
-      style={styles.section}
-    >
-      <ThemedText style={[styles.sectionTitle, { color: colors.textTertiary }]}>
-        {title}
-      </ThemedText>
+    <Animated.View entering={FadeIn.delay(100 * index).duration(300)} style={styles.section}>
+      <ThemedText style={[styles.sectionTitle, { color: colors.textTertiary }]}>{title}</ThemedText>
       <View style={[styles.sectionContent, { backgroundColor: colors.card }, shadows.small]}>
         {React.Children.map(children, (child, childIndex) => (
           <>
@@ -112,30 +106,31 @@ function SettingsSection({ title, children, index = 0 }: SettingsSectionProps) {
         ))}
       </View>
     </Animated.View>
-  );
+  )
 }
 
 export default function SettingsScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const themeGradients = gradients[colorScheme ?? 'light'];
-  const { isPremium, remainingFreeExtractions, restorePurchases, isRevenueCatAvailable } = usePurchaseStore();
-  const { hapticFeedback, setHapticFeedback, clearAllData } = useSettingsStore();
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const themeGradients = gradients[colorScheme ?? 'light']
+  const { isPremium, remainingFreeExtractions, restorePurchases, isRevenueCatAvailable } =
+    usePurchaseStore()
+  const { hapticFeedback, setHapticFeedback, clearAllData } = useSettingsStore()
 
   // Data stores for export
-  const { loadRecipes } = useRecipeStore();
-  const { loadMealPlans } = useMealPlanStore();
-  const { loadAllLists } = useGroceryStore();
-  const { loadItems: loadPantryItems } = usePantryStore();
+  const { loadRecipes } = useRecipeStore()
+  const { loadMealPlans } = useMealPlanStore()
+  const { loadAllLists } = useGroceryStore()
+  const { loadItems: loadPantryItems } = usePantryStore()
 
   const handleRestorePurchases = async () => {
     try {
-      await restorePurchases();
-      Alert.alert('Success', 'Purchases restored successfully.');
+      await restorePurchases()
+      Alert.alert('Success', 'Purchases restored successfully.')
     } catch (error) {
-      Alert.alert('Error', 'Failed to restore purchases. Please try again.');
+      Alert.alert('Error', 'Failed to restore purchases. Please try again.')
     }
-  };
+  }
 
   const handleExportData = () => {
     Alert.alert(
@@ -148,28 +143,23 @@ export default function SettingsScreen() {
           onPress: async () => {
             try {
               // Check if sharing is available
-              const isSharingAvailable = await isAvailableAsync();
+              const isSharingAvailable = await isAvailableAsync()
               if (!isSharingAvailable) {
-                Alert.alert('Error', 'Sharing is not available on this device.');
-                return;
+                Alert.alert('Error', 'Sharing is not available on this device.')
+                return
               }
 
               // Load all data from stores
-              await Promise.all([
-                loadRecipes(),
-                loadMealPlans(),
-                loadAllLists(),
-                loadPantryItems(),
-              ]);
+              await Promise.all([loadRecipes(), loadMealPlans(), loadAllLists(), loadPantryItems()])
 
               // Get current state from stores
-              const recipes = useRecipeStore.getState().recipes;
-              const mealPlans = useMealPlanStore.getState().mealPlans;
-              const lists = useGroceryStore.getState().lists;
-              const pantryItems = usePantryStore.getState().items;
+              const recipes = useRecipeStore.getState().recipes
+              const mealPlans = useMealPlanStore.getState().mealPlans
+              const lists = useGroceryStore.getState().lists
+              const pantryItems = usePantryStore.getState().items
 
               // Build export data
-              const timestamp = new Date().toISOString();
+              const timestamp = new Date().toISOString()
               const exportData = {
                 exportedAt: timestamp,
                 appVersion: '1.0.0',
@@ -195,31 +185,31 @@ export default function SettingsScreen() {
                   })),
                   pantryItems,
                 },
-              };
+              }
 
-              const jsonString = JSON.stringify(exportData, null, 2);
-              const date = new Date().toISOString().split('T')[0];
-              const fileName = `recipe-to-reality-complete-export-${date}.json`;
+              const jsonString = JSON.stringify(exportData, null, 2)
+              const date = new Date().toISOString().split('T')[0]
+              const fileName = `recipe-to-reality-complete-export-${date}.json`
 
               // Create file in cache directory
-              const file = new File(Paths.cache, fileName);
-              file.write(jsonString);
+              const file = new File(Paths.cache, fileName)
+              file.write(jsonString)
 
               // Share the file
               await shareAsync(file.uri, {
                 mimeType: 'application/json',
                 dialogTitle: 'Export All Data',
                 UTI: 'public.json',
-              });
+              })
             } catch (error) {
-              console.error('Export error:', error);
-              Alert.alert('Export Failed', 'Unable to export data. Please try again.');
+              console.error('Export error:', error)
+              Alert.alert('Export Failed', 'Unable to export data. Please try again.')
             }
           },
         },
       ]
-    );
-  };
+    )
+  }
 
   const handleClearData = () => {
     Alert.alert(
@@ -233,8 +223,8 @@ export default function SettingsScreen() {
           onPress: () => clearAllData(),
         },
       ]
-    );
-  };
+    )
+  }
 
   return (
     <>
@@ -251,10 +241,7 @@ export default function SettingsScreen() {
         contentInsetAdjustmentBehavior="automatic"
       >
         {/* App Header Card */}
-        <Animated.View
-          entering={FadeIn.duration(400)}
-          style={[styles.headerCard, shadows.medium]}
-        >
+        <Animated.View entering={FadeIn.duration(400)} style={[styles.headerCard, shadows.medium]}>
           <LinearGradient
             colors={themeGradients.primary}
             start={{ x: 0, y: 0 }}
@@ -376,19 +363,11 @@ export default function SettingsScreen() {
             subtitle="Download all your recipes"
             onPress={handleExportData}
           />
-          <SettingsRow
-            icon="trash"
-            title="Clear All Data"
-            danger
-            onPress={handleClearData}
-          />
+          <SettingsRow icon="trash" title="Clear All Data" danger onPress={handleClearData} />
         </SettingsSection>
 
         {/* Footer */}
-        <Animated.View
-          entering={FadeIn.delay(600).duration(300)}
-          style={styles.footer}
-        >
+        <Animated.View entering={FadeIn.delay(600).duration(300)} style={styles.footer}>
           <ThemedText style={[styles.footerText, { color: colors.textTertiary }]}>
             Made with love for home cooks
           </ThemedText>
@@ -398,7 +377,7 @@ export default function SettingsScreen() {
         </Animated.View>
       </ScrollView>
     </>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -495,4 +474,4 @@ const styles = StyleSheet.create({
   footerCopyright: {
     ...typography.caption,
   },
-});
+})

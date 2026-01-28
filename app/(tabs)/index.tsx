@@ -1,8 +1,16 @@
-import React, { useCallback, useState } from 'react';
-import { StyleSheet, FlatList, View, Pressable, useColorScheme, Platform, Alert } from 'react-native';
-import { router, Stack } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
-import * as Haptics from 'expo-haptics';
+import React, { useCallback, useState } from 'react'
+import {
+  StyleSheet,
+  FlatList,
+  View,
+  Pressable,
+  useColorScheme,
+  Platform,
+  Alert,
+} from 'react-native'
+import { router, Stack } from 'expo-router'
+import { useFocusEffect } from '@react-navigation/native'
+import * as Haptics from 'expo-haptics'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -10,50 +18,55 @@ import Animated, {
   interpolateColor,
   FadeIn,
   Layout,
-} from 'react-native-reanimated';
+} from 'react-native-reanimated'
 
-import { ThemedView, ThemedText } from '@/components/Themed';
-import { useRecipeStore } from '@/src/stores/recipeStore';
-import { useSettingsStore } from '@/src/stores/settingsStore';
-import { RecipeWithIngredients } from '@/src/types';
-import RecipeRow from '@/src/components/RecipeRow';
-import EmptyState from '@/src/components/EmptyState';
-import { SkeletonRecipeList } from '@/src/components/ui/SkeletonLoader';
-import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
-import { Icon } from '@/src/components/ui/Icon';
-import Colors, { shadows, radius, spacing, typography, animation } from '@/constants/Colors';
+import { ThemedView, ThemedText } from '@/components/Themed'
+import { useRecipeStore } from '@/src/stores/recipeStore'
+import { useSettingsStore } from '@/src/stores/settingsStore'
+import { RecipeWithIngredients } from '@/src/types'
+import RecipeRow from '@/src/components/RecipeRow'
+import EmptyState from '@/src/components/EmptyState'
+import { SkeletonRecipeList } from '@/src/components/ui/SkeletonLoader'
+import AnimatedPressable from '@/src/components/ui/AnimatedPressable'
+import { Icon } from '@/src/components/ui/Icon'
+import Colors, { shadows, radius, spacing, typography, animation } from '@/constants/Colors'
 
-type SortOption = 'dateAdded' | 'name' | 'cookTime';
-type FilterOption = 'all' | 'queue' | 'cooked';
+type SortOption = 'dateAdded' | 'name' | 'cookTime'
+type FilterOption = 'all' | 'queue' | 'cooked'
 
 const FILTER_OPTIONS: { key: FilterOption; label: string }[] = [
   { key: 'all', label: 'All' },
   { key: 'queue', label: 'To Cook' },
   { key: 'cooked', label: 'Cooked' },
-];
+]
 
 const SORT_OPTIONS: { key: SortOption; label: string; icon: string }[] = [
   { key: 'dateAdded', label: 'Recently Added', icon: 'calendar' },
   { key: 'name', label: 'Name', icon: 'text' },
   { key: 'cookTime', label: 'Cook Time', icon: 'time' },
-];
+]
 
 function SegmentedControl({
   options,
   selectedKey,
   onSelect,
 }: {
-  options: { key: string; label: string }[];
-  selectedKey: string;
-  onSelect: (key: string) => void;
+  options: { key: string; label: string }[]
+  selectedKey: string
+  onSelect: (key: string) => void
 }) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
 
   return (
-    <View style={[styles.segmentedControl, { backgroundColor: colorScheme === 'dark' ? colors.cardElevated : '#E8E8ED' }]}>
+    <View
+      style={[
+        styles.segmentedControl,
+        { backgroundColor: colorScheme === 'dark' ? colors.cardElevated : '#E8E8ED' },
+      ]}
+    >
       {options.map((option) => {
-        const isSelected = option.key === selectedKey;
+        const isSelected = option.key === selectedKey
         return (
           <AnimatedPressable
             key={option.key}
@@ -81,102 +94,110 @@ function SegmentedControl({
               {option.label}
             </ThemedText>
           </AnimatedPressable>
-        );
+        )
       })}
     </View>
-  );
+  )
 }
 
 export default function RecipesScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const { recipes, loadRecipes, searchRecipes, isLoading, toggleQueue, markAsCooked, deleteRecipe } = useRecipeStore();
-  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const {
+    recipes,
+    loadRecipes,
+    searchRecipes,
+    isLoading,
+    toggleQueue,
+    markAsCooked,
+    deleteRecipe,
+  } = useRecipeStore()
+  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback)
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<SortOption>('dateAdded');
-  const [filter, setFilter] = useState<FilterOption>('all');
-  const [showSortMenu, setShowSortMenu] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('')
+  const [sortBy, setSortBy] = useState<SortOption>('dateAdded')
+  const [filter, setFilter] = useState<FilterOption>('all')
+  const [showSortMenu, setShowSortMenu] = useState(false)
 
   useFocusEffect(
     useCallback(() => {
-      loadRecipes();
+      loadRecipes()
     }, [loadRecipes])
-  );
+  )
 
   const triggerHaptic = () => {
     if (hapticFeedback) {
-      Haptics.selectionAsync();
+      Haptics.selectionAsync()
     }
-  };
+  }
 
   const handleFilterChange = (newFilter: string) => {
-    triggerHaptic();
-    setFilter(newFilter as FilterOption);
-  };
+    triggerHaptic()
+    setFilter(newFilter as FilterOption)
+  }
 
   const extractMinutes = (cookTime: string | null | undefined): number => {
-    if (!cookTime) return Number.MAX_VALUE;
-    const time = cookTime.toLowerCase();
-    let totalMinutes = 0;
+    if (!cookTime) return Number.MAX_VALUE
+    const time = cookTime.toLowerCase()
+    let totalMinutes = 0
 
-    const hourMatch = time.match(/(\d+)\s*(?:hour|hr|h)/);
+    const hourMatch = time.match(/(\d+)\s*(?:hour|hr|h)/)
     if (hourMatch) {
-      totalMinutes += parseInt(hourMatch[1], 10) * 60;
+      totalMinutes += parseInt(hourMatch[1], 10) * 60
     }
 
-    const minMatch = time.match(/(\d+)\s*(?:min|m)/);
+    const minMatch = time.match(/(\d+)\s*(?:min|m)/)
     if (minMatch) {
-      totalMinutes += parseInt(minMatch[1], 10);
+      totalMinutes += parseInt(minMatch[1], 10)
     }
 
-    return totalMinutes === 0 ? Number.MAX_VALUE : totalMinutes;
-  };
+    return totalMinutes === 0 ? Number.MAX_VALUE : totalMinutes
+  }
 
   const filteredRecipes = React.useMemo(() => {
-    let result = searchQuery ? searchRecipes(searchQuery) : recipes;
+    let result = searchQuery ? searchRecipes(searchQuery) : recipes
 
     if (filter === 'queue') {
-      result = result.filter((r) => r.isInQueue);
+      result = result.filter((r) => r.isInQueue)
     } else if (filter === 'cooked') {
-      result = result.filter((r) => r.dateCooked !== null);
+      result = result.filter((r) => r.dateCooked !== null)
     }
 
     result = [...result].sort((a, b) => {
       switch (sortBy) {
         case 'name':
-          return a.title.localeCompare(b.title);
+          return a.title.localeCompare(b.title)
         case 'cookTime':
-          return extractMinutes(a.cookTime) - extractMinutes(b.cookTime);
+          return extractMinutes(a.cookTime) - extractMinutes(b.cookTime)
         case 'dateAdded':
         default:
-          return b.dateAdded - a.dateAdded;
+          return b.dateAdded - a.dateAdded
       }
-    });
+    })
 
-    return result;
-  }, [recipes, searchQuery, sortBy, filter, searchRecipes]);
+    return result
+  }, [recipes, searchQuery, sortBy, filter, searchRecipes])
 
   // Handle context menu actions
   const handleAddToQueue = async (recipe: RecipeWithIngredients) => {
     if (hapticFeedback) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     }
-    await toggleQueue(recipe.id);
-    loadRecipes();
-  };
+    await toggleQueue(recipe.id)
+    loadRecipes()
+  }
 
   const handleMarkAsCooked = async (recipe: RecipeWithIngredients) => {
     if (hapticFeedback) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
     }
-    await markAsCooked(recipe.id);
-    loadRecipes();
-  };
+    await markAsCooked(recipe.id)
+    loadRecipes()
+  }
 
   const handleAddToGroceryList = (recipe: RecipeWithIngredients) => {
-    router.push({ pathname: '/grocery/add-from-recipe', params: { recipeId: recipe.id } } as any);
-  };
+    router.push({ pathname: '/grocery/add-from-recipe', params: { recipeId: recipe.id } } as any)
+  }
 
   const handleDelete = (recipe: RecipeWithIngredients) => {
     Alert.alert('Delete Recipe', `Are you sure you want to delete "${recipe.title}"?`, [
@@ -185,12 +206,12 @@ export default function RecipesScreen() {
         text: 'Delete',
         style: 'destructive',
         onPress: async () => {
-          await deleteRecipe(recipe.id);
-          loadRecipes();
+          await deleteRecipe(recipe.id)
+          loadRecipes()
         },
       },
-    ]);
-  };
+    ])
+  }
 
   const renderRecipe = ({ item, index }: { item: RecipeWithIngredients; index: number }) => (
     <RecipeRow
@@ -202,18 +223,15 @@ export default function RecipesScreen() {
       onDelete={() => handleDelete(item)}
       enableLinkPreview={true}
     />
-  );
+  )
 
   // Render sort menu with backdrop
   const renderSortMenu = () => {
-    if (!showSortMenu) return null;
+    if (!showSortMenu) return null
 
     return (
       <>
-        <Pressable
-          style={StyleSheet.absoluteFillObject}
-          onPress={() => setShowSortMenu(false)}
-        />
+        <Pressable style={StyleSheet.absoluteFillObject} onPress={() => setShowSortMenu(false)} />
         <Animated.View
           entering={FadeIn.duration(150)}
           style={[
@@ -230,8 +248,8 @@ export default function RecipesScreen() {
               <AnimatedPressable
                 hapticType="selection"
                 onPress={() => {
-                  setSortBy(option.key);
-                  setShowSortMenu(false);
+                  setSortBy(option.key)
+                  setShowSortMenu(false)
                 }}
                 style={styles.sortMenuItem}
               >
@@ -241,16 +259,11 @@ export default function RecipesScreen() {
                   color={sortBy === option.key ? colors.tint : colors.textTertiary}
                 />
                 <ThemedText
-                  style={[
-                    styles.sortMenuText,
-                    sortBy === option.key && { color: colors.tint },
-                  ]}
+                  style={[styles.sortMenuText, sortBy === option.key && { color: colors.tint }]}
                 >
                   {option.label}
                 </ThemedText>
-                {sortBy === option.key && (
-                  <Icon name="checkmark" size={18} color={colors.tint} />
-                )}
+                {sortBy === option.key && <Icon name="checkmark" size={18} color={colors.tint} />}
               </AnimatedPressable>
               {index < SORT_OPTIONS.length - 1 && (
                 <View style={[styles.sortMenuDivider, { backgroundColor: colors.borderSubtle }]} />
@@ -259,8 +272,8 @@ export default function RecipesScreen() {
           ))}
         </Animated.View>
       </>
-    );
-  };
+    )
+  }
 
   return (
     <>
@@ -276,8 +289,8 @@ export default function RecipesScreen() {
             recipes.length > 0 ? (
               <AnimatedPressable
                 onPress={() => {
-                  triggerHaptic();
-                  setShowSortMenu(!showSortMenu);
+                  triggerHaptic()
+                  setShowSortMenu(!showSortMenu)
                 }}
                 hapticType="selection"
                 style={styles.headerButton}
@@ -288,8 +301,8 @@ export default function RecipesScreen() {
           headerRight: () => (
             <AnimatedPressable
               onPress={() => {
-                triggerHaptic();
-                router.push('/recipe/add');
+                triggerHaptic()
+                router.push('/recipe/add')
               }}
               hapticType="medium"
               style={styles.headerButton}
@@ -337,7 +350,7 @@ export default function RecipesScreen() {
         )}
       </ThemedView>
     </>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -403,4 +416,4 @@ const styles = StyleSheet.create({
     paddingTop: spacing.sm,
     paddingBottom: 120,
   },
-});
+})

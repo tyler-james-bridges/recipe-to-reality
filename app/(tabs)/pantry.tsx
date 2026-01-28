@@ -1,92 +1,93 @@
-import React, { useCallback, useState } from 'react';
-import { StyleSheet, View, ScrollView, SectionList, useColorScheme } from 'react-native';
-import { router, Stack, Href } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Icon } from '@/src/components/ui/Icon';
-import { useFocusEffect } from '@react-navigation/native';
-import * as Haptics from 'expo-haptics';
+import React, { useCallback, useState } from 'react'
+import { StyleSheet, View, ScrollView, SectionList, useColorScheme } from 'react-native'
+import { router, Stack, Href } from 'expo-router'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Icon } from '@/src/components/ui/Icon'
+import { useFocusEffect } from '@react-navigation/native'
+import * as Haptics from 'expo-haptics'
 
-import { ThemedView, ThemedText } from '@/components/Themed';
-import { usePantryStore } from '@/src/stores/pantryStore';
-import { useSettingsStore } from '@/src/stores/settingsStore';
-import { PantryItem, INGREDIENT_CATEGORIES, IngredientCategory } from '@/src/types';
-import PantryItemRow from '@/src/components/PantryItemRow';
-import EmptyState from '@/src/components/EmptyState';
-import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
-import Colors, { radius, spacing, typography } from '@/constants/Colors';
+import { ThemedView, ThemedText } from '@/components/Themed'
+import { usePantryStore } from '@/src/stores/pantryStore'
+import { useSettingsStore } from '@/src/stores/settingsStore'
+import { PantryItem, INGREDIENT_CATEGORIES, IngredientCategory } from '@/src/types'
+import PantryItemRow from '@/src/components/PantryItemRow'
+import EmptyState from '@/src/components/EmptyState'
+import AnimatedPressable from '@/src/components/ui/AnimatedPressable'
+import Colors, { radius, spacing, typography } from '@/constants/Colors'
 
-type FilterOption = 'all' | 'expiring' | IngredientCategory;
+type FilterOption = 'all' | 'expiring' | IngredientCategory
 
 export default function PantryScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const insets = useSafeAreaInsets();
-  const { items, loadItems, deleteItem } = usePantryStore();
-  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState<FilterOption>('all');
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const insets = useSafeAreaInsets()
+  const { items, loadItems, deleteItem } = usePantryStore()
+  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedFilter, setSelectedFilter] = useState<FilterOption>('all')
 
   useFocusEffect(
     useCallback(() => {
-      loadItems();
+      loadItems()
     }, [loadItems])
-  );
+  )
 
   const triggerHaptic = () => {
     if (hapticFeedback) {
-      Haptics.selectionAsync();
+      Haptics.selectionAsync()
     }
-  };
+  }
 
   const filteredItems = React.useMemo(() => {
-    let result = items;
+    let result = items
 
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter((item) => item.name.toLowerCase().includes(query));
+      const query = searchQuery.toLowerCase()
+      result = result.filter((item) => item.name.toLowerCase().includes(query))
     }
 
     if (selectedFilter === 'expiring') {
-      const threeDaysFromNow = Date.now() + 3 * 24 * 60 * 60 * 1000;
+      const threeDaysFromNow = Date.now() + 3 * 24 * 60 * 60 * 1000
       result = result.filter((item) => {
-        if (!item.expirationDate) return false;
-        return item.expirationDate <= threeDaysFromNow;
-      });
+        if (!item.expirationDate) return false
+        return item.expirationDate <= threeDaysFromNow
+      })
     } else if (selectedFilter !== 'all') {
-      result = result.filter((item) => item.category === selectedFilter);
+      result = result.filter((item) => item.category === selectedFilter)
     }
 
     return [...result].sort((a, b) => {
       if (a.expirationDate && b.expirationDate) {
-        return a.expirationDate - b.expirationDate;
+        return a.expirationDate - b.expirationDate
       }
-      if (a.expirationDate) return -1;
-      if (b.expirationDate) return 1;
-      return a.name.localeCompare(b.name);
-    });
-  }, [items, searchQuery, selectedFilter]);
+      if (a.expirationDate) return -1
+      if (b.expirationDate) return 1
+      return a.name.localeCompare(b.name)
+    })
+  }, [items, searchQuery, selectedFilter])
 
   const sections = React.useMemo(() => {
     if (selectedFilter !== 'all' && selectedFilter !== 'expiring') {
-      return [{ title: selectedFilter, data: filteredItems }];
+      return [{ title: selectedFilter, data: filteredItems }]
     }
 
-    const grouped: Record<string, PantryItem[]> = {};
+    const grouped: Record<string, PantryItem[]> = {}
     filteredItems.forEach((item) => {
-      const category = item.category || 'Other';
-      if (!grouped[category]) grouped[category] = [];
-      grouped[category].push(item);
-    });
+      const category = item.category || 'Other'
+      if (!grouped[category]) grouped[category] = []
+      grouped[category].push(item)
+    })
 
-    return INGREDIENT_CATEGORIES
-      .filter((cat) => grouped[cat]?.length > 0)
-      .map((category) => ({ title: category, data: grouped[category] }));
-  }, [filteredItems, selectedFilter]);
+    return INGREDIENT_CATEGORIES.filter((cat) => grouped[cat]?.length > 0).map((category) => ({
+      title: category,
+      data: grouped[category],
+    }))
+  }, [filteredItems, selectedFilter])
 
   const filterOptions: { key: string; label: string; icon?: any }[] = [
     { key: 'all', label: 'All' },
     { key: 'expiring', label: 'Expiring Soon', icon: 'time-outline' },
-  ];
+  ]
 
   const renderItem = ({ item, index }: { item: PantryItem; index: number }) => (
     <PantryItemRow
@@ -95,15 +96,13 @@ export default function PantryScreen() {
       onPress={() => router.push({ pathname: '/pantry/edit', params: { id: item.id } } as any)}
       index={index}
     />
-  );
+  )
 
   const renderSectionHeader = ({ section: { title } }: { section: { title: string } }) => (
     <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
-      <ThemedText style={[styles.sectionTitle, { color: colors.textTertiary }]}>
-        {title}
-      </ThemedText>
+      <ThemedText style={[styles.sectionTitle, { color: colors.textTertiary }]}>{title}</ThemedText>
     </View>
-  );
+  )
 
   return (
     <>
@@ -119,8 +118,8 @@ export default function PantryScreen() {
             <View style={styles.headerButtons}>
               <AnimatedPressable
                 onPress={() => {
-                  triggerHaptic();
-                  router.push('/what-can-i-make');
+                  triggerHaptic()
+                  router.push('/what-can-i-make')
                 }}
                 hapticType="selection"
                 style={styles.headerButton}
@@ -129,8 +128,8 @@ export default function PantryScreen() {
               </AnimatedPressable>
               <AnimatedPressable
                 onPress={() => {
-                  triggerHaptic();
-                  router.push('/pantry/add' as Href);
+                  triggerHaptic()
+                  router.push('/pantry/add' as Href)
                 }}
                 hapticType="medium"
                 style={styles.headerButton}
@@ -165,14 +164,17 @@ export default function PantryScreen() {
                     hapticType="selection"
                     scaleOnPress={0.95}
                     onPress={() => {
-                      triggerHaptic();
-                      setSelectedFilter(option.key as FilterOption);
+                      triggerHaptic()
+                      setSelectedFilter(option.key as FilterOption)
                     }}
                     style={[
                       styles.filterPill,
                       selectedFilter === option.key
                         ? { backgroundColor: colors.tint }
-                        : { backgroundColor: colorScheme === 'dark' ? colors.cardElevated : '#E8E8ED' },
+                        : {
+                            backgroundColor:
+                              colorScheme === 'dark' ? colors.cardElevated : '#E8E8ED',
+                          },
                     ]}
                   >
                     {option.icon && (
@@ -211,7 +213,7 @@ export default function PantryScreen() {
         )}
       </ThemedView>
     </>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -262,4 +264,4 @@ const styles = StyleSheet.create({
   list: {
     paddingBottom: 120,
   },
-});
+})

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'
 import {
   StyleSheet,
   ScrollView,
@@ -7,25 +7,25 @@ import {
   Linking,
   Platform,
   useColorScheme,
-} from 'react-native';
-import { Stack } from 'expo-router';
-import { Icon } from '@/src/components/ui/Icon';
-import Animated, { FadeIn, FadeInDown, SlideInRight } from 'react-native-reanimated';
-import * as Notifications from 'expo-notifications';
-import * as Haptics from 'expo-haptics';
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+} from 'react-native'
+import { Stack } from 'expo-router'
+import { Icon } from '@/src/components/ui/Icon'
+import Animated, { FadeIn, FadeInDown, SlideInRight } from 'react-native-reanimated'
+import * as Notifications from 'expo-notifications'
+import * as Haptics from 'expo-haptics'
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker'
 
-import { ThemedText } from '@/components/Themed';
-import { useSettingsStore } from '@/src/stores/settingsStore';
-import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
-import ModernButton from '@/src/components/ui/ModernButton';
-import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors';
+import { ThemedText } from '@/components/Themed'
+import { useSettingsStore } from '@/src/stores/settingsStore'
+import AnimatedPressable from '@/src/components/ui/AnimatedPressable'
+import ModernButton from '@/src/components/ui/ModernButton'
+import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors'
 
-type PermissionStatus = 'granted' | 'denied' | 'undetermined';
+type PermissionStatus = 'granted' | 'denied' | 'undetermined'
 
 export default function NotificationsSettingsScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
   const {
     notificationsEnabled,
     setNotificationsEnabled,
@@ -33,106 +33,106 @@ export default function NotificationsSettingsScreen() {
     reminderTimeMinute,
     setReminderTime,
     hapticFeedback,
-  } = useSettingsStore();
+  } = useSettingsStore()
 
-  const [permissionStatus, setPermissionStatus] = useState<PermissionStatus>('undetermined');
-  const [isRequestingPermission, setIsRequestingPermission] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [permissionStatus, setPermissionStatus] = useState<PermissionStatus>('undetermined')
+  const [isRequestingPermission, setIsRequestingPermission] = useState(false)
+  const [showTimePicker, setShowTimePicker] = useState(false)
 
   // Create a Date object from the stored hour/minute for the picker
-  const reminderDate = new Date();
-  reminderDate.setHours(reminderTimeHour);
-  reminderDate.setMinutes(reminderTimeMinute);
-  reminderDate.setSeconds(0);
+  const reminderDate = new Date()
+  reminderDate.setHours(reminderTimeHour)
+  reminderDate.setMinutes(reminderTimeMinute)
+  reminderDate.setSeconds(0)
 
   // Check current permission status
   const checkPermissionStatus = useCallback(async () => {
-    const { status } = await Notifications.getPermissionsAsync();
-    setPermissionStatus(status as PermissionStatus);
-  }, []);
+    const { status } = await Notifications.getPermissionsAsync()
+    setPermissionStatus(status as PermissionStatus)
+  }, [])
 
   useEffect(() => {
-    checkPermissionStatus();
-  }, [checkPermissionStatus]);
+    checkPermissionStatus()
+  }, [checkPermissionStatus])
 
   // Request notification permissions
   const requestPermissions = async () => {
     if (hapticFeedback) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     }
 
-    setIsRequestingPermission(true);
+    setIsRequestingPermission(true)
     try {
-      const { status } = await Notifications.requestPermissionsAsync();
-      setPermissionStatus(status as PermissionStatus);
+      const { status } = await Notifications.requestPermissionsAsync()
+      setPermissionStatus(status as PermissionStatus)
 
       if (status === 'granted') {
         if (hapticFeedback) {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
         }
       } else {
         if (hapticFeedback) {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
         }
       }
     } catch (error) {
-      console.error('Error requesting permissions:', error);
+      console.error('Error requesting permissions:', error)
       if (hapticFeedback) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
       }
     } finally {
-      setIsRequestingPermission(false);
+      setIsRequestingPermission(false)
     }
-  };
+  }
 
   // Open system settings
   const openSystemSettings = () => {
     if (hapticFeedback) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     }
-    Linking.openSettings();
-  };
+    Linking.openSettings()
+  }
 
   // Handle toggle change
   const handleToggleNotifications = async (enabled: boolean) => {
     if (hapticFeedback) {
-      Haptics.selectionAsync();
+      Haptics.selectionAsync()
     }
 
     if (enabled && permissionStatus !== 'granted') {
       // Request permissions if trying to enable and not granted
-      await requestPermissions();
+      await requestPermissions()
       // Only enable if permissions were granted
-      const { status } = await Notifications.getPermissionsAsync();
+      const { status } = await Notifications.getPermissionsAsync()
       if (status === 'granted') {
-        await setNotificationsEnabled(true);
+        await setNotificationsEnabled(true)
       }
     } else {
-      await setNotificationsEnabled(enabled);
+      await setNotificationsEnabled(enabled)
     }
-  };
+  }
 
   // Handle time picker change
   const handleTimeChange = async (event: DateTimePickerEvent, selectedDate?: Date) => {
     if (process.env.EXPO_OS === 'android') {
-      setShowTimePicker(false);
+      setShowTimePicker(false)
     }
 
     if (event.type === 'set' && selectedDate) {
       if (hapticFeedback) {
-        Haptics.selectionAsync();
+        Haptics.selectionAsync()
       }
-      await setReminderTime(selectedDate.getHours(), selectedDate.getMinutes());
+      await setReminderTime(selectedDate.getHours(), selectedDate.getMinutes())
     }
-  };
+  }
 
   // Format time for display
   const formatTime = (hour: number, minute: number): string => {
-    const period = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour % 12 || 12;
-    const displayMinute = minute.toString().padStart(2, '0');
-    return `${displayHour}:${displayMinute} ${period}`;
-  };
+    const period = hour >= 12 ? 'PM' : 'AM'
+    const displayHour = hour % 12 || 12
+    const displayMinute = minute.toString().padStart(2, '0')
+    return `${displayHour}:${displayMinute} ${period}`
+  }
 
   // Get permission status display info
   const getPermissionStatusInfo = () => {
@@ -143,14 +143,14 @@ export default function NotificationsSettingsScreen() {
           color: colors.success,
           icon: 'checkmark-circle' as const,
           bgColor: colors.successBackground,
-        };
+        }
       case 'denied':
         return {
           text: 'Notifications Denied',
           color: colors.error,
           icon: 'close-circle' as const,
           bgColor: colors.errorBackground,
-        };
+        }
       case 'undetermined':
       default:
         return {
@@ -158,11 +158,11 @@ export default function NotificationsSettingsScreen() {
           color: colors.warning,
           icon: 'alert-circle' as const,
           bgColor: colors.warningBackground,
-        };
+        }
     }
-  };
+  }
 
-  const statusInfo = getPermissionStatusInfo();
+  const statusInfo = getPermissionStatusInfo()
 
   return (
     <>
@@ -192,8 +192,8 @@ export default function NotificationsSettingsScreen() {
                 {permissionStatus === 'granted'
                   ? 'You will receive meal reminders'
                   : permissionStatus === 'denied'
-                  ? 'Enable in system settings'
-                  : 'Tap below to enable notifications'}
+                    ? 'Enable in system settings'
+                    : 'Tap below to enable notifications'}
               </ThemedText>
             </View>
           </View>
@@ -272,9 +272,9 @@ export default function NotificationsSettingsScreen() {
             <AnimatedPressable
               onPress={() => {
                 if (hapticFeedback) {
-                  Haptics.selectionAsync();
+                  Haptics.selectionAsync()
                 }
-                setShowTimePicker(true);
+                setShowTimePicker(true)
               }}
               hapticType="selection"
               scaleOnPress={0.99}
@@ -385,7 +385,7 @@ export default function NotificationsSettingsScreen() {
         )}
       </ScrollView>
     </>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -509,4 +509,4 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     paddingBottom: spacing.sm,
   },
-});
+})

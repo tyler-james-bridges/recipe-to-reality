@@ -3,14 +3,14 @@
  * Ported from HapticManager.swift
  */
 
-import * as Haptics from 'expo-haptics';
-import { useSettingsStore } from '../stores/settingsStore';
+import * as Haptics from 'expo-haptics'
+import { useSettingsStore } from '../stores/settingsStore'
 
 /**
  * Check if haptic feedback is enabled
  */
 function isEnabled(): boolean {
-  return useSettingsStore.getState().hapticFeedback;
+  return useSettingsStore.getState().hapticFeedback
 }
 
 /**
@@ -18,7 +18,7 @@ function isEnabled(): boolean {
  */
 export function lightImpact(): void {
   if (isEnabled()) {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
   }
 }
 
@@ -27,7 +27,7 @@ export function lightImpact(): void {
  */
 export function mediumImpact(): void {
   if (isEnabled()) {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
   }
 }
 
@@ -36,7 +36,7 @@ export function mediumImpact(): void {
  */
 export function heavyImpact(): void {
   if (isEnabled()) {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
   }
 }
 
@@ -45,7 +45,7 @@ export function heavyImpact(): void {
  */
 export function selection(): void {
   if (isEnabled()) {
-    Haptics.selectionAsync();
+    Haptics.selectionAsync()
   }
 }
 
@@ -54,7 +54,7 @@ export function selection(): void {
  */
 export function success(): void {
   if (isEnabled()) {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
   }
 }
 
@@ -63,7 +63,7 @@ export function success(): void {
  */
 export function warning(): void {
   if (isEnabled()) {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
   }
 }
 
@@ -72,7 +72,7 @@ export function warning(): void {
  */
 export function error(): void {
   if (isEnabled()) {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
   }
 }
 
@@ -87,6 +87,6 @@ export const HapticManager = {
   success,
   warning,
   error,
-};
+}
 
-export default HapticManager;
+export default HapticManager

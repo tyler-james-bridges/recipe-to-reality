@@ -1,48 +1,45 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, FlatList, View, Pressable } from 'react-native';
-import { router } from 'expo-router';
-import { MaterialIcon } from '@/src/components/ui/Icon';
+import React, { useEffect, useState } from 'react'
+import { StyleSheet, FlatList, View, Pressable } from 'react-native'
+import { router } from 'expo-router'
+import { MaterialIcon } from '@/src/components/ui/Icon'
 
-import { ThemedView, ThemedText } from '@/components/Themed';
-import { useRecipeStore } from '@/src/stores/recipeStore';
-import { usePantryStore } from '@/src/stores/pantryStore';
-import { RecipeWithIngredients } from '@/src/types';
-import { rankRecipesByPantry, getMissingIngredients } from '@/src/utils/pantryMatching';
-import EmptyState from '@/src/components/EmptyState';
+import { ThemedView, ThemedText } from '@/components/Themed'
+import { useRecipeStore } from '@/src/stores/recipeStore'
+import { usePantryStore } from '@/src/stores/pantryStore'
+import { RecipeWithIngredients } from '@/src/types'
+import { rankRecipesByPantry, getMissingIngredients } from '@/src/utils/pantryMatching'
+import EmptyState from '@/src/components/EmptyState'
 
 interface RankedRecipe {
-  recipe: RecipeWithIngredients;
-  matchPercentage: number;
-  missingCount: number;
+  recipe: RecipeWithIngredients
+  matchPercentage: number
+  missingCount: number
 }
 
 export default function WhatCanIMakeScreen() {
-  const { recipes, loadRecipes } = useRecipeStore();
-  const { items, loadItems } = usePantryStore();
-  const [rankedRecipes, setRankedRecipes] = useState<RankedRecipe[]>([]);
+  const { recipes, loadRecipes } = useRecipeStore()
+  const { items, loadItems } = usePantryStore()
+  const [rankedRecipes, setRankedRecipes] = useState<RankedRecipe[]>([])
 
   useEffect(() => {
     Promise.all([loadRecipes(), loadItems()]).then(() => {
-      const ranked = rankRecipesByPantry(recipes, items);
-      setRankedRecipes(ranked);
-    });
-  }, []);
+      const ranked = rankRecipesByPantry(recipes, items)
+      setRankedRecipes(ranked)
+    })
+  }, [])
 
   useEffect(() => {
     if (recipes.length > 0 && items.length > 0) {
-      const ranked = rankRecipesByPantry(recipes, items);
-      setRankedRecipes(ranked);
+      const ranked = rankRecipesByPantry(recipes, items)
+      setRankedRecipes(ranked)
     }
-  }, [recipes, items]);
+  }, [recipes, items])
 
   const renderRecipe = ({ item }: { item: RankedRecipe }) => {
-    const missingIngredients = getMissingIngredients(item.recipe, items);
+    const missingIngredients = getMissingIngredients(item.recipe, items)
 
     return (
-      <Pressable
-        style={styles.recipeCard}
-        onPress={() => router.push(`/recipe/${item.recipe.id}`)}
-      >
+      <Pressable style={styles.recipeCard} onPress={() => router.push(`/recipe/${item.recipe.id}`)}>
         <View style={styles.recipeHeader}>
           <ThemedText style={styles.recipeTitle} numberOfLines={2}>
             {item.recipe.title}
@@ -53,8 +50,8 @@ export default function WhatCanIMakeScreen() {
               item.matchPercentage >= 75
                 ? styles.matchBadgeHigh
                 : item.matchPercentage >= 50
-                ? styles.matchBadgeMedium
-                : styles.matchBadgeLow,
+                  ? styles.matchBadgeMedium
+                  : styles.matchBadgeLow,
             ]}
           >
             <ThemedText style={styles.matchText}>{item.matchPercentage}%</ThemedText>
@@ -94,8 +91,8 @@ export default function WhatCanIMakeScreen() {
           <MaterialIcon name="chevron-right" size={20} color="#ccc" />
         </View>
       </Pressable>
-    );
-  };
+    )
+  }
 
   if (items.length === 0) {
     return (
@@ -105,11 +102,11 @@ export default function WhatCanIMakeScreen() {
         message="Add items to your pantry to see what you can make"
         actionLabel="Go to Pantry"
         onAction={() => {
-          router.back();
-          router.push('/pantry');
+          router.back()
+          router.push('/pantry')
         }}
       />
-    );
+    )
   }
 
   if (recipes.length === 0) {
@@ -120,11 +117,11 @@ export default function WhatCanIMakeScreen() {
         message="Add some recipes to see what you can make"
         actionLabel="Add Recipe"
         onAction={() => {
-          router.back();
-          router.push('/recipe/add');
+          router.back()
+          router.push('/recipe/add')
         }}
       />
-    );
+    )
   }
 
   return (
@@ -144,14 +141,12 @@ export default function WhatCanIMakeScreen() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <ThemedText style={styles.emptyText}>
-              No recipes match your pantry items
-            </ThemedText>
+            <ThemedText style={styles.emptyText}>No recipes match your pantry items</ThemedText>
           </View>
         }
       />
     </ThemedView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -261,4 +256,4 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
   },
-});
+})

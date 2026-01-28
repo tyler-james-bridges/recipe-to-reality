@@ -1,36 +1,30 @@
-import React from 'react';
-import { Platform, useColorScheme } from 'react-native';
-import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { SymbolView } from 'expo-symbols';
-import Colors from '@/constants/Colors';
+import React from 'react'
+import { Platform, useColorScheme } from 'react-native'
+import { Tabs } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
+import { SymbolView } from 'expo-symbols'
+import Colors from '@/constants/Colors'
 
-type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
+type IoniconsName = React.ComponentProps<typeof Ionicons>['name']
 
 interface TabBarIconProps {
-  focused: boolean;
-  color: string;
-  size: number;
-  ionIcon: IoniconsName;
-  sfSymbol: string;
+  focused: boolean
+  color: string
+  size: number
+  ionIcon: IoniconsName
+  sfSymbol: string
 }
 
 function TabBarIcon({ focused, color, size, ionIcon, sfSymbol }: TabBarIconProps) {
   if (Platform.OS === 'ios') {
-    return (
-      <SymbolView
-        name={sfSymbol as any}
-        size={size}
-        tintColor={color}
-      />
-    );
+    return <SymbolView name={sfSymbol as any} size={size} tintColor={color} />
   }
-  return <Ionicons name={ionIcon} size={size} color={color} />;
+  return <Ionicons name={ionIcon} size={size} color={color} />
 }
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
 
   return (
     <Tabs
@@ -128,5 +122,5 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
-  );
+  )
 }

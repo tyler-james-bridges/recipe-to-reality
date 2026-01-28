@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, View, useColorScheme } from 'react-native';
+import React from 'react'
+import { StyleSheet, View, useColorScheme } from 'react-native'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -7,37 +7,34 @@ import Animated, {
   withDelay,
   interpolate,
   Extrapolation,
-} from 'react-native-reanimated';
-import { ThemedText } from '@/components/Themed';
-import { PantryItem } from '../types';
-import { isExpired, isExpiringSoon } from '../utils/pantryMatching';
-import { formatIngredient } from '../utils/quantity';
-import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors';
-import AnimatedPressable from './ui/AnimatedPressable';
-import Badge from './ui/Badge';
-import { Icon } from './ui/Icon';
+} from 'react-native-reanimated'
+import { ThemedText } from '@/components/Themed'
+import { PantryItem } from '../types'
+import { isExpired, isExpiringSoon } from '../utils/pantryMatching'
+import { formatIngredient } from '../utils/quantity'
+import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors'
+import AnimatedPressable from './ui/AnimatedPressable'
+import Badge from './ui/Badge'
+import { Icon } from './ui/Icon'
 
 interface PantryItemRowProps {
-  item: PantryItem;
-  onDelete: () => void;
-  onPress?: () => void;
-  index?: number;
+  item: PantryItem
+  onDelete: () => void
+  onPress?: () => void
+  index?: number
 }
 
 /**
  * Modern pantry item row with animations
  */
 export default function PantryItemRow({ item, onDelete, onPress, index = 0 }: PantryItemRowProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const progress = useSharedValue(0);
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const progress = useSharedValue(0)
 
   React.useEffect(() => {
-    progress.value = withDelay(
-      index * 40,
-      withSpring(1, { damping: 18, stiffness: 100 })
-    );
-  }, [index]);
+    progress.value = withDelay(index * 40, withSpring(1, { damping: 18, stiffness: 100 }))
+  }, [index])
 
   const rowAnimatedStyle = useAnimatedStyle(() => ({
     opacity: interpolate(progress.value, [0, 1], [0, 1], Extrapolation.CLAMP),
@@ -45,31 +42,31 @@ export default function PantryItemRow({ item, onDelete, onPress, index = 0 }: Pa
       { translateX: interpolate(progress.value, [0, 1], [-20, 0], Extrapolation.CLAMP) },
       { scale: interpolate(progress.value, [0, 1], [0.95, 1], Extrapolation.CLAMP) },
     ],
-  }));
+  }))
 
-  const expired = isExpired(item);
-  const expiringSoon = isExpiringSoon(item);
+  const expired = isExpired(item)
+  const expiringSoon = isExpiringSoon(item)
 
   const formatDate = (timestamp: number): string => {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
+    const date = new Date(timestamp)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  }
 
   const getCategoryIcon = (category?: string): string => {
     const icons: Record<string, string> = {
-      'Produce': 'leaf',
-      'Dairy': 'water',
-      'Meat': 'restaurant',
-      'Seafood': 'fish',
-      'Grains': 'nutrition',
-      'Spices': 'flame',
-      'Canned': 'cube',
-      'Frozen': 'snow',
-      'Beverages': 'cafe',
-      'Condiments': 'color-fill',
-    };
-    return icons[category || ''] || 'ellipse';
-  };
+      Produce: 'leaf',
+      Dairy: 'water',
+      Meat: 'restaurant',
+      Seafood: 'fish',
+      Grains: 'nutrition',
+      Spices: 'flame',
+      Canned: 'cube',
+      Frozen: 'snow',
+      Beverages: 'cafe',
+      Condiments: 'color-fill',
+    }
+    return icons[category || ''] || 'ellipse'
+  }
 
   return (
     <Animated.View style={rowAnimatedStyle}>
@@ -77,27 +74,16 @@ export default function PantryItemRow({ item, onDelete, onPress, index = 0 }: Pa
         onPress={onPress}
         hapticType="light"
         scaleOnPress={0.98}
-        style={[
-          styles.container,
-          { backgroundColor: colors.card },
-          shadows.small,
-        ]}
+        style={[styles.container, { backgroundColor: colors.card }, shadows.small]}
       >
         {/* Category Icon */}
         <View style={[styles.iconContainer, { backgroundColor: colors.accentSubtle }]}>
-          <Icon
-            name={getCategoryIcon(item.category) as any}
-            size={18}
-            color={colors.tint}
-          />
+          <Icon name={getCategoryIcon(item.category) as any} size={18} color={colors.tint} />
         </View>
 
         {/* Content */}
         <View style={styles.content}>
-          <ThemedText
-            style={[styles.name, expired && { color: colors.error }]}
-            numberOfLines={1}
-          >
+          <ThemedText style={[styles.name, expired && { color: colors.error }]} numberOfLines={1}>
             {formatIngredient(item.name, item.quantity, item.unit)}
           </ThemedText>
 
@@ -115,7 +101,11 @@ export default function PantryItemRow({ item, onDelete, onPress, index = 0 }: Pa
                 {expired ? (
                   <Badge label="Expired" variant="error" size="small" />
                 ) : expiringSoon ? (
-                  <Badge label={`Exp: ${formatDate(item.expirationDate)}`} variant="warning" size="small" />
+                  <Badge
+                    label={`Exp: ${formatDate(item.expirationDate)}`}
+                    variant="warning"
+                    size="small"
+                  />
                 ) : (
                   <ThemedText style={[styles.expirationText, { color: colors.textTertiary }]}>
                     Exp: {formatDate(item.expirationDate)}
@@ -130,7 +120,7 @@ export default function PantryItemRow({ item, onDelete, onPress, index = 0 }: Pa
         <Icon name="chevron-forward" size={18} color={colors.textTertiary} />
       </AnimatedPressable>
     </Animated.View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -174,4 +164,4 @@ const styles = StyleSheet.create({
   expirationText: {
     ...typography.caption,
   },
-});
+})

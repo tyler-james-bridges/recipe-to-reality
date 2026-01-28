@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react'
 import {
   StyleSheet,
   View,
@@ -9,30 +9,21 @@ import {
   useColorScheme,
   Image,
   Alert,
-} from 'react-native';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { Icon, MaterialIcon } from '@/src/components/ui/Icon';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import * as Haptics from 'expo-haptics';
-import Animated, {
-  FadeIn,
-  FadeInDown,
-  Layout,
-} from 'react-native-reanimated';
+} from 'react-native'
+import { router, Stack, useLocalSearchParams } from 'expo-router'
+import { Icon, MaterialIcon } from '@/src/components/ui/Icon'
+import DateTimePicker from '@react-native-community/datetimepicker'
+import * as Haptics from 'expo-haptics'
+import Animated, { FadeIn, FadeInDown, Layout } from 'react-native-reanimated'
 
-import { ThemedView, ThemedText } from '@/components/Themed';
-import { useMealPlanStore } from '@/src/stores/mealPlanStore';
-import { useRecipeStore } from '@/src/stores/recipeStore';
-import { useSettingsStore } from '@/src/stores/settingsStore';
-import {
-  MealType,
-  MEAL_TYPES,
-  MEAL_TYPE_DEFAULT_TIMES,
-  RecipeWithIngredients,
-} from '@/src/types';
-import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
-import ModernButton from '@/src/components/ui/ModernButton';
-import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors';
+import { ThemedView, ThemedText } from '@/components/Themed'
+import { useMealPlanStore } from '@/src/stores/mealPlanStore'
+import { useRecipeStore } from '@/src/stores/recipeStore'
+import { useSettingsStore } from '@/src/stores/settingsStore'
+import { MealType, MEAL_TYPES, MEAL_TYPE_DEFAULT_TIMES, RecipeWithIngredients } from '@/src/types'
+import AnimatedPressable from '@/src/components/ui/AnimatedPressable'
+import ModernButton from '@/src/components/ui/ModernButton'
+import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors'
 
 // Icon mapping for meal types
 const getMealTypeIcon = (mealType: MealType): string => {
@@ -41,112 +32,109 @@ const getMealTypeIcon = (mealType: MealType): string => {
     Lunch: 'weather-sunny',
     Dinner: 'weather-night',
     Snack: 'food-apple',
-  };
-  return icons[mealType];
-};
+  }
+  return icons[mealType]
+}
 
 export default function AddMealPlanScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const params = useLocalSearchParams<{ date?: string; mealType?: MealType }>();
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const params = useLocalSearchParams<{ date?: string; mealType?: MealType }>()
 
-  const { addMealPlan, requestNotificationPermissions } = useMealPlanStore();
-  const { recipes } = useRecipeStore();
-  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
+  const { addMealPlan, requestNotificationPermissions } = useMealPlanStore()
+  const { recipes } = useRecipeStore()
+  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback)
 
   // Initialize date from params or use today
-  const initialDate = params.date ? new Date(params.date) : new Date();
+  const initialDate = params.date ? new Date(params.date) : new Date()
 
   // Initialize meal type from params or default to Dinner
-  const initialMealType: MealType = params.mealType && MEAL_TYPES.includes(params.mealType)
-    ? params.mealType
-    : 'Dinner';
+  const initialMealType: MealType =
+    params.mealType && MEAL_TYPES.includes(params.mealType) ? params.mealType : 'Dinner'
 
   // State
-  const [selectedDate, setSelectedDate] = useState(initialDate);
-  const [selectedMealType, setSelectedMealType] = useState<MealType>(initialMealType);
-  const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null);
-  const [enableReminder, setEnableReminder] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(initialDate)
+  const [selectedMealType, setSelectedMealType] = useState<MealType>(initialMealType)
+  const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null)
+  const [enableReminder, setEnableReminder] = useState(false)
   const [reminderTime, setReminderTime] = useState(() => {
-    const defaultTime = MEAL_TYPE_DEFAULT_TIMES[initialMealType];
-    const date = new Date(initialDate);
-    date.setHours(defaultTime.hour, defaultTime.minute, 0, 0);
-    return date;
-  });
-  const [searchText, setSearchText] = useState('');
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
+    const defaultTime = MEAL_TYPE_DEFAULT_TIMES[initialMealType]
+    const date = new Date(initialDate)
+    date.setHours(defaultTime.hour, defaultTime.minute, 0, 0)
+    return date
+  })
+  const [searchText, setSearchText] = useState('')
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [showTimePicker, setShowTimePicker] = useState(false)
 
   // Derived state
   const filteredRecipes = useMemo(() => {
-    if (!searchText.trim()) return recipes;
-    const search = searchText.toLowerCase();
-    return recipes.filter((recipe) =>
-      recipe.title.toLowerCase().includes(search)
-    );
-  }, [recipes, searchText]);
+    if (!searchText.trim()) return recipes
+    const search = searchText.toLowerCase()
+    return recipes.filter((recipe) => recipe.title.toLowerCase().includes(search))
+  }, [recipes, searchText])
 
   const isValid = useMemo(() => {
-    return selectedRecipeId !== null;
-  }, [selectedRecipeId]);
+    return selectedRecipeId !== null
+  }, [selectedRecipeId])
 
   const selectedRecipe = useMemo(() => {
-    return recipes.find((r) => r.id === selectedRecipeId);
-  }, [recipes, selectedRecipeId]);
+    return recipes.find((r) => r.id === selectedRecipeId)
+  }, [recipes, selectedRecipeId])
 
   // Haptic feedback helper
   const triggerHaptic = useCallback(
     (type: 'light' | 'medium' | 'success' | 'selection') => {
-      if (!hapticFeedback) return;
+      if (!hapticFeedback) return
       switch (type) {
         case 'light':
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          break;
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+          break
         case 'medium':
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          break;
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+          break
         case 'success':
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          break;
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+          break
         case 'selection':
-          Haptics.selectionAsync();
-          break;
+          Haptics.selectionAsync()
+          break
       }
     },
     [hapticFeedback]
-  );
+  )
 
   // Update reminder time when meal type changes
   const handleMealTypeChange = (type: string) => {
-    triggerHaptic('selection');
-    const mealType = type as MealType;
-    setSelectedMealType(mealType);
+    triggerHaptic('selection')
+    const mealType = type as MealType
+    setSelectedMealType(mealType)
 
     // Update default reminder time
-    const defaultTime = MEAL_TYPE_DEFAULT_TIMES[mealType];
-    const newReminderTime = new Date(selectedDate);
-    newReminderTime.setHours(defaultTime.hour, defaultTime.minute, 0, 0);
-    setReminderTime(newReminderTime);
-  };
+    const defaultTime = MEAL_TYPE_DEFAULT_TIMES[mealType]
+    const newReminderTime = new Date(selectedDate)
+    newReminderTime.setHours(defaultTime.hour, defaultTime.minute, 0, 0)
+    setReminderTime(newReminderTime)
+  }
 
   // Handle recipe selection
   const handleRecipeSelect = (recipe: RecipeWithIngredients) => {
-    triggerHaptic('selection');
+    triggerHaptic('selection')
     if (selectedRecipeId === recipe.id) {
-      setSelectedRecipeId(null);
+      setSelectedRecipeId(null)
     } else {
-      setSelectedRecipeId(recipe.id);
+      setSelectedRecipeId(recipe.id)
     }
-  };
+  }
 
   // Handle save
   const handleSave = async () => {
-    if (!isValid) return;
+    if (!isValid) return
 
-    triggerHaptic('medium');
+    triggerHaptic('medium')
 
-    const mealDate = new Date(selectedDate);
-    mealDate.setHours(0, 0, 0, 0);
+    const mealDate = new Date(selectedDate)
+    mealDate.setHours(0, 0, 0, 0)
 
     try {
       await addMealPlan({
@@ -158,36 +146,36 @@ export default function AddMealPlanScreen() {
         isCompleted: false,
         reminder: enableReminder,
         reminderTime: enableReminder ? reminderTime.getTime() : null,
-      });
+      })
 
-      triggerHaptic('success');
-      router.back();
+      triggerHaptic('success')
+      router.back()
     } catch (error) {
-      console.error('Failed to add meal plan:', error);
+      console.error('Failed to add meal plan:', error)
     }
-  };
+  }
 
   // Format date for display
   const formatDate = (date: Date): string => {
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const today = new Date()
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
 
     if (date.toDateString() === today.toDateString()) {
-      return 'Today';
+      return 'Today'
     } else if (date.toDateString() === tomorrow.toDateString()) {
-      return 'Tomorrow';
+      return 'Tomorrow'
     }
     return date.toLocaleDateString('en-US', {
       weekday: 'long',
       month: 'short',
       day: 'numeric',
-    });
-  };
+    })
+  }
 
   // Render meal type chip with MaterialCommunityIcons
   const renderMealTypeChip = (type: MealType) => {
-    const isSelected = selectedMealType === type;
+    const isSelected = selectedMealType === type
     return (
       <AnimatedPressable
         key={type}
@@ -202,8 +190,8 @@ export default function AddMealPlanScreen() {
               backgroundColor: isSelected
                 ? colors.tint
                 : colorScheme === 'dark'
-                ? colors.cardElevated
-                : colors.skeleton,
+                  ? colors.cardElevated
+                  : colors.skeleton,
             },
           ]}
         >
@@ -213,21 +201,18 @@ export default function AddMealPlanScreen() {
             color={isSelected ? '#FFFFFF' : colors.textTertiary}
           />
           <ThemedText
-            style={[
-              styles.mealTypeChipLabel,
-              { color: isSelected ? '#FFFFFF' : colors.text },
-            ]}
+            style={[styles.mealTypeChipLabel, { color: isSelected ? '#FFFFFF' : colors.text }]}
           >
             {type}
           </ThemedText>
         </Animated.View>
       </AnimatedPressable>
-    );
-  };
+    )
+  }
 
   // Render reminder footer when recipe is selected
   const renderReminderFooter = () => {
-    if (!selectedRecipeId) return null;
+    if (!selectedRecipeId) return null
 
     return (
       <Animated.View
@@ -242,20 +227,20 @@ export default function AddMealPlanScreen() {
           <Switch
             value={enableReminder}
             onValueChange={async (value) => {
-              triggerHaptic('selection');
+              triggerHaptic('selection')
               if (value) {
                 // Request notification permissions when enabling reminder
-                const granted = await requestNotificationPermissions();
+                const granted = await requestNotificationPermissions()
                 if (!granted) {
                   Alert.alert(
                     'Notifications Disabled',
                     'Please enable notifications in Settings to receive meal reminders.',
                     [{ text: 'OK' }]
-                  );
-                  return;
+                  )
+                  return
                 }
               }
-              setEnableReminder(value);
+              setEnableReminder(value)
             }}
             trackColor={{ false: colors.border, true: colors.tint + '80' }}
             thumbColor={enableReminder ? colors.tint : '#f4f3f4'}
@@ -265,18 +250,15 @@ export default function AddMealPlanScreen() {
 
         {/* Reminder Time Picker */}
         {enableReminder && (
-          <Animated.View
-            entering={FadeIn.duration(200)}
-            style={styles.reminderTimeContainer}
-          >
+          <Animated.View entering={FadeIn.duration(200)} style={styles.reminderTimeContainer}>
             <View style={styles.reminderTimeRow}>
               <ThemedText style={[styles.reminderTimeLabel, { color: colors.textSecondary }]}>
                 Reminder Time
               </ThemedText>
               <AnimatedPressable
                 onPress={() => {
-                  triggerHaptic('selection');
-                  setShowTimePicker(true);
+                  triggerHaptic('selection')
+                  setShowTimePicker(true)
                 }}
                 hapticType="selection"
                 style={[styles.timeButton, { backgroundColor: colors.secondaryBackground }]}
@@ -298,7 +280,7 @@ export default function AddMealPlanScreen() {
                   display="spinner"
                   onChange={(event, time) => {
                     if (time) {
-                      setReminderTime(time);
+                      setReminderTime(time)
                     }
                   }}
                   style={styles.timePicker}
@@ -319,9 +301,9 @@ export default function AddMealPlanScreen() {
                 mode="time"
                 display="default"
                 onChange={(event, time) => {
-                  setShowTimePicker(false);
+                  setShowTimePicker(false)
                   if (time) {
-                    setReminderTime(time);
+                    setReminderTime(time)
                   }
                 }}
               />
@@ -329,12 +311,12 @@ export default function AddMealPlanScreen() {
           </Animated.View>
         )}
       </Animated.View>
-    );
-  };
+    )
+  }
 
   // Render recipe selection row
   const renderRecipeRow = ({ item }: { item: RecipeWithIngredients }) => {
-    const isSelected = selectedRecipeId === item.id;
+    const isSelected = selectedRecipeId === item.id
 
     return (
       <AnimatedPressable
@@ -355,12 +337,7 @@ export default function AddMealPlanScreen() {
           {item.imageURL ? (
             <Image source={{ uri: item.imageURL }} style={styles.recipeImage} />
           ) : (
-            <View
-              style={[
-                styles.recipeImagePlaceholder,
-                { backgroundColor: colors.skeleton },
-              ]}
-            >
+            <View style={[styles.recipeImagePlaceholder, { backgroundColor: colors.skeleton }]}>
               <Icon name="restaurant" size={20} color={colors.textTertiary} />
             </View>
           )}
@@ -398,8 +375,8 @@ export default function AddMealPlanScreen() {
           />
         </Animated.View>
       </AnimatedPressable>
-    );
-  };
+    )
+  }
 
   return (
     <>
@@ -409,22 +386,16 @@ export default function AddMealPlanScreen() {
           headerLeft: () => (
             <AnimatedPressable
               onPress={() => {
-                triggerHaptic('light');
-                router.back();
+                triggerHaptic('light')
+                router.back()
               }}
               hapticType="light"
             >
-              <ThemedText style={[styles.headerButton, { color: colors.tint }]}>
-                Cancel
-              </ThemedText>
+              <ThemedText style={[styles.headerButton, { color: colors.tint }]}>Cancel</ThemedText>
             </AnimatedPressable>
           ),
           headerRight: () => (
-            <AnimatedPressable
-              onPress={handleSave}
-              disabled={!isValid}
-              hapticType="medium"
-            >
+            <AnimatedPressable onPress={handleSave} disabled={!isValid} hapticType="medium">
               <ThemedText
                 style={[
                   styles.headerButton,
@@ -461,8 +432,8 @@ export default function AddMealPlanScreen() {
                 <ThemedText style={styles.mealTypeTitle}>{selectedMealType}</ThemedText>
                 <AnimatedPressable
                   onPress={() => {
-                    triggerHaptic('selection');
-                    setShowDatePicker(true);
+                    triggerHaptic('selection')
+                    setShowDatePicker(true)
                   }}
                   hapticType="selection"
                 >
@@ -482,11 +453,16 @@ export default function AddMealPlanScreen() {
                   display="inline"
                   onChange={(event, date) => {
                     if (date) {
-                      setSelectedDate(date);
+                      setSelectedDate(date)
                       // Update reminder time to keep the same hour/minute on new date
-                      const newReminderTime = new Date(date);
-                      newReminderTime.setHours(reminderTime.getHours(), reminderTime.getMinutes(), 0, 0);
-                      setReminderTime(newReminderTime);
+                      const newReminderTime = new Date(date)
+                      newReminderTime.setHours(
+                        reminderTime.getHours(),
+                        reminderTime.getMinutes(),
+                        0,
+                        0
+                      )
+                      setReminderTime(newReminderTime)
                     }
                   }}
                   accentColor={colors.tint}
@@ -509,12 +485,17 @@ export default function AddMealPlanScreen() {
                 mode="date"
                 display="default"
                 onChange={(event, date) => {
-                  setShowDatePicker(false);
+                  setShowDatePicker(false)
                   if (date) {
-                    setSelectedDate(date);
-                    const newReminderTime = new Date(date);
-                    newReminderTime.setHours(reminderTime.getHours(), reminderTime.getMinutes(), 0, 0);
-                    setReminderTime(newReminderTime);
+                    setSelectedDate(date)
+                    const newReminderTime = new Date(date)
+                    newReminderTime.setHours(
+                      reminderTime.getHours(),
+                      reminderTime.getMinutes(),
+                      0,
+                      0
+                    )
+                    setReminderTime(newReminderTime)
                   }
                 }}
               />
@@ -522,9 +503,7 @@ export default function AddMealPlanScreen() {
 
             {/* Meal Type Selector */}
             <View style={styles.mealTypeSelector}>
-              <View style={styles.mealTypeChipGroup}>
-                {MEAL_TYPES.map(renderMealTypeChip)}
-              </View>
+              <View style={styles.mealTypeChipGroup}>{MEAL_TYPES.map(renderMealTypeChip)}</View>
             </View>
           </Animated.View>
 
@@ -551,10 +530,7 @@ export default function AddMealPlanScreen() {
                   autoCorrect={false}
                 />
                 {searchText.length > 0 && (
-                  <AnimatedPressable
-                    onPress={() => setSearchText('')}
-                    hapticType="light"
-                  >
+                  <AnimatedPressable onPress={() => setSearchText('')} hapticType="light">
                     <Icon name="close-circle" size={18} color={colors.textTertiary} />
                   </AnimatedPressable>
                 )}
@@ -563,10 +539,7 @@ export default function AddMealPlanScreen() {
 
             {/* Recipe List or Empty State */}
             {recipes.length === 0 ? (
-              <Animated.View
-                entering={FadeIn.duration(300)}
-                style={styles.emptyState}
-              >
+              <Animated.View entering={FadeIn.duration(300)} style={styles.emptyState}>
                 <Icon name="book-outline" size={48} color={colors.textTertiary} />
                 <ThemedText style={[styles.emptyTitle, { color: colors.text }]}>
                   No Recipes
@@ -576,10 +549,7 @@ export default function AddMealPlanScreen() {
                 </ThemedText>
               </Animated.View>
             ) : filteredRecipes.length === 0 ? (
-              <Animated.View
-                entering={FadeIn.duration(300)}
-                style={styles.emptyState}
-              >
+              <Animated.View entering={FadeIn.duration(300)} style={styles.emptyState}>
                 <Icon name="search" size={48} color={colors.textTertiary} />
                 <ThemedText style={[styles.emptyTitle, { color: colors.text }]}>
                   No Results
@@ -603,7 +573,7 @@ export default function AddMealPlanScreen() {
         </ThemedView>
       </KeyboardAvoidingView>
     </>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -794,4 +764,4 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: spacing.sm,
   },
-});
+})

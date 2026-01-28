@@ -1,25 +1,25 @@
-import React from 'react';
-import { StyleSheet, ViewStyle, StyleProp, useColorScheme, View } from 'react-native';
+import React from 'react'
+import { StyleSheet, ViewStyle, StyleProp, useColorScheme, View } from 'react-native'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   interpolateColor,
-} from 'react-native-reanimated';
-import AnimatedPressable from './AnimatedPressable';
-import Colors, { radius, typography, spacing, animation } from '@/constants/Colors';
-import { ThemedText } from '@/components/Themed';
-import { Icon, IconProps } from './Icon';
+} from 'react-native-reanimated'
+import AnimatedPressable from './AnimatedPressable'
+import Colors, { radius, typography, spacing, animation } from '@/constants/Colors'
+import { ThemedText } from '@/components/Themed'
+import { Icon, IconProps } from './Icon'
 
-type IconName = IconProps['name'];
+type IconName = IconProps['name']
 
 interface ChipProps {
-  label: string;
-  selected?: boolean;
-  onPress?: () => void;
-  icon?: IconName;
-  disabled?: boolean;
-  style?: StyleProp<ViewStyle>;
+  label: string
+  selected?: boolean
+  onPress?: () => void
+  icon?: IconName
+  disabled?: boolean
+  style?: StyleProp<ViewStyle>
 }
 
 export default function Chip({
@@ -30,35 +30,32 @@ export default function Chip({
   disabled = false,
   style,
 }: ChipProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
 
-  const selectedValue = useSharedValue(selected ? 1 : 0);
+  const selectedValue = useSharedValue(selected ? 1 : 0)
 
   React.useEffect(() => {
     selectedValue.value = withSpring(selected ? 1 : 0, {
       damping: animation.spring.damping,
       stiffness: animation.spring.stiffness,
-    });
-  }, [selected]);
+    })
+  }, [selected])
 
   const animatedContainerStyle = useAnimatedStyle(() => {
     const backgroundColor = interpolateColor(
       selectedValue.value,
       [0, 1],
-      [
-        colorScheme === 'dark' ? colors.cardElevated : colors.skeleton,
-        colors.tint,
-      ]
-    );
+      [colorScheme === 'dark' ? colors.cardElevated : colors.skeleton, colors.tint]
+    )
 
     return {
       backgroundColor,
-    };
-  });
+    }
+  })
 
-  const textColor = selected ? '#FFFFFF' : colors.text;
-  const iconColor = selected ? '#FFFFFF' : colors.textTertiary;
+  const textColor = selected ? '#FFFFFF' : colors.text
+  const iconColor = selected ? '#FFFFFF' : colors.textTertiary
 
   return (
     <AnimatedPressable
@@ -69,13 +66,11 @@ export default function Chip({
       style={[disabled && styles.disabled]}
     >
       <Animated.View style={[styles.container, animatedContainerStyle, style]}>
-        {icon && (
-          <Icon name={icon} size={14} color={iconColor} style={styles.icon} />
-        )}
+        {icon && <Icon name={icon} size={14} color={iconColor} style={styles.icon} />}
         <ThemedText style={[styles.label, { color: textColor }]}>{label}</ThemedText>
       </Animated.View>
     </AnimatedPressable>
-  );
+  )
 }
 
 export function ChipGroup({
@@ -84,10 +79,10 @@ export function ChipGroup({
   onSelect,
   style,
 }: {
-  options: { key: string; label: string; icon?: IconName }[];
-  selectedKey: string;
-  onSelect: (key: string) => void;
-  style?: StyleProp<ViewStyle>;
+  options: { key: string; label: string; icon?: IconName }[]
+  selectedKey: string
+  onSelect: (key: string) => void
+  style?: StyleProp<ViewStyle>
 }) {
   return (
     <View style={[styles.group, style]}>
@@ -101,7 +96,7 @@ export function ChipGroup({
         />
       ))}
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -126,4 +121,4 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: spacing.sm,
   },
-});
+})

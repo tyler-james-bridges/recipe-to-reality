@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'
 import {
   StyleSheet,
   ScrollView,
@@ -10,23 +10,23 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-} from 'react-native';
-import { Stack, router } from 'expo-router';
-import { Icon } from '@/src/components/ui/Icon';
-import Animated, { FadeIn, FadeInDown, SlideInRight } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+} from 'react-native'
+import { Stack, router } from 'expo-router'
+import { Icon } from '@/src/components/ui/Icon'
+import Animated, { FadeIn, FadeInDown, SlideInRight } from 'react-native-reanimated'
+import * as Haptics from 'expo-haptics'
 
-import { ThemedView, ThemedText } from '@/components/Themed';
-import { useSettingsStore } from '@/src/stores/settingsStore';
+import { ThemedView, ThemedText } from '@/components/Themed'
+import { useSettingsStore } from '@/src/stores/settingsStore'
 import {
   saveSupadataAPIKey,
   hasSupadataAPIKey,
   deleteSupadataAPIKey,
   testSupadataAPIKey,
-} from '@/src/services/video/videoTranscript';
-import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
-import ModernButton from '@/src/components/ui/ModernButton';
-import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors';
+} from '@/src/services/video/videoTranscript'
+import AnimatedPressable from '@/src/components/ui/AnimatedPressable'
+import ModernButton from '@/src/components/ui/ModernButton'
+import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors'
 
 // Platform configuration
 const VIDEO_PLATFORMS = [
@@ -54,22 +54,22 @@ const VIDEO_PLATFORMS = [
     iconColor: '#E4405F',
     requiresKey: true,
   },
-];
+]
 
 // Minimum API key length for validation
-const MIN_API_KEY_LENGTH = 10;
+const MIN_API_KEY_LENGTH = 10
 
 interface PlatformRowProps {
-  platform: (typeof VIDEO_PLATFORMS)[0];
-  hasSupadataKey: boolean;
-  index: number;
+  platform: (typeof VIDEO_PLATFORMS)[0]
+  hasSupadataKey: boolean
+  index: number
 }
 
 function PlatformRow({ platform, hasSupadataKey, index }: PlatformRowProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
 
-  const isConfigured = platform.requiresKey ? hasSupadataKey : true;
+  const isConfigured = platform.requiresKey ? hasSupadataKey : true
 
   return (
     <Animated.View entering={FadeInDown.delay(100 + index * 50).duration(300)}>
@@ -128,130 +128,130 @@ function PlatformRow({ platform, hasSupadataKey, index }: PlatformRowProps) {
         />
       </View>
     </Animated.View>
-  );
+  )
 }
 
 export default function VideoPlatformsSettingsScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback)
 
-  const [apiKey, setApiKey] = useState('');
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [hasKey, setHasKey] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isTesting, setIsTesting] = useState(false);
-  const [validationStatus, setValidationStatus] = useState<'none' | 'valid' | 'invalid'>('none');
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const [apiKey, setApiKey] = useState('')
+  const [showApiKey, setShowApiKey] = useState(false)
+  const [hasKey, setHasKey] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isTesting, setIsTesting] = useState(false)
+  const [validationStatus, setValidationStatus] = useState<'none' | 'valid' | 'invalid'>('none')
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   // Load key status
   const loadKeyStatus = useCallback(async () => {
-    const keyExists = await hasSupadataAPIKey();
-    setHasKey(keyExists);
-  }, []);
+    const keyExists = await hasSupadataAPIKey()
+    setHasKey(keyExists)
+  }, [])
 
   useEffect(() => {
-    loadKeyStatus();
-  }, [loadKeyStatus]);
+    loadKeyStatus()
+  }, [loadKeyStatus])
 
   // Reset validation status when API key changes
   useEffect(() => {
-    setValidationStatus('none');
-    setValidationError(null);
-  }, [apiKey]);
+    setValidationStatus('none')
+    setValidationError(null)
+  }, [apiKey])
 
   // Validate API key format (basic check before sending)
   const isApiKeyValid = (key: string): boolean => {
-    const trimmed = key.trim();
-    return trimmed.length >= MIN_API_KEY_LENGTH;
-  };
+    const trimmed = key.trim()
+    return trimmed.length >= MIN_API_KEY_LENGTH
+  }
 
   // Get input border color based on validation status
   const getInputBorderColor = (): string | undefined => {
     if (validationStatus === 'valid') {
-      return colors.success;
+      return colors.success
     }
     if (validationStatus === 'invalid') {
-      return colors.error;
+      return colors.error
     }
-    return undefined;
-  };
+    return undefined
+  }
 
   const handleTestKey = async () => {
-    const trimmedKey = apiKey.trim();
+    const trimmedKey = apiKey.trim()
 
     if (!isApiKeyValid(trimmedKey)) {
       if (hapticFeedback) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
       }
-      Alert.alert('Invalid Key', 'API key must be at least 10 characters long.');
-      return;
+      Alert.alert('Invalid Key', 'API key must be at least 10 characters long.')
+      return
     }
 
-    setIsTesting(true);
-    setValidationStatus('none');
-    setValidationError(null);
+    setIsTesting(true)
+    setValidationStatus('none')
+    setValidationError(null)
 
     try {
-      const result = await testSupadataAPIKey(trimmedKey);
+      const result = await testSupadataAPIKey(trimmedKey)
 
       if (result.valid) {
-        setValidationStatus('valid');
+        setValidationStatus('valid')
         if (hapticFeedback) {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
         }
       } else {
-        setValidationStatus('invalid');
-        setValidationError(result.error || 'Invalid API key');
+        setValidationStatus('invalid')
+        setValidationError(result.error || 'Invalid API key')
         if (hapticFeedback) {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
         }
       }
     } catch (error) {
-      setValidationStatus('invalid');
-      setValidationError('Could not validate key. Check your connection.');
+      setValidationStatus('invalid')
+      setValidationError('Could not validate key. Check your connection.')
       if (hapticFeedback) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
       }
     } finally {
-      setIsTesting(false);
+      setIsTesting(false)
     }
-  };
+  }
 
   const handleSaveKey = async () => {
-    const trimmedKey = apiKey.trim();
+    const trimmedKey = apiKey.trim()
 
     if (!isApiKeyValid(trimmedKey)) {
       if (hapticFeedback) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
       }
-      Alert.alert('Invalid Key', 'API key must be at least 10 characters long.');
-      return;
+      Alert.alert('Invalid Key', 'API key must be at least 10 characters long.')
+      return
     }
 
-    setIsSaving(true);
+    setIsSaving(true)
     try {
-      await saveSupadataAPIKey(trimmedKey);
-      await loadKeyStatus();
+      await saveSupadataAPIKey(trimmedKey)
+      await loadKeyStatus()
 
       if (hapticFeedback) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
       }
 
       Alert.alert('Success', 'Supadata API key saved successfully.', [
         { text: 'OK', onPress: () => router.back() },
-      ]);
+      ])
     } catch (error) {
       if (hapticFeedback) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
       }
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      Alert.alert('Error', `Failed to save API key: ${errorMessage}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      Alert.alert('Error', `Failed to save API key: ${errorMessage}`)
     } finally {
-      setIsSaving(false);
+      setIsSaving(false)
     }
-  };
+  }
 
   const handleDeleteKey = () => {
     Alert.alert(
@@ -263,46 +263,46 @@ export default function VideoPlatformsSettingsScreen() {
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
-            setIsDeleting(true);
+            setIsDeleting(true)
             try {
-              await deleteSupadataAPIKey();
-              await loadKeyStatus();
-              setApiKey('');
-              setValidationStatus('none');
-              setValidationError(null);
+              await deleteSupadataAPIKey()
+              await loadKeyStatus()
+              setApiKey('')
+              setValidationStatus('none')
+              setValidationError(null)
 
               if (hapticFeedback) {
-                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
               }
 
-              Alert.alert('Success', 'API key deleted successfully.');
+              Alert.alert('Success', 'API key deleted successfully.')
             } catch (error) {
               if (hapticFeedback) {
-                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
               }
-              Alert.alert('Error', 'Failed to delete API key.');
+              Alert.alert('Error', 'Failed to delete API key.')
             } finally {
-              setIsDeleting(false);
+              setIsDeleting(false)
             }
           },
         },
       ]
-    );
-  };
+    )
+  }
 
   const handleOpenUrl = (url: string) => {
     if (hapticFeedback) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     }
-    Linking.openURL(url);
-  };
+    Linking.openURL(url)
+  }
 
   const toggleShowApiKey = () => {
     if (hapticFeedback) {
-      Haptics.selectionAsync();
+      Haptics.selectionAsync()
     }
-    setShowApiKey(!showApiKey);
-  };
+    setShowApiKey(!showApiKey)
+  }
 
   return (
     <>
@@ -313,11 +313,7 @@ export default function VideoPlatformsSettingsScreen() {
             apiKey.trim() && isApiKeyValid(apiKey) ? (
               <AnimatedPressable onPress={handleSaveKey} disabled={isSaving} hapticType="medium">
                 <ThemedText
-                  style={[
-                    styles.saveButton,
-                    { color: colors.tint },
-                    isSaving && { opacity: 0.5 },
-                  ]}
+                  style={[styles.saveButton, { color: colors.tint }, isSaving && { opacity: 0.5 }]}
                 >
                   {isSaving ? 'Saving...' : 'Save'}
                 </ThemedText>
@@ -505,7 +501,11 @@ export default function VideoPlatformsSettingsScreen() {
           {hasKey && (
             <Animated.View entering={FadeIn.delay(400).duration(300)} style={styles.section}>
               <View
-                style={[styles.deleteCard, { backgroundColor: colors.errorBackground }, shadows.small]}
+                style={[
+                  styles.deleteCard,
+                  { backgroundColor: colors.errorBackground },
+                  shadows.small,
+                ]}
               >
                 <AnimatedPressable
                   onPress={handleDeleteKey}
@@ -552,7 +552,7 @@ export default function VideoPlatformsSettingsScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
     </>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -729,4 +729,4 @@ const styles = StyleSheet.create({
     ...typography.labelLarge,
     fontWeight: '600',
   },
-});
+})

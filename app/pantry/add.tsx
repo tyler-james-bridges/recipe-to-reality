@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react'
 import {
   StyleSheet,
   ScrollView,
@@ -9,26 +9,26 @@ import {
   Platform,
   useColorScheme,
   Alert,
-} from 'react-native';
-import { router, Stack } from 'expo-router';
-import { Icon } from '@/src/components/ui/Icon';
-import * as Haptics from 'expo-haptics';
-import Animated, { FadeIn, FadeInDown, Layout } from 'react-native-reanimated';
-import DateTimePicker from '@react-native-community/datetimepicker';
+} from 'react-native'
+import { router, Stack } from 'expo-router'
+import { Icon } from '@/src/components/ui/Icon'
+import * as Haptics from 'expo-haptics'
+import Animated, { FadeIn, FadeInDown, Layout } from 'react-native-reanimated'
+import DateTimePicker from '@react-native-community/datetimepicker'
 
-import { ThemedView, ThemedText } from '@/components/Themed';
-import { usePantryStore } from '@/src/stores/pantryStore';
-import { useSettingsStore } from '@/src/stores/settingsStore';
-import { IngredientCategory } from '@/src/types';
-import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
-import SectionHeader from '@/src/components/ui/SectionHeader';
-import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors';
+import { ThemedView, ThemedText } from '@/components/Themed'
+import { usePantryStore } from '@/src/stores/pantryStore'
+import { useSettingsStore } from '@/src/stores/settingsStore'
+import { IngredientCategory } from '@/src/types'
+import AnimatedPressable from '@/src/components/ui/AnimatedPressable'
+import SectionHeader from '@/src/components/ui/SectionHeader'
+import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors'
 
 // Common pantry items for quick-add
 interface QuickItem {
-  name: string;
-  category: IngredientCategory;
-  icon: string;
+  name: string
+  category: IngredientCategory
+  icon: string
 }
 
 const COMMON_ITEMS: QuickItem[] = [
@@ -41,7 +41,7 @@ const COMMON_ITEMS: QuickItem[] = [
   { name: 'Onion', category: 'Produce', icon: 'ellipse' },
   { name: 'Garlic', category: 'Produce', icon: 'leaf-outline' },
   { name: 'Chicken', category: 'Meat & Seafood', icon: 'restaurant-outline' },
-];
+]
 
 // Simplified categories for the picker (matching iOS)
 const SIMPLE_CATEGORIES: IngredientCategory[] = [
@@ -51,63 +51,66 @@ const SIMPLE_CATEGORIES: IngredientCategory[] = [
   'Pantry',
   'Spices & Seasonings',
   'Other',
-];
+]
 
 export default function AddPantryItemScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
 
-  const { addItem } = usePantryStore();
-  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
+  const { addItem } = usePantryStore()
+  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback)
 
   // Form state
-  const [name, setName] = useState('');
-  const [quantity, setQuantity] = useState('');
-  const [unit, setUnit] = useState('');
-  const [category, setCategory] = useState<IngredientCategory>('Other');
-  const [hasExpiration, setHasExpiration] = useState(false);
+  const [name, setName] = useState('')
+  const [quantity, setQuantity] = useState('')
+  const [unit, setUnit] = useState('')
+  const [category, setCategory] = useState<IngredientCategory>('Other')
+  const [hasExpiration, setHasExpiration] = useState(false)
   const [expirationDate, setExpirationDate] = useState(() => {
-    const date = new Date();
-    date.setDate(date.getDate() + 7); // Default to 1 week from now
-    return date;
-  });
-  const [notes, setNotes] = useState('');
-  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+    const date = new Date()
+    date.setDate(date.getDate() + 7) // Default to 1 week from now
+    return date
+  })
+  const [notes, setNotes] = useState('')
+  const [showCategoryPicker, setShowCategoryPicker] = useState(false)
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
-  const isValid = name.trim().length > 0;
+  const isValid = name.trim().length > 0
 
-  const triggerHaptic = useCallback((type: 'light' | 'medium' | 'success' | 'error' | 'selection') => {
-    if (!hapticFeedback) return;
-    switch (type) {
-      case 'light':
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        break;
-      case 'medium':
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        break;
-      case 'success':
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        break;
-      case 'error':
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        break;
-      case 'selection':
-        Haptics.selectionAsync();
-        break;
-    }
-  }, [hapticFeedback]);
+  const triggerHaptic = useCallback(
+    (type: 'light' | 'medium' | 'success' | 'error' | 'selection') => {
+      if (!hapticFeedback) return
+      switch (type) {
+        case 'light':
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+          break
+        case 'medium':
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+          break
+        case 'success':
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+          break
+        case 'error':
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
+          break
+        case 'selection':
+          Haptics.selectionAsync()
+          break
+      }
+    },
+    [hapticFeedback]
+  )
 
   const handleSave = async () => {
     if (!isValid) {
-      triggerHaptic('error');
-      Alert.alert('Error', 'Please enter an item name');
-      return;
+      triggerHaptic('error')
+      Alert.alert('Error', 'Please enter an item name')
+      return
     }
 
-    setIsSaving(true);
-    triggerHaptic('light');
+    setIsSaving(true)
+    triggerHaptic('light')
 
     try {
       await addItem({
@@ -117,20 +120,20 @@ export default function AddPantryItemScreen() {
         unit: unit.trim() || null,
         expirationDate: hasExpiration ? expirationDate.getTime() : null,
         notes: notes.trim() || null,
-      });
+      })
 
-      triggerHaptic('success');
-      router.back();
+      triggerHaptic('success')
+      router.back()
     } catch (error) {
-      triggerHaptic('error');
-      Alert.alert('Error', 'Failed to add item to pantry');
+      triggerHaptic('error')
+      Alert.alert('Error', 'Failed to add item to pantry')
     } finally {
-      setIsSaving(false);
+      setIsSaving(false)
     }
-  };
+  }
 
   const handleQuickAdd = async (item: QuickItem) => {
-    triggerHaptic('medium');
+    triggerHaptic('medium')
 
     try {
       await addItem({
@@ -140,20 +143,20 @@ export default function AddPantryItemScreen() {
         unit: null,
         expirationDate: null,
         notes: null,
-      });
+      })
 
-      triggerHaptic('success');
+      triggerHaptic('success')
     } catch (error) {
-      triggerHaptic('error');
-      Alert.alert('Error', 'Failed to add item');
+      triggerHaptic('error')
+      Alert.alert('Error', 'Failed to add item')
     }
-  };
+  }
 
   const selectCategory = (cat: IngredientCategory) => {
-    triggerHaptic('selection');
-    setCategory(cat);
-    setShowCategoryPicker(false);
-  };
+    triggerHaptic('selection')
+    setCategory(cat)
+    setShowCategoryPicker(false)
+  }
 
   return (
     <>
@@ -161,7 +164,11 @@ export default function AddPantryItemScreen() {
         options={{
           title: 'Add to Pantry',
           headerLeft: () => (
-            <AnimatedPressable onPress={() => router.back()} hapticType="light" style={styles.headerButton}>
+            <AnimatedPressable
+              onPress={() => router.back()}
+              hapticType="light"
+              style={styles.headerButton}
+            >
               <ThemedText style={[styles.headerButtonText, { color: colors.tint }]}>
                 Cancel
               </ThemedText>
@@ -215,10 +222,7 @@ export default function AddPantryItemScreen() {
                       onPress={() => handleQuickAdd(item)}
                       hapticType="medium"
                       scaleOnPress={0.95}
-                      style={[
-                        styles.quickAddButton,
-                        { backgroundColor: colors.accentSubtle },
-                      ]}
+                      style={[styles.quickAddButton, { backgroundColor: colors.accentSubtle }]}
                     >
                       <Icon name={item.icon as any} size={20} color={colors.tint} />
                       <ThemedText style={[styles.quickAddText, { color: colors.tint }]}>
@@ -252,8 +256,8 @@ export default function AddPantryItemScreen() {
 
                 <AnimatedPressable
                   onPress={() => {
-                    triggerHaptic('selection');
-                    setShowCategoryPicker(!showCategoryPicker);
+                    triggerHaptic('selection')
+                    setShowCategoryPicker(!showCategoryPicker)
                   }}
                   hapticType="none"
                   style={styles.inputRow}
@@ -325,7 +329,9 @@ export default function AddPantryItemScreen() {
                       keyboardType="decimal-pad"
                     />
                   </View>
-                  <View style={[styles.quantityDivider, { backgroundColor: colors.borderSubtle }]} />
+                  <View
+                    style={[styles.quantityDivider, { backgroundColor: colors.borderSubtle }]}
+                  />
                   <View style={[styles.quantityInputContainer, styles.unitInput]}>
                     <ThemedText style={[styles.inputLabel, { color: colors.textTertiary }]}>
                       Unit
@@ -357,8 +363,8 @@ export default function AddPantryItemScreen() {
                   <Switch
                     value={hasExpiration}
                     onValueChange={(value) => {
-                      triggerHaptic('selection');
-                      setHasExpiration(value);
+                      triggerHaptic('selection')
+                      setHasExpiration(value)
                     }}
                     trackColor={{ false: colors.borderSubtle, true: colors.tint + '60' }}
                     thumbColor={hasExpiration ? colors.tint : colors.card}
@@ -367,15 +373,12 @@ export default function AddPantryItemScreen() {
                 </View>
 
                 {hasExpiration && (
-                  <Animated.View
-                    entering={FadeIn.duration(200)}
-                    layout={Layout.springify()}
-                  >
+                  <Animated.View entering={FadeIn.duration(200)} layout={Layout.springify()}>
                     <View style={[styles.divider, { backgroundColor: colors.borderSubtle }]} />
                     <AnimatedPressable
                       onPress={() => {
-                        triggerHaptic('selection');
-                        setShowDatePicker(true);
+                        triggerHaptic('selection')
+                        setShowDatePicker(true)
                       }}
                       hapticType="none"
                       style={styles.datePickerRow}
@@ -390,8 +393,8 @@ export default function AddPantryItemScreen() {
                           display="default"
                           onChange={(event, date) => {
                             if (date) {
-                              triggerHaptic('selection');
-                              setExpirationDate(date);
+                              triggerHaptic('selection')
+                              setExpirationDate(date)
                             }
                           }}
                           minimumDate={new Date()}
@@ -412,10 +415,10 @@ export default function AddPantryItemScreen() {
                         mode="date"
                         display="default"
                         onChange={(event, date) => {
-                          setShowDatePicker(false);
+                          setShowDatePicker(false)
                           if (event.type === 'set' && date) {
-                            triggerHaptic('selection');
-                            setExpirationDate(date);
+                            triggerHaptic('selection')
+                            setExpirationDate(date)
                           }
                         }}
                         minimumDate={new Date()}
@@ -449,7 +452,7 @@ export default function AddPantryItemScreen() {
         </ThemedView>
       </KeyboardAvoidingView>
     </>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -600,4 +603,4 @@ const styles = StyleSheet.create({
   bottomSpacer: {
     height: 100,
   },
-});
+})

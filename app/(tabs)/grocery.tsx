@@ -1,113 +1,110 @@
-import React, { useCallback } from 'react';
-import { StyleSheet, View, Pressable, SectionList, useColorScheme, Alert } from 'react-native';
-import { router, Stack, Href } from 'expo-router';
-import { Icon } from '@/src/components/ui/Icon';
-import { useFocusEffect } from '@react-navigation/native';
-import * as Haptics from 'expo-haptics';
-import Animated, { FadeInDown, Layout } from 'react-native-reanimated';
+import React, { useCallback } from 'react'
+import { StyleSheet, View, Pressable, SectionList, useColorScheme, Alert } from 'react-native'
+import { router, Stack, Href } from 'expo-router'
+import { Icon } from '@/src/components/ui/Icon'
+import { useFocusEffect } from '@react-navigation/native'
+import * as Haptics from 'expo-haptics'
+import Animated, { FadeInDown, Layout } from 'react-native-reanimated'
 
-import { ThemedView, ThemedText } from '@/components/Themed';
-import { useGroceryStore } from '@/src/stores/groceryStore';
-import { useRecipeStore } from '@/src/stores/recipeStore';
-import { useSettingsStore } from '@/src/stores/settingsStore';
-import { GroceryItem, INGREDIENT_CATEGORIES } from '@/src/types';
-import GroceryItemRow from '@/src/components/GroceryItemRow';
-import EmptyState from '@/src/components/EmptyState';
-import ProgressBar from '@/src/components/ui/ProgressBar';
-import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
-import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors';
+import { ThemedView, ThemedText } from '@/components/Themed'
+import { useGroceryStore } from '@/src/stores/groceryStore'
+import { useRecipeStore } from '@/src/stores/recipeStore'
+import { useSettingsStore } from '@/src/stores/settingsStore'
+import { GroceryItem, INGREDIENT_CATEGORIES } from '@/src/types'
+import GroceryItemRow from '@/src/components/GroceryItemRow'
+import EmptyState from '@/src/components/EmptyState'
+import ProgressBar from '@/src/components/ui/ProgressBar'
+import AnimatedPressable from '@/src/components/ui/AnimatedPressable'
+import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors'
 
 export default function GroceryScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const { currentList, loadCurrentList, toggleItem, deleteItem, clearChecked, clearAll } = useGroceryStore();
-  const { recipes } = useRecipeStore();
-  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const { currentList, loadCurrentList, toggleItem, deleteItem, clearChecked, clearAll } =
+    useGroceryStore()
+  const { recipes } = useRecipeStore()
+  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback)
 
-  const queuedRecipes = recipes.filter((r) => r.isInQueue);
+  const queuedRecipes = recipes.filter((r) => r.isInQueue)
 
   useFocusEffect(
     useCallback(() => {
-      loadCurrentList();
+      loadCurrentList()
     }, [loadCurrentList])
-  );
+  )
 
   const triggerHaptic = (type: 'selection' | 'success' | 'warning') => {
-    if (!hapticFeedback) return;
+    if (!hapticFeedback) return
     switch (type) {
       case 'selection':
-        Haptics.selectionAsync();
-        break;
+        Haptics.selectionAsync()
+        break
       case 'success':
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        break;
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+        break
       case 'warning':
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-        break;
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
+        break
     }
-  };
+  }
 
-  const items = currentList?.items || [];
-  const checkedCount = items.filter((i) => i.isChecked).length;
-  const totalCount = items.length;
-  const progress = totalCount > 0 ? checkedCount / totalCount : 0;
+  const items = currentList?.items || []
+  const checkedCount = items.filter((i) => i.isChecked).length
+  const totalCount = items.length
+  const progress = totalCount > 0 ? checkedCount / totalCount : 0
 
   // Group items by category
   const sections = React.useMemo(() => {
-    const grouped: Record<string, GroceryItem[]> = {};
+    const grouped: Record<string, GroceryItem[]> = {}
 
     items.forEach((item) => {
-      const category = item.category || 'Other';
+      const category = item.category || 'Other'
       if (!grouped[category]) {
-        grouped[category] = [];
+        grouped[category] = []
       }
-      grouped[category].push(item);
-    });
+      grouped[category].push(item)
+    })
 
     return INGREDIENT_CATEGORIES.filter((cat) => grouped[cat]?.length > 0).map((category) => ({
       title: category,
       data: grouped[category].sort((a, b) => {
         if (a.isChecked !== b.isChecked) {
-          return a.isChecked ? 1 : -1;
+          return a.isChecked ? 1 : -1
         }
-        return a.name.localeCompare(b.name);
+        return a.name.localeCompare(b.name)
       }),
-    }));
-  }, [items]);
+    }))
+  }, [items])
 
   const handleToggleItem = (itemId: string) => {
-    triggerHaptic('selection');
-    const item = items.find((i) => i.id === itemId);
-    toggleItem(itemId);
+    triggerHaptic('selection')
+    const item = items.find((i) => i.id === itemId)
+    toggleItem(itemId)
     if (!item?.isChecked) {
-      triggerHaptic('success');
+      triggerHaptic('success')
     }
-  };
+  }
 
   const handleShowMenu = () => {
-    Alert.alert(
-      'Grocery List',
-      undefined,
-      [
-        {
-          text: 'Clear Checked',
-          onPress: () => {
-            triggerHaptic('selection');
-            clearChecked();
-          },
+    Alert.alert('Grocery List', undefined, [
+      {
+        text: 'Clear Checked',
+        onPress: () => {
+          triggerHaptic('selection')
+          clearChecked()
         },
-        {
-          text: 'Clear All',
-          style: 'destructive',
-          onPress: () => {
-            triggerHaptic('warning');
-            clearAll();
-          },
+      },
+      {
+        text: 'Clear All',
+        style: 'destructive',
+        onPress: () => {
+          triggerHaptic('warning')
+          clearAll()
         },
-        { text: 'Cancel', style: 'cancel' },
-      ]
-    );
-  };
+      },
+      { text: 'Cancel', style: 'cancel' },
+    ])
+  }
 
   const renderItem = ({ item, index }: { item: GroceryItem; index: number }) => (
     <GroceryItemRow
@@ -116,15 +113,13 @@ export default function GroceryScreen() {
       onDelete={() => deleteItem(item.id)}
       index={index}
     />
-  );
+  )
 
   const renderSectionHeader = ({ section: { title } }: { section: { title: string } }) => (
     <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
-      <ThemedText style={[styles.sectionTitle, { color: colors.textTertiary }]}>
-        {title}
-      </ThemedText>
+      <ThemedText style={[styles.sectionTitle, { color: colors.textTertiary }]}>{title}</ThemedText>
     </View>
-  );
+  )
 
   return (
     <>
@@ -166,18 +161,16 @@ export default function GroceryScreen() {
                 : undefined
             }
             actionLabel={queuedRecipes.length > 0 ? 'Generate from Queue' : undefined}
-            onAction={queuedRecipes.length > 0 ? () => router.push('/grocery/generate' as Href) : undefined}
+            onAction={
+              queuedRecipes.length > 0 ? () => router.push('/grocery/generate' as Href) : undefined
+            }
           />
         ) : (
           <>
             {/* Progress Header Card */}
             <Animated.View
               entering={FadeInDown.duration(300)}
-              style={[
-                styles.progressCard,
-                { backgroundColor: colors.card },
-                shadows.small,
-              ]}
+              style={[styles.progressCard, { backgroundColor: colors.card }, shadows.small]}
             >
               <View style={styles.progressHeader}>
                 <View style={styles.progressTextContainer}>
@@ -209,7 +202,7 @@ export default function GroceryScreen() {
         )}
       </ThemedView>
     </>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -267,4 +260,4 @@ const styles = StyleSheet.create({
   list: {
     paddingBottom: 120,
   },
-});
+})

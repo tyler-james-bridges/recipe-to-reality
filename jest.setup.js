@@ -3,7 +3,7 @@ jest.mock('expo-secure-store', () => ({
   getItemAsync: jest.fn(() => Promise.resolve(null)),
   setItemAsync: jest.fn(() => Promise.resolve()),
   deleteItemAsync: jest.fn(() => Promise.resolve()),
-}));
+}))
 
 // Mock expo-notifications
 jest.mock('expo-notifications', () => ({
@@ -19,7 +19,7 @@ jest.mock('expo-notifications', () => ({
   setNotificationChannelAsync: jest.fn(() => Promise.resolve()),
   getExpoPushTokenAsync: jest.fn(() => Promise.resolve({ data: 'token' })),
   AndroidImportance: { MAX: 5, HIGH: 4, DEFAULT: 3, LOW: 2, MIN: 1 },
-}));
+}))
 
 // Mock expo-router
 jest.mock('expo-router', () => ({
@@ -40,7 +40,7 @@ jest.mock('expo-router', () => ({
     Screen: () => null,
   },
   Link: () => null,
-}));
+}))
 
 // Mock expo-haptics
 jest.mock('expo-haptics', () => ({
@@ -49,7 +49,7 @@ jest.mock('expo-haptics', () => ({
   selectionAsync: jest.fn(() => Promise.resolve()),
   ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
   NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
-}));
+}))
 
 // Mock expo-sqlite (for store tests)
 jest.mock('expo-sqlite', () => ({
@@ -59,11 +59,11 @@ jest.mock('expo-sqlite', () => ({
     getAllSync: jest.fn(() => []),
     execSync: jest.fn(),
   })),
-}));
+}))
 
 // Silence console warnings during tests
 global.console = {
   ...console,
   warn: jest.fn(),
   error: jest.fn(),
-};
+}

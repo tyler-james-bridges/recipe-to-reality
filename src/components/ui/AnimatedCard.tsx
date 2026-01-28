@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, ViewStyle, StyleProp, useColorScheme } from 'react-native';
+import React, { useEffect } from 'react'
+import { StyleSheet, ViewStyle, StyleProp, useColorScheme } from 'react-native'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -7,15 +7,15 @@ import Animated, {
   withDelay,
   interpolate,
   Extrapolation,
-} from 'react-native-reanimated';
-import Colors, { shadows, radius, spacing } from '@/constants/Colors';
+} from 'react-native-reanimated'
+import Colors, { shadows, radius, spacing } from '@/constants/Colors'
 
 interface AnimatedCardProps {
-  children: React.ReactNode;
-  style?: StyleProp<ViewStyle>;
-  delay?: number;
-  index?: number;
-  elevated?: boolean;
+  children: React.ReactNode
+  style?: StyleProp<ViewStyle>
+  delay?: number
+  index?: number
+  elevated?: boolean
 }
 
 export default function AnimatedCard({
@@ -25,12 +25,12 @@ export default function AnimatedCard({
   index = 0,
   elevated = false,
 }: AnimatedCardProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const progress = useSharedValue(0);
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const progress = useSharedValue(0)
 
   useEffect(() => {
-    const totalDelay = delay + index * 50;
+    const totalDelay = delay + index * 50
     progress.value = withDelay(
       totalDelay,
       withSpring(1, {
@@ -38,32 +38,22 @@ export default function AnimatedCard({
         stiffness: 100,
         mass: 1,
       })
-    );
-  }, [delay, index]);
+    )
+  }, [delay, index])
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
       opacity: interpolate(progress.value, [0, 1], [0, 1], Extrapolation.CLAMP),
       transform: [
         {
-          translateY: interpolate(
-            progress.value,
-            [0, 1],
-            [20, 0],
-            Extrapolation.CLAMP
-          ),
+          translateY: interpolate(progress.value, [0, 1], [20, 0], Extrapolation.CLAMP),
         },
         {
-          scale: interpolate(
-            progress.value,
-            [0, 1],
-            [0.95, 1],
-            Extrapolation.CLAMP
-          ),
+          scale: interpolate(progress.value, [0, 1], [0.95, 1], Extrapolation.CLAMP),
         },
       ],
-    };
-  });
+    }
+  })
 
   return (
     <Animated.View
@@ -79,7 +69,7 @@ export default function AnimatedCard({
     >
       {children}
     </Animated.View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -88,4 +78,4 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     overflow: 'hidden',
   },
-});
+})

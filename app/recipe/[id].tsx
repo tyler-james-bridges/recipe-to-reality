@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react'
 import {
   StyleSheet,
   ScrollView,
@@ -10,13 +10,13 @@ import {
   useColorScheme,
   Dimensions,
   Platform,
-} from 'react-native';
-import { useLocalSearchParams, router, Stack, Href } from 'expo-router';
-import { Image } from 'expo-image';
-import { Icon } from '@/src/components/ui/Icon';
-import { LinearGradient } from 'expo-linear-gradient';
-import * as Haptics from 'expo-haptics';
-import * as Clipboard from 'expo-clipboard';
+} from 'react-native'
+import { useLocalSearchParams, router, Stack, Href } from 'expo-router'
+import { Image } from 'expo-image'
+import { Icon } from '@/src/components/ui/Icon'
+import { LinearGradient } from 'expo-linear-gradient'
+import * as Haptics from 'expo-haptics'
+import * as Clipboard from 'expo-clipboard'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -27,59 +27,59 @@ import Animated, {
   FadeIn,
   FadeInDown,
   useAnimatedScrollHandler,
-} from 'react-native-reanimated';
+} from 'react-native-reanimated'
 
-import { ThemedView, ThemedText } from '@/components/Themed';
-import { useRecipeStore } from '@/src/stores/recipeStore';
-import { useSettingsStore } from '@/src/stores/settingsStore';
-import { scaleQuantity, formatIngredient } from '@/src/utils/quantity';
-import { RecipeWithIngredients, Ingredient } from '@/src/types';
-import Colors, { shadows, radius, spacing, typography, gradients } from '@/constants/Colors';
-import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
-import ModernButton from '@/src/components/ui/ModernButton';
-import Badge from '@/src/components/ui/Badge';
-import SkeletonLoader from '@/src/components/ui/SkeletonLoader';
+import { ThemedView, ThemedText } from '@/components/Themed'
+import { useRecipeStore } from '@/src/stores/recipeStore'
+import { useSettingsStore } from '@/src/stores/settingsStore'
+import { scaleQuantity, formatIngredient } from '@/src/utils/quantity'
+import { RecipeWithIngredients, Ingredient } from '@/src/types'
+import Colors, { shadows, radius, spacing, typography, gradients } from '@/constants/Colors'
+import AnimatedPressable from '@/src/components/ui/AnimatedPressable'
+import ModernButton from '@/src/components/ui/ModernButton'
+import Badge from '@/src/components/ui/Badge'
+import SkeletonLoader from '@/src/components/ui/SkeletonLoader'
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const HEADER_IMAGE_HEIGHT = 280;
-const SERVING_PRESETS = [2, 4, 6, 8];
+const { width: SCREEN_WIDTH } = Dimensions.get('window')
+const HEADER_IMAGE_HEIGHT = 280
+const SERVING_PRESETS = [2, 4, 6, 8]
 
-const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
+const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView)
 
 export default function RecipeDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const themeGradients = gradients[colorScheme ?? 'light'];
-  const { getRecipe, toggleQueue, markAsCooked, deleteRecipe, loadRecipes } = useRecipeStore();
-  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
+  const { id } = useLocalSearchParams<{ id: string }>()
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const themeGradients = gradients[colorScheme ?? 'light']
+  const { getRecipe, toggleQueue, markAsCooked, deleteRecipe, loadRecipes } = useRecipeStore()
+  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback)
 
-  const [recipe, setRecipe] = useState<RecipeWithIngredients | undefined>();
-  const [selectedServings, setSelectedServings] = useState(4);
-  const [showCopiedToast, setShowCopiedToast] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [recipe, setRecipe] = useState<RecipeWithIngredients | undefined>()
+  const [selectedServings, setSelectedServings] = useState(4)
+  const [showCopiedToast, setShowCopiedToast] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
-  const scrollY = useSharedValue(0);
-  const headerOpacity = useSharedValue(0);
+  const scrollY = useSharedValue(0)
+  const headerOpacity = useSharedValue(0)
 
   useEffect(() => {
-    setIsLoading(true);
+    setIsLoading(true)
     loadRecipes().then(() => {
-      const found = getRecipe(id);
-      setRecipe(found);
+      const found = getRecipe(id)
+      setRecipe(found)
       if (found?.servings) {
-        setSelectedServings(found.servings);
+        setSelectedServings(found.servings)
       }
-      setIsLoading(false);
-      headerOpacity.value = withDelay(200, withSpring(1));
-    });
-  }, [id, getRecipe, loadRecipes]);
+      setIsLoading(false)
+      headerOpacity.value = withDelay(200, withSpring(1))
+    })
+  }, [id, getRecipe, loadRecipes])
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
-      scrollY.value = event.contentOffset.y;
+      scrollY.value = event.contentOffset.y
     },
-  });
+  })
 
   const headerAnimatedStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
@@ -88,7 +88,7 @@ export default function RecipeDetailScreen() {
       [0, 1],
       Extrapolation.CLAMP
     ),
-  }));
+  }))
 
   const imageAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -101,39 +101,34 @@ export default function RecipeDetailScreen() {
         ),
       },
       {
-        scale: interpolate(
-          scrollY.value,
-          [-100, 0],
-          [1.3, 1],
-          Extrapolation.CLAMP
-        ),
+        scale: interpolate(scrollY.value, [-100, 0], [1.3, 1], Extrapolation.CLAMP),
       },
     ],
-  }));
+  }))
 
   const triggerHaptic = useCallback(
     (type: 'light' | 'medium' | 'success' | 'selection' | 'warning') => {
-      if (!hapticFeedback) return;
+      if (!hapticFeedback) return
       switch (type) {
         case 'light':
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          break;
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+          break
         case 'medium':
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          break;
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+          break
         case 'success':
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          break;
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+          break
         case 'selection':
-          Haptics.selectionAsync();
-          break;
+          Haptics.selectionAsync()
+          break
         case 'warning':
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-          break;
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
+          break
       }
     },
     [hapticFeedback]
-  );
+  )
 
   if (isLoading || !recipe) {
     return (
@@ -146,33 +141,33 @@ export default function RecipeDetailScreen() {
           <SkeletonLoader width="100%" height={48} />
         </View>
       </ThemedView>
-    );
+    )
   }
 
   const instructions: string[] = (() => {
     try {
       return typeof recipe.instructions === 'string'
         ? JSON.parse(recipe.instructions)
-        : recipe.instructions || [];
+        : recipe.instructions || []
     } catch {
-      return [];
+      return []
     }
-  })();
+  })()
 
   const handleToggleQueue = async () => {
-    triggerHaptic('medium');
-    await toggleQueue(recipe.id);
-    setRecipe({ ...recipe, isInQueue: !recipe.isInQueue });
+    triggerHaptic('medium')
+    await toggleQueue(recipe.id)
+    setRecipe({ ...recipe, isInQueue: !recipe.isInQueue })
     if (!recipe.isInQueue) {
-      triggerHaptic('success');
+      triggerHaptic('success')
     }
-  };
+  }
 
   const handleMarkAsCooked = async () => {
-    triggerHaptic('success');
-    await markAsCooked(recipe.id);
-    setRecipe({ ...recipe, dateCooked: Date.now() });
-  };
+    triggerHaptic('success')
+    await markAsCooked(recipe.id)
+    setRecipe({ ...recipe, dateCooked: Date.now() })
+  }
 
   const handleDelete = () => {
     Alert.alert('Delete Recipe', 'Are you sure you want to delete this recipe?', [
@@ -181,67 +176,63 @@ export default function RecipeDetailScreen() {
         text: 'Delete',
         style: 'destructive',
         onPress: async () => {
-          await deleteRecipe(recipe.id);
-          router.back();
+          await deleteRecipe(recipe.id)
+          router.back()
         },
       },
-    ]);
-  };
+    ])
+  }
 
   const handleShare = async () => {
     try {
       await Share.share({
         message: `Check out this recipe: ${recipe.title}${recipe.sourceURL ? `\n${recipe.sourceURL}` : ''}`,
-      });
+      })
     } catch {
       // Ignore share errors
     }
-  };
+  }
 
   const handleCopyIngredients = async () => {
-    triggerHaptic('success');
-    const ingredientsList = recipe.ingredients
-      .map((ing) => scaleIngredient(ing))
-      .join('\n');
-    const header = `Ingredients for ${recipe.title} (${selectedServings} servings):\n\n`;
-    await Clipboard.setStringAsync(header + ingredientsList);
+    triggerHaptic('success')
+    const ingredientsList = recipe.ingredients.map((ing) => scaleIngredient(ing)).join('\n')
+    const header = `Ingredients for ${recipe.title} (${selectedServings} servings):\n\n`
+    await Clipboard.setStringAsync(header + ingredientsList)
 
-    setShowCopiedToast(true);
-    setTimeout(() => setShowCopiedToast(false), 2000);
-  };
+    setShowCopiedToast(true)
+    setTimeout(() => setShowCopiedToast(false), 2000)
+  }
 
   const handleOpenSource = () => {
     if (recipe.sourceURL) {
-      Linking.openURL(recipe.sourceURL);
+      Linking.openURL(recipe.sourceURL)
     }
-  };
+  }
 
   const scaleIngredient = (ingredient: Ingredient): string => {
-    const originalServings = recipe.servings;
+    const originalServings = recipe.servings
     if (!originalServings || originalServings <= 0 || selectedServings === originalServings) {
-      return formatIngredient(ingredient.name, ingredient.quantity, ingredient.unit);
+      return formatIngredient(ingredient.name, ingredient.quantity, ingredient.unit)
     }
 
-    const scale = selectedServings / originalServings;
-    const scaledQuantity = ingredient.quantity
-      ? scaleQuantity(ingredient.quantity, scale)
-      : null;
+    const scale = selectedServings / originalServings
+    const scaledQuantity = ingredient.quantity ? scaleQuantity(ingredient.quantity, scale) : null
 
-    return formatIngredient(ingredient.name, scaledQuantity, ingredient.unit);
-  };
+    return formatIngredient(ingredient.name, scaledQuantity, ingredient.unit)
+  }
 
   const sourceIcon = React.useMemo(() => {
     switch (recipe.sourceType) {
       case 'youtube':
-        return 'play-circle';
+        return 'play-circle'
       case 'tiktok':
-        return 'musical-notes';
+        return 'musical-notes'
       case 'instagram':
-        return 'camera';
+        return 'camera'
       default:
-        return 'link';
+        return 'link'
     }
-  }, [recipe.sourceType]);
+  }, [recipe.sourceType])
 
   return (
     <>
@@ -253,21 +244,17 @@ export default function RecipeDetailScreen() {
           headerRight: () => (
             <AnimatedPressable
               onPress={() => {
-                Alert.alert(
-                  recipe.title,
-                  undefined,
-                  [
-                    {
-                      text: recipe.isInQueue ? 'Remove from Queue' : 'Add to Queue',
-                      onPress: handleToggleQueue,
-                    },
-                    { text: 'Mark as Cooked', onPress: handleMarkAsCooked },
-                    { text: 'Copy Ingredients', onPress: handleCopyIngredients },
-                    { text: 'Share', onPress: handleShare },
-                    { text: 'Delete', style: 'destructive', onPress: handleDelete },
-                    { text: 'Cancel', style: 'cancel' },
-                  ]
-                );
+                Alert.alert(recipe.title, undefined, [
+                  {
+                    text: recipe.isInQueue ? 'Remove from Queue' : 'Add to Queue',
+                    onPress: handleToggleQueue,
+                  },
+                  { text: 'Mark as Cooked', onPress: handleMarkAsCooked },
+                  { text: 'Copy Ingredients', onPress: handleCopyIngredients },
+                  { text: 'Share', onPress: handleShare },
+                  { text: 'Delete', style: 'destructive', onPress: handleDelete },
+                  { text: 'Cancel', style: 'cancel' },
+                ])
               }}
               hapticType="selection"
               style={styles.headerButton}
@@ -280,10 +267,7 @@ export default function RecipeDetailScreen() {
 
       {/* Copied Toast */}
       {showCopiedToast && (
-        <Animated.View
-          entering={FadeIn.duration(200)}
-          style={styles.toastContainer}
-        >
+        <Animated.View entering={FadeIn.duration(200)} style={styles.toastContainer}>
           <View style={[styles.toast, { backgroundColor: colors.card }, shadows.medium]}>
             <Icon name="checkmark-circle" size={18} color={colors.success} />
             <ThemedText style={styles.toastText}>Ingredients copied</ThemedText>
@@ -378,7 +362,12 @@ export default function RecipeDetailScreen() {
               title="Add to List"
               icon="cart"
               variant="primary"
-              onPress={() => router.push({ pathname: '/grocery/add-from-recipe', params: { recipeId: recipe.id } } as any)}
+              onPress={() =>
+                router.push({
+                  pathname: '/grocery/add-from-recipe',
+                  params: { recipeId: recipe.id },
+                } as any)
+              }
               style={styles.actionButton}
             />
           </View>
@@ -406,9 +395,12 @@ export default function RecipeDetailScreen() {
                       style={[
                         styles.presetButton,
                         {
-                          backgroundColor: selectedServings === preset
-                            ? colors.tint
-                            : colorScheme === 'dark' ? colors.cardElevated : colors.skeleton,
+                          backgroundColor:
+                            selectedServings === preset
+                              ? colors.tint
+                              : colorScheme === 'dark'
+                                ? colors.cardElevated
+                                : colors.skeleton,
                         },
                       ]}
                     >
@@ -427,7 +419,9 @@ export default function RecipeDetailScreen() {
                 <View style={styles.servingAdjuster}>
                   <AnimatedPressable
                     hapticType="light"
-                    onPress={() => selectedServings > 1 && setSelectedServings(selectedServings - 1)}
+                    onPress={() =>
+                      selectedServings > 1 && setSelectedServings(selectedServings - 1)
+                    }
                     disabled={selectedServings <= 1}
                   >
                     <Icon
@@ -461,9 +455,7 @@ export default function RecipeDetailScreen() {
                 style={styles.ingredientRow}
               >
                 <View style={[styles.ingredientBullet, { backgroundColor: colors.tint }]} />
-                <ThemedText style={styles.ingredientText}>
-                  {scaleIngredient(ingredient)}
-                </ThemedText>
+                <ThemedText style={styles.ingredientText}>{scaleIngredient(ingredient)}</ThemedText>
               </Animated.View>
             ))}
           </View>
@@ -481,10 +473,7 @@ export default function RecipeDetailScreen() {
                     entering={FadeInDown.delay(200 + index * 50).duration(300)}
                     style={styles.instructionRow}
                   >
-                    <LinearGradient
-                      colors={themeGradients.primary}
-                      style={styles.stepNumber}
-                    >
+                    <LinearGradient colors={themeGradients.primary} style={styles.stepNumber}>
                       <ThemedText style={styles.stepNumberText}>{index + 1}</ThemedText>
                     </LinearGradient>
                     <ThemedText style={styles.instructionText}>{step}</ThemedText>
@@ -523,7 +512,7 @@ export default function RecipeDetailScreen() {
         <View style={styles.bottomPadding} />
       </AnimatedScrollView>
     </>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -725,4 +714,4 @@ const styles = StyleSheet.create({
   bottomPadding: {
     height: spacing['5xl'],
   },
-});
+})

@@ -1,12 +1,12 @@
-import * as SQLite from 'expo-sqlite';
-import { drizzle } from 'drizzle-orm/expo-sqlite';
-import * as schema from './schema';
+import * as SQLite from 'expo-sqlite'
+import { drizzle } from 'drizzle-orm/expo-sqlite'
+import * as schema from './schema'
 
 // Open the database
-const expo = SQLite.openDatabaseSync('recipetoreality.db');
+const expo = SQLite.openDatabaseSync('recipetoreality.db')
 
 // Create Drizzle ORM instance
-export const db = drizzle(expo, { schema });
+export const db = drizzle(expo, { schema })
 
 // Initialize database - create tables if they don't exist
 export async function initializeDatabase() {
@@ -27,7 +27,7 @@ export async function initializeDatabase() {
       date_added INTEGER NOT NULL,
       date_cooked INTEGER
     );
-  `);
+  `)
 
   // Create ingredients table
   await expo.execAsync(`
@@ -41,7 +41,7 @@ export async function initializeDatabase() {
       is_optional INTEGER NOT NULL DEFAULT 0,
       FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
     );
-  `);
+  `)
 
   // Create grocery_lists table
   await expo.execAsync(`
@@ -50,7 +50,7 @@ export async function initializeDatabase() {
       name TEXT NOT NULL DEFAULT 'Shopping List',
       date_created INTEGER NOT NULL
     );
-  `);
+  `)
 
   // Create grocery_items table
   await expo.execAsync(`
@@ -65,7 +65,7 @@ export async function initializeDatabase() {
       source_recipe_ids TEXT NOT NULL DEFAULT '[]',
       FOREIGN KEY (grocery_list_id) REFERENCES grocery_lists(id) ON DELETE CASCADE
     );
-  `);
+  `)
 
   // Create pantry_items table
   await expo.execAsync(`
@@ -79,7 +79,7 @@ export async function initializeDatabase() {
       expiration_date INTEGER,
       notes TEXT
     );
-  `);
+  `)
 
   // Create meal_plans table
   await expo.execAsync(`
@@ -95,14 +95,20 @@ export async function initializeDatabase() {
       reminder_time INTEGER,
       FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE SET NULL
     );
-  `);
+  `)
 
   // Create indexes for common queries
-  await expo.execAsync(`CREATE INDEX IF NOT EXISTS idx_ingredients_recipe_id ON ingredients(recipe_id);`);
-  await expo.execAsync(`CREATE INDEX IF NOT EXISTS idx_grocery_items_list_id ON grocery_items(grocery_list_id);`);
-  await expo.execAsync(`CREATE INDEX IF NOT EXISTS idx_meal_plans_date ON meal_plans(date);`);
-  await expo.execAsync(`CREATE INDEX IF NOT EXISTS idx_recipes_date_added ON recipes(date_added);`);
-  await expo.execAsync(`CREATE INDEX IF NOT EXISTS idx_pantry_items_expiration ON pantry_items(expiration_date);`);
+  await expo.execAsync(
+    `CREATE INDEX IF NOT EXISTS idx_ingredients_recipe_id ON ingredients(recipe_id);`
+  )
+  await expo.execAsync(
+    `CREATE INDEX IF NOT EXISTS idx_grocery_items_list_id ON grocery_items(grocery_list_id);`
+  )
+  await expo.execAsync(`CREATE INDEX IF NOT EXISTS idx_meal_plans_date ON meal_plans(date);`)
+  await expo.execAsync(`CREATE INDEX IF NOT EXISTS idx_recipes_date_added ON recipes(date_added);`)
+  await expo.execAsync(
+    `CREATE INDEX IF NOT EXISTS idx_pantry_items_expiration ON pantry_items(expiration_date);`
+  )
 }
 
-export { expo as sqliteDB };
+export { expo as sqliteDB }

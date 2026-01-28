@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback } from 'react'
 import {
   View,
   StyleSheet,
@@ -8,11 +8,11 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
   Platform,
-} from 'react-native';
-import { router } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Icon, MaterialIcon } from '@/src/components/ui/Icon';
-import * as Haptics from 'expo-haptics';
+} from 'react-native'
+import { router } from 'expo-router'
+import { LinearGradient } from 'expo-linear-gradient'
+import { Icon, MaterialIcon } from '@/src/components/ui/Icon'
+import * as Haptics from 'expo-haptics'
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -29,23 +29,30 @@ import Animated, {
   SlideInRight,
   runOnJS,
   SharedValue,
-} from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+} from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import Colors, { gradients, shadows, radius, typography, spacing, animation } from '@/constants/Colors';
-import { ThemedText } from '@/components/Themed';
-import { ModernButton, AnimatedPressable } from '@/src/components/ui';
-import { useSettingsStore } from '@/src/stores/settingsStore';
+import Colors, {
+  gradients,
+  shadows,
+  radius,
+  typography,
+  spacing,
+  animation,
+} from '@/constants/Colors'
+import { ThemedText } from '@/components/Themed'
+import { ModernButton, AnimatedPressable } from '@/src/components/ui'
+import { useSettingsStore } from '@/src/stores/settingsStore'
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const TOTAL_PAGES = 5;
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window')
+const TOTAL_PAGES = 5
 
 // Onboarding slide data
 const SLIDES = [
   {
     id: 'welcome',
     title: 'Recipe to Reality',
-    subtitle: 'Turn any recipe into tonight\'s dinner',
+    subtitle: "Turn any recipe into tonight's dinner",
     description: 'Extract recipes from anywhere, plan your meals, and never waste an ingredient.',
     icon: 'restaurant-outline' as const,
     iconFamily: 'ionicons' as const,
@@ -55,7 +62,8 @@ const SLIDES = [
     id: 'extract',
     title: 'AI-Powered Extraction',
     subtitle: 'From any source, instantly',
-    description: 'Paste a URL or share from TikTok, Instagram, YouTube, or any recipe website. Our AI does the rest.',
+    description:
+      'Paste a URL or share from TikTok, Instagram, YouTube, or any recipe website. Our AI does the rest.',
     icon: 'sparkles' as const,
     iconFamily: 'ionicons' as const,
     accentColor: '#AF52DE',
@@ -64,7 +72,8 @@ const SLIDES = [
     id: 'mealplan',
     title: 'Smart Meal Planning',
     subtitle: 'Your week, organized',
-    description: 'Drag recipes to your calendar, manage your cooking queue, and never stress about "what\'s for dinner?"',
+    description:
+      'Drag recipes to your calendar, manage your cooking queue, and never stress about "what\'s for dinner?"',
     icon: 'calendar' as const,
     iconFamily: 'ionicons' as const,
     accentColor: '#007AFF',
@@ -73,7 +82,8 @@ const SLIDES = [
     id: 'grocery',
     title: 'Intelligent Grocery Lists',
     subtitle: 'Shop smarter, waste less',
-    description: 'Auto-consolidated ingredients, pantry integration, and smart suggestions to skip items you already have.',
+    description:
+      'Auto-consolidated ingredients, pantry integration, and smart suggestions to skip items you already have.',
     icon: 'cart' as const,
     iconFamily: 'ionicons' as const,
     accentColor: '#34C759',
@@ -82,12 +92,12 @@ const SLIDES = [
     id: 'getstarted',
     title: 'Ready to Cook?',
     subtitle: 'Your culinary journey starts now',
-    description: 'Join thousands of home cooks who\'ve simplified their meal planning.',
+    description: "Join thousands of home cooks who've simplified their meal planning.",
     icon: 'rocket' as const,
     iconFamily: 'ionicons' as const,
     accentColor: '#FF9500',
   },
-];
+]
 
 // Animated floating icon component
 function FloatingIcon({
@@ -95,75 +105,66 @@ function FloatingIcon({
   color,
   size = 24,
   delay = 0,
-  family = 'ionicons'
+  family = 'ionicons',
 }: {
-  name: string;
-  color: string;
-  size?: number;
-  delay?: number;
-  family?: 'ionicons' | 'material';
+  name: string
+  color: string
+  size?: number
+  delay?: number
+  family?: 'ionicons' | 'material'
 }) {
-  const translateY = useSharedValue(0);
-  const opacity = useSharedValue(0);
+  const translateY = useSharedValue(0)
+  const opacity = useSharedValue(0)
 
   React.useEffect(() => {
-    opacity.value = withDelay(delay, withTiming(1, { duration: 500 }));
+    opacity.value = withDelay(delay, withTiming(1, { duration: 500 }))
     translateY.value = withDelay(
       delay,
       withRepeat(
-        withSequence(
-          withTiming(-8, { duration: 1500 }),
-          withTiming(8, { duration: 1500 })
-        ),
+        withSequence(withTiming(-8, { duration: 1500 }), withTiming(8, { duration: 1500 })),
         -1,
         true
       )
-    );
-  }, []);
+    )
+  }, [])
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
     opacity: opacity.value,
-  }));
+  }))
 
-  const IconComponent = family === 'material' ? MaterialIcon : Icon;
+  const IconComponent = family === 'material' ? MaterialIcon : Icon
 
   return (
     <Animated.View style={animatedStyle}>
       <IconComponent name={name as any} size={size} color={color} />
     </Animated.View>
-  );
+  )
 }
 
 // Animated hero illustration for each slide
-function SlideIllustration({ slide, isActive }: { slide: typeof SLIDES[0]; isActive: boolean }) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const scale = useSharedValue(0.8);
-  const rotation = useSharedValue(0);
+function SlideIllustration({ slide, isActive }: { slide: (typeof SLIDES)[0]; isActive: boolean }) {
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const scale = useSharedValue(0.8)
+  const rotation = useSharedValue(0)
 
   React.useEffect(() => {
     if (isActive) {
-      scale.value = withSpring(1, { damping: 12, stiffness: 100 });
+      scale.value = withSpring(1, { damping: 12, stiffness: 100 })
       rotation.value = withRepeat(
-        withSequence(
-          withTiming(-3, { duration: 2000 }),
-          withTiming(3, { duration: 2000 })
-        ),
+        withSequence(withTiming(-3, { duration: 2000 }), withTiming(3, { duration: 2000 })),
         -1,
         true
-      );
+      )
     } else {
-      scale.value = withTiming(0.8, { duration: 300 });
+      scale.value = withTiming(0.8, { duration: 300 })
     }
-  }, [isActive]);
+  }, [isActive])
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { scale: scale.value },
-      { rotate: `${rotation.value}deg` },
-    ],
-  }));
+    transform: [{ scale: scale.value }, { rotate: `${rotation.value}deg` }],
+  }))
 
   const renderIllustration = () => {
     switch (slide.id) {
@@ -193,7 +194,7 @@ function SlideIllustration({ slide, isActive }: { slide: typeof SLIDES[0]; isAct
               <FloatingIcon name="star" color="#FFD60A" size={26} delay={300} />
             </View>
           </View>
-        );
+        )
 
       case 'extract':
         return (
@@ -208,7 +209,12 @@ function SlideIllustration({ slide, isActive }: { slide: typeof SLIDES[0]; isAct
             </Animated.View>
             {/* Social media icons floating */}
             <View style={[styles.floatingIcon, { top: 10, left: 20 }]}>
-              <FloatingIcon name="logo-tiktok" color={colorScheme === 'dark' ? '#FFFFFF' : '#000000'} size={26} delay={100} />
+              <FloatingIcon
+                name="logo-tiktok"
+                color={colorScheme === 'dark' ? '#FFFFFF' : '#000000'}
+                size={26}
+                delay={100}
+              />
             </View>
             <View style={[styles.floatingIcon, { top: 30, right: 25 }]}>
               <FloatingIcon name="logo-instagram" color="#E1306C" size={28} delay={200} />
@@ -220,7 +226,7 @@ function SlideIllustration({ slide, isActive }: { slide: typeof SLIDES[0]; isAct
               <FloatingIcon name="link" color={colors.tint} size={24} delay={400} />
             </View>
           </View>
-        );
+        )
 
       case 'mealplan':
         return (
@@ -247,7 +253,7 @@ function SlideIllustration({ slide, isActive }: { slide: typeof SLIDES[0]; isAct
               <FloatingIcon name="notifications" color="#FFD60A" size={24} delay={450} />
             </View>
           </View>
-        );
+        )
 
       case 'grocery':
         return (
@@ -274,7 +280,7 @@ function SlideIllustration({ slide, isActive }: { slide: typeof SLIDES[0]; isAct
               <FloatingIcon name="basket" color="#AF52DE" size={24} delay={400} />
             </View>
           </View>
-        );
+        )
 
       case 'getstarted':
         return (
@@ -301,14 +307,14 @@ function SlideIllustration({ slide, isActive }: { slide: typeof SLIDES[0]; isAct
               <FloatingIcon name="trophy" color="#FFD60A" size={24} delay={350} />
             </View>
           </View>
-        );
+        )
 
       default:
-        return null;
+        return null
     }
-  };
+  }
 
-  return renderIllustration();
+  return renderIllustration()
 }
 
 // Individual slide component
@@ -318,35 +324,25 @@ function OnboardingSlide({
   currentPage,
   scrollX,
 }: {
-  slide: typeof SLIDES[0];
-  index: number;
-  currentPage: number;
-  scrollX: SharedValue<number>;
+  slide: (typeof SLIDES)[0]
+  index: number
+  currentPage: number
+  scrollX: SharedValue<number>
 }) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const isActive = currentPage === index;
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const isActive = currentPage === index
 
-  const inputRange = [(index - 1) * SCREEN_WIDTH, index * SCREEN_WIDTH, (index + 1) * SCREEN_WIDTH];
+  const inputRange = [(index - 1) * SCREEN_WIDTH, index * SCREEN_WIDTH, (index + 1) * SCREEN_WIDTH]
 
   const animatedContainerStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      scrollX.value,
-      inputRange,
-      [0.5, 1, 0.5],
-      Extrapolation.CLAMP
-    );
-    const scale = interpolate(
-      scrollX.value,
-      inputRange,
-      [0.9, 1, 0.9],
-      Extrapolation.CLAMP
-    );
+    const opacity = interpolate(scrollX.value, inputRange, [0.5, 1, 0.5], Extrapolation.CLAMP)
+    const scale = interpolate(scrollX.value, inputRange, [0.9, 1, 0.9], Extrapolation.CLAMP)
     return {
       opacity,
       transform: [{ scale }],
-    };
-  });
+    }
+  })
 
   return (
     <View style={[styles.slide, { width: SCREEN_WIDTH }]}>
@@ -360,54 +356,42 @@ function OnboardingSlide({
         <View style={styles.textContent}>
           <Animated.Text
             entering={isActive ? FadeInDown.delay(200).duration(500) : undefined}
-            style={[
-              styles.title,
-              typography.displayLarge,
-              { color: colors.text },
-            ]}
+            style={[styles.title, typography.displayLarge, { color: colors.text }]}
           >
             {slide.title}
           </Animated.Text>
 
           <Animated.Text
             entering={isActive ? FadeInDown.delay(300).duration(500) : undefined}
-            style={[
-              styles.subtitle,
-              typography.titleMedium,
-              { color: slide.accentColor },
-            ]}
+            style={[styles.subtitle, typography.titleMedium, { color: slide.accentColor }]}
           >
             {slide.subtitle}
           </Animated.Text>
 
           <Animated.Text
             entering={isActive ? FadeInDown.delay(400).duration(500) : undefined}
-            style={[
-              styles.description,
-              typography.bodyLarge,
-              { color: colors.textSecondary },
-            ]}
+            style={[styles.description, typography.bodyLarge, { color: colors.textSecondary }]}
           >
             {slide.description}
           </Animated.Text>
         </View>
       </Animated.View>
     </View>
-  );
+  )
 }
 
 // Animated page indicator dots
 function PageIndicator({
   currentPage,
   totalPages,
-  scrollX
+  scrollX,
 }: {
-  currentPage: number;
-  totalPages: number;
-  scrollX: SharedValue<number>;
+  currentPage: number
+  totalPages: number
+  scrollX: SharedValue<number>
 }) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
 
   return (
     <View style={styles.paginationContainer}>
@@ -417,94 +401,80 @@ function PageIndicator({
             (index - 1) * SCREEN_WIDTH,
             index * SCREEN_WIDTH,
             (index + 1) * SCREEN_WIDTH,
-          ];
-          const width = interpolate(
-            scrollX.value,
-            inputRange,
-            [8, 24, 8],
-            Extrapolation.CLAMP
-          );
-          const opacity = interpolate(
-            scrollX.value,
-            inputRange,
-            [0.4, 1, 0.4],
-            Extrapolation.CLAMP
-          );
+          ]
+          const width = interpolate(scrollX.value, inputRange, [8, 24, 8], Extrapolation.CLAMP)
+          const opacity = interpolate(scrollX.value, inputRange, [0.4, 1, 0.4], Extrapolation.CLAMP)
           return {
             width,
             opacity,
-          };
-        });
+          }
+        })
 
         return (
           <Animated.View
             key={index}
-            style={[
-              styles.paginationDot,
-              { backgroundColor: colors.tint },
-              animatedDotStyle,
-            ]}
+            style={[styles.paginationDot, { backgroundColor: colors.tint }, animatedDotStyle]}
           />
-        );
+        )
       })}
     </View>
-  );
+  )
 }
 
 // Main onboarding screen
 export default function OnboardingScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const insets = useSafeAreaInsets();
-  const scrollViewRef = useRef<ScrollView>(null);
-  const [currentPage, setCurrentPage] = useState(0);
-  const scrollX = useSharedValue(0);
-  const setHasCompletedOnboarding = useSettingsStore((state) => state.setHasCompletedOnboarding);
-  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const insets = useSafeAreaInsets()
+  const scrollViewRef = useRef<ScrollView>(null)
+  const [currentPage, setCurrentPage] = useState(0)
+  const scrollX = useSharedValue(0)
+  const setHasCompletedOnboarding = useSettingsStore((state) => state.setHasCompletedOnboarding)
+  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback)
 
   const triggerHaptic = useCallback(() => {
     if (hapticFeedback) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     }
-  }, [hapticFeedback]);
+  }, [hapticFeedback])
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const offsetX = event.nativeEvent.contentOffset.x;
-    scrollX.value = offsetX;
-    const newPage = Math.round(offsetX / SCREEN_WIDTH);
+    const offsetX = event.nativeEvent.contentOffset.x
+    scrollX.value = offsetX
+    const newPage = Math.round(offsetX / SCREEN_WIDTH)
     if (newPage !== currentPage) {
-      setCurrentPage(newPage);
-      triggerHaptic();
+      setCurrentPage(newPage)
+      triggerHaptic()
     }
-  };
+  }
 
   const handleSkip = useCallback(async () => {
     if (hapticFeedback) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     }
-    await setHasCompletedOnboarding(true);
-    router.replace('/(tabs)');
-  }, [setHasCompletedOnboarding, hapticFeedback]);
+    await setHasCompletedOnboarding(true)
+    router.replace('/(tabs)')
+  }, [setHasCompletedOnboarding, hapticFeedback])
 
   const handleNext = useCallback(() => {
     if (currentPage < TOTAL_PAGES - 1) {
-      triggerHaptic();
+      triggerHaptic()
       scrollViewRef.current?.scrollTo({
         x: (currentPage + 1) * SCREEN_WIDTH,
         animated: true,
-      });
+      })
     }
-  }, [currentPage, triggerHaptic]);
+  }, [currentPage, triggerHaptic])
 
   const handleGetStarted = useCallback(async () => {
     if (hapticFeedback) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
     }
-    await setHasCompletedOnboarding(true);
-    router.replace('/(tabs)');
-  }, [setHasCompletedOnboarding, hapticFeedback]);
+    await setHasCompletedOnboarding(true)
+    router.replace('/(tabs)')
+  }, [setHasCompletedOnboarding, hapticFeedback])
 
-  const isLastPage = currentPage === TOTAL_PAGES - 1;
+  const isLastPage = currentPage === TOTAL_PAGES - 1
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -560,19 +530,12 @@ export default function OnboardingScreen() {
       {/* Bottom controls */}
       <View style={[styles.bottomContainer, { paddingBottom: insets.bottom + spacing.xl }]}>
         {/* Page indicators */}
-        <PageIndicator
-          currentPage={currentPage}
-          totalPages={TOTAL_PAGES}
-          scrollX={scrollX}
-        />
+        <PageIndicator currentPage={currentPage} totalPages={TOTAL_PAGES} scrollX={scrollX} />
 
         {/* Action buttons */}
         <View style={styles.buttonContainer}>
           {isLastPage ? (
-            <Animated.View
-              entering={FadeInUp.duration(400)}
-              style={styles.getStartedButton}
-            >
+            <Animated.View entering={FadeInUp.duration(400)} style={styles.getStartedButton}>
               <ModernButton
                 title="Get Started"
                 onPress={handleGetStarted}
@@ -601,7 +564,7 @@ export default function OnboardingScreen() {
         </View>
       </View>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -713,4 +676,4 @@ const styles = StyleSheet.create({
     maxWidth: 320,
     alignSelf: 'center',
   },
-});
+})
