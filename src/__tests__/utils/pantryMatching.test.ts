@@ -7,7 +7,7 @@ import {
   getMatchedIngredients,
   rankRecipesByPantry,
 } from '../../utils/pantryMatching'
-import { PantryItem, RecipeWithIngredients, IngredientCategory } from '../../types'
+import { PantryItem, RecipeWithIngredients } from '../../types'
 
 describe('pantryMatching', () => {
   const mockPantryItems: PantryItem[] = [

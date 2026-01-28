@@ -5,14 +5,14 @@ import {
 } from '../../../services/extraction/recipeExtraction'
 import { ExtractedRecipe } from '../../../types'
 
+import * as videoTranscript from '../../../services/video/videoTranscript'
+
 // Mock the video transcript module
 jest.mock('../../../services/video/videoTranscript', () => ({
   extractVideoTranscript: jest.fn(),
   isVideoURL: jest.fn(),
   getVideoPlatform: jest.fn(),
 }))
-
-import * as videoTranscript from '../../../services/video/videoTranscript'
 
 // Mock fetch
 global.fetch = jest.fn()
@@ -231,11 +231,7 @@ describe('recipeExtraction', () => {
     })
 
     it('defaults retryable to false', () => {
-      const error = new ExtractionError(
-        'Test message',
-        ExtractionErrorType.UNKNOWN,
-        'User message'
-      )
+      const error = new ExtractionError('Test message', ExtractionErrorType.UNKNOWN, 'User message')
 
       expect(error.retryable).toBe(false)
     })

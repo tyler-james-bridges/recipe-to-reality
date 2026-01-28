@@ -555,7 +555,7 @@ export default function AddMealPlanScreen() {
                   No Results
                 </ThemedText>
                 <ThemedText style={[styles.emptyMessage, { color: colors.textTertiary }]}>
-                  No recipes match "{searchText}"
+                  No recipes match &quot;{searchText}&quot;
                 </ThemedText>
               </Animated.View>
             ) : (

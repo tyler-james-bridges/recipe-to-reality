@@ -1,12 +1,12 @@
 import React from 'react'
 import { StyleSheet, ScrollView, View, Switch, Linking, Alert, useColorScheme } from 'react-native'
 import { router, Stack, Href } from 'expo-router'
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated'
+import Animated, { FadeIn } from 'react-native-reanimated'
 import { LinearGradient } from 'expo-linear-gradient'
 import { File, Paths } from 'expo-file-system'
 import { shareAsync, isAvailableAsync } from 'expo-sharing'
 
-import { ThemedView, ThemedText } from '@/components/Themed'
+import { ThemedText } from '@/components/Themed'
 import { usePurchaseStore } from '@/src/stores/purchaseStore'
 import { useSettingsStore } from '@/src/stores/settingsStore'
 import { useRecipeStore } from '@/src/stores/recipeStore'
@@ -127,7 +127,7 @@ export default function SettingsScreen() {
     try {
       await restorePurchases()
       Alert.alert('Success', 'Purchases restored successfully.')
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to restore purchases. Please try again.')
     }
   }

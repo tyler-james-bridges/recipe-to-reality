@@ -101,7 +101,7 @@ export async function cancelReminder(id: string): Promise<void> {
   try {
     await Notifications.cancelScheduledNotificationAsync(id)
     console.log('[Notifications] Cancelled reminder with ID: ' + id)
-  } catch (error) {
+  } catch {
     // Ignore errors when cancelling non-existent notifications
     console.log('[Notifications] No notification found to cancel with ID: ' + id)
   }

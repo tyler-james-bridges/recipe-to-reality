@@ -1,13 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import {
-  StyleSheet,
-  ScrollView,
-  View,
-  Switch,
-  Linking,
-  Platform,
-  useColorScheme,
-} from 'react-native'
+import { StyleSheet, ScrollView, View, Switch, Linking, useColorScheme } from 'react-native'
 import { Stack } from 'expo-router'
 import { Icon } from '@/src/components/ui/Icon'
 import Animated, { FadeIn, FadeInDown, SlideInRight } from 'react-native-reanimated'
@@ -219,7 +211,7 @@ export default function NotificationsSettingsScreen() {
                   <Icon name="information-circle" size={20} color={colors.warning} />
                   <ThemedText style={[styles.deniedText, { color: colors.text }]}>
                     Notifications are disabled in your device settings. To receive meal reminders,
-                    you'll need to enable them in Settings.
+                    you will need to enable them in Settings.
                   </ThemedText>
                 </View>
                 <View style={{ marginTop: spacing.md }}>
@@ -340,7 +332,7 @@ export default function NotificationsSettingsScreen() {
           <View style={[styles.infoCard, { backgroundColor: colors.infoBackground }]}>
             <Icon name="information-circle" size={20} color={colors.info} />
             <ThemedText style={[styles.infoText, { color: colors.text }]}>
-              Meal reminders help you stay on track with your cooking schedule. You'll receive a
+              Meal reminders help you stay on track with your cooking schedule. You will receive a
               notification at your chosen time when you have meals planned for the day.
             </ThemedText>
           </View>

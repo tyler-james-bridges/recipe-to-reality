@@ -34,6 +34,7 @@ export default function PantryItemRow({ item, onDelete, onPress, index = 0 }: Pa
 
   React.useEffect(() => {
     progress.value = withDelay(index * 40, withSpring(1, { damping: 18, stiffness: 100 }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index])
 
   const rowAnimatedStyle = useAnimatedStyle(() => ({

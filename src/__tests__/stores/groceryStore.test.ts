@@ -1,7 +1,11 @@
 import { useGroceryStore } from '../../stores/groceryStore'
 import { GroceryListWithItems, RecipeWithIngredients, IngredientCategory } from '../../types'
 import { db } from '../../db/client'
+// Schema tables are imported but referenced via mock setup
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { groceryLists, groceryItems } from '../../db/schema'
+
+import { combineQuantities } from '../../utils/quantity'
 
 // Mock the database
 jest.mock('../../db/client', () => ({
@@ -26,8 +30,6 @@ jest.mock('../../utils/quantity', () => ({
     return String(n1 + n2)
   }),
 }))
-
-import { combineQuantities } from '../../utils/quantity'
 
 describe('groceryStore', () => {
   beforeEach(() => {
@@ -115,7 +117,6 @@ describe('groceryStore', () => {
           }),
         }),
       })
-
       ;(db.select as jest.Mock).mockReturnValueOnce({
         from: jest.fn().mockReturnValue({
           where: jest.fn().mockResolvedValue(mockGroceryList.items),
@@ -199,7 +200,6 @@ describe('groceryStore', () => {
           orderBy: jest.fn().mockResolvedValue(mockLists),
         }),
       })
-
       ;(db.select as jest.Mock).mockReturnValueOnce({
         from: jest.fn().mockResolvedValue(mockItems),
       })
@@ -354,6 +354,7 @@ describe('groceryStore', () => {
         ],
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       let capturedValues: any = null
       const mockInsert = jest.fn().mockReturnValue({
         values: jest.fn().mockImplementation((values) => {

@@ -19,7 +19,7 @@ import DateTimePicker from '@react-native-community/datetimepicker'
 import { ThemedView, ThemedText } from '@/components/Themed'
 import { usePantryStore } from '@/src/stores/pantryStore'
 import { useSettingsStore } from '@/src/stores/settingsStore'
-import { IngredientCategory, PantryItem } from '@/src/types'
+import { IngredientCategory } from '@/src/types'
 import AnimatedPressable from '@/src/components/ui/AnimatedPressable'
 import ModernButton from '@/src/components/ui/ModernButton'
 import SectionHeader from '@/src/components/ui/SectionHeader'
@@ -146,7 +146,7 @@ export default function EditPantryItemScreen() {
 
       triggerHaptic('success')
       router.back()
-    } catch (error) {
+    } catch {
       triggerHaptic('error')
       Alert.alert('Error', 'Failed to update item')
     } finally {
@@ -172,7 +172,7 @@ export default function EditPantryItemScreen() {
             await deleteItem(id)
             triggerHaptic('success')
             router.back()
-          } catch (error) {
+          } catch {
             triggerHaptic('error')
             Alert.alert('Error', 'Failed to delete item')
             setIsDeleting(false)

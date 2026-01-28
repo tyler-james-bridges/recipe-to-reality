@@ -1,24 +1,9 @@
 import React, { useCallback, useState } from 'react'
-import {
-  StyleSheet,
-  FlatList,
-  View,
-  Pressable,
-  useColorScheme,
-  Platform,
-  Alert,
-} from 'react-native'
+import { StyleSheet, FlatList, View, Pressable, useColorScheme, Alert } from 'react-native'
 import { router, Stack } from 'expo-router'
 import { useFocusEffect } from '@react-navigation/native'
 import * as Haptics from 'expo-haptics'
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  interpolateColor,
-  FadeIn,
-  Layout,
-} from 'react-native-reanimated'
+import Animated, { FadeIn } from 'react-native-reanimated'
 
 import { ThemedView, ThemedText } from '@/components/Themed'
 import { useRecipeStore } from '@/src/stores/recipeStore'
@@ -29,7 +14,7 @@ import EmptyState from '@/src/components/EmptyState'
 import { SkeletonRecipeList } from '@/src/components/ui/SkeletonLoader'
 import AnimatedPressable from '@/src/components/ui/AnimatedPressable'
 import { Icon } from '@/src/components/ui/Icon'
-import Colors, { shadows, radius, spacing, typography, animation } from '@/constants/Colors'
+import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors'
 
 type SortOption = 'dateAdded' | 'name' | 'cookTime'
 type FilterOption = 'all' | 'queue' | 'cooked'

@@ -90,7 +90,6 @@ describe('recipeStore', () => {
           orderBy: jest.fn().mockResolvedValue(mockDbRecipes),
         }),
       })
-
       ;(db.select as jest.Mock).mockReturnValueOnce({
         from: jest.fn().mockResolvedValue(mockDbIngredients),
       })
@@ -133,7 +132,6 @@ describe('recipeStore', () => {
           ),
         }),
       })
-
       ;(db.select as jest.Mock).mockReturnValueOnce({
         from: jest.fn().mockResolvedValue([]),
       })
@@ -377,9 +375,7 @@ describe('recipeStore', () => {
         where: jest.fn().mockRejectedValue(new Error(errorMessage)),
       })
 
-      await expect(useRecipeStore.getState().deleteRecipe('recipe-1')).rejects.toThrow(
-        errorMessage
-      )
+      await expect(useRecipeStore.getState().deleteRecipe('recipe-1')).rejects.toThrow(errorMessage)
 
       const state = useRecipeStore.getState()
       expect(state.error).toBe(errorMessage)

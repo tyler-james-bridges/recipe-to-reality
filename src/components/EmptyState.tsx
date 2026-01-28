@@ -44,6 +44,7 @@ export default function EmptyState({
     iconProgress.value = withSpring(1, { damping: 12, stiffness: 80 })
     contentProgress.value = withDelay(150, withSpring(1, { damping: 15, stiffness: 100 }))
     buttonProgress.value = withDelay(300, withSpring(1, { damping: 15, stiffness: 100 }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const iconAnimatedStyle = useAnimatedStyle(() => ({

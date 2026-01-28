@@ -14,7 +14,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router'
 import { Icon } from '@/src/components/ui/Icon'
 import * as Haptics from 'expo-haptics'
 
-import { ThemedView, ThemedText } from '@/components/Themed'
+import { ThemedText } from '@/components/Themed'
 import { useRecipeStore } from '@/src/stores/recipeStore'
 import { usePurchaseStore } from '@/src/stores/purchaseStore'
 import { useSettingsStore } from '@/src/stores/settingsStore'
@@ -111,6 +111,7 @@ export default function AddRecipeScreen() {
       }, 300)
       return () => clearTimeout(timer)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deepLinkUrl, autoExtract])
 
   const saveExtractedRecipe = async (extracted: ExtractedRecipe) => {
@@ -187,7 +188,7 @@ export default function AddRecipeScreen() {
       })
       triggerHaptic('success')
       router.back()
-    } catch (error) {
+    } catch {
       triggerHaptic('error')
       Alert.alert('Error', 'Failed to save recipe')
     }

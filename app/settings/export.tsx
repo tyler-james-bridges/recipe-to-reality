@@ -104,6 +104,7 @@ function ExportRow({ option, count, isLoading, isSuccess, onExport, index }: Exp
         withTiming(1, { duration: 150 })
       )
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccess])
 
   const successAnimatedStyle = useAnimatedStyle(() => ({
@@ -204,6 +205,7 @@ export default function ExportDataScreen() {
     }
 
     loadAllData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Update counts when data changes

@@ -7,7 +7,6 @@ import Animated, {
   withDelay,
   interpolate,
   Extrapolation,
-  FadeIn,
 } from 'react-native-reanimated'
 import { ThemedText } from '@/components/Themed'
 import { GroceryItem } from '../types'
@@ -36,6 +35,7 @@ export default function GroceryItemRow({
 
   React.useEffect(() => {
     progress.value = withDelay(index * 30, withSpring(1, { damping: 18, stiffness: 100 }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index])
 
   React.useEffect(() => {
@@ -43,6 +43,7 @@ export default function GroceryItemRow({
       damping: 12,
       stiffness: 200,
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item.isChecked])
 
   const rowAnimatedStyle = useAnimatedStyle(() => ({

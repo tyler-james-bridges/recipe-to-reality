@@ -68,6 +68,7 @@ export default function AnimatedPressable({
 
       onPressIn?.(e)
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [onPressIn, animationType]
   )
 
@@ -83,6 +84,7 @@ export default function AnimatedPressable({
 
       onPressOut?.(e)
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [onPressOut, animationType]
   )
 

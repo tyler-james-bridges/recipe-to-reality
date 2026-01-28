@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-as-default-member */
 import { create } from 'zustand'
 import storage from '../utils/storage'
 import { initializeDatabase, sqliteDB } from '../db/client'

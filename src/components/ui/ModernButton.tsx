@@ -1,12 +1,7 @@
 import React from 'react'
 import { StyleSheet, ViewStyle, TextStyle, StyleProp, useColorScheme, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  interpolate,
-} from 'react-native-reanimated'
+import Animated, { useAnimatedStyle, useSharedValue, interpolate } from 'react-native-reanimated'
 import AnimatedPressable from './AnimatedPressable'
 import Colors, { gradients, shadows, radius, typography, spacing } from '@/constants/Colors'
 import { ThemedText } from '@/components/Themed'
@@ -29,7 +24,8 @@ interface ModernButtonProps {
   style?: StyleProp<ViewStyle>
 }
 
-const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient)
+// Note: Keeping the animated component creation in place though it's only needed for potential future use
+// const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient)
 
 export default function ModernButton({
   title,

@@ -7,7 +7,6 @@ import {
   ScrollView,
   NativeSyntheticEvent,
   NativeScrollEvent,
-  Platform,
 } from 'react-native'
 import { router } from 'expo-router'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -26,25 +25,16 @@ import Animated, {
   FadeIn,
   FadeInDown,
   FadeInUp,
-  SlideInRight,
-  runOnJS,
   SharedValue,
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import Colors, {
-  gradients,
-  shadows,
-  radius,
-  typography,
-  spacing,
-  animation,
-} from '@/constants/Colors'
+import Colors, { shadows, radius, typography, spacing } from '@/constants/Colors'
 import { ThemedText } from '@/components/Themed'
 import { ModernButton, AnimatedPressable } from '@/src/components/ui'
 import { useSettingsStore } from '@/src/stores/settingsStore'
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window')
+const { width: SCREEN_WIDTH } = Dimensions.get('window')
 const TOTAL_PAGES = 5
 
 // Onboarding slide data
@@ -126,7 +116,7 @@ function FloatingIcon({
         true
       )
     )
-  }, [])
+  }, [delay, opacity, translateY])
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
@@ -160,7 +150,7 @@ function SlideIllustration({ slide, isActive }: { slide: (typeof SLIDES)[0]; isA
     } else {
       scale.value = withTiming(0.8, { duration: 300 })
     }
-  }, [isActive])
+  }, [isActive, scale, rotation])
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }, { rotate: `${rotation.value}deg` }],
@@ -380,9 +370,39 @@ function OnboardingSlide({
   )
 }
 
+// Single page indicator dot component
+function PageIndicatorDot({
+  index,
+  scrollX,
+  tintColor,
+}: {
+  index: number
+  scrollX: SharedValue<number>
+  tintColor: string
+}) {
+  const animatedDotStyle = useAnimatedStyle(() => {
+    const inputRange = [
+      (index - 1) * SCREEN_WIDTH,
+      index * SCREEN_WIDTH,
+      (index + 1) * SCREEN_WIDTH,
+    ]
+    const width = interpolate(scrollX.value, inputRange, [8, 24, 8], Extrapolation.CLAMP)
+    const opacity = interpolate(scrollX.value, inputRange, [0.4, 1, 0.4], Extrapolation.CLAMP)
+    return {
+      width,
+      opacity,
+    }
+  })
+
+  return (
+    <Animated.View
+      style={[styles.paginationDot, { backgroundColor: tintColor }, animatedDotStyle]}
+    />
+  )
+}
+
 // Animated page indicator dots
 function PageIndicator({
-  currentPage,
   totalPages,
   scrollX,
 }: {
@@ -395,28 +415,9 @@ function PageIndicator({
 
   return (
     <View style={styles.paginationContainer}>
-      {Array.from({ length: totalPages }).map((_, index) => {
-        const animatedDotStyle = useAnimatedStyle(() => {
-          const inputRange = [
-            (index - 1) * SCREEN_WIDTH,
-            index * SCREEN_WIDTH,
-            (index + 1) * SCREEN_WIDTH,
-          ]
-          const width = interpolate(scrollX.value, inputRange, [8, 24, 8], Extrapolation.CLAMP)
-          const opacity = interpolate(scrollX.value, inputRange, [0.4, 1, 0.4], Extrapolation.CLAMP)
-          return {
-            width,
-            opacity,
-          }
-        })
-
-        return (
-          <Animated.View
-            key={index}
-            style={[styles.paginationDot, { backgroundColor: colors.tint }, animatedDotStyle]}
-          />
-        )
-      })}
+      {Array.from({ length: totalPages }).map((_, index) => (
+        <PageIndicatorDot key={index} index={index} scrollX={scrollX} tintColor={colors.tint} />
+      ))}
     </View>
   )
 }
