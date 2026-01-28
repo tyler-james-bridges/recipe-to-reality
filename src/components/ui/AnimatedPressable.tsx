@@ -1,24 +1,24 @@
-import React, { useCallback } from 'react';
-import { Pressable, PressableProps, StyleProp, ViewStyle } from 'react-native';
+import React, { useCallback } from 'react'
+import { Pressable, PressableProps, StyleProp, ViewStyle } from 'react-native'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
   interpolate,
-} from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
-import { useSettingsStore } from '@/src/stores/settingsStore';
-import { animation } from '@/constants/Colors';
+} from 'react-native-reanimated'
+import * as Haptics from 'expo-haptics'
+import { useSettingsStore } from '@/src/stores/settingsStore'
+import { animation } from '@/constants/Colors'
 
-const AnimatedPressableComponent = Animated.createAnimatedComponent(Pressable);
+const AnimatedPressableComponent = Animated.createAnimatedComponent(Pressable)
 
 interface AnimatedPressableProps extends Omit<PressableProps, 'style'> {
-  style?: StyleProp<ViewStyle>;
-  scaleOnPress?: number;
-  opacityOnPress?: number;
-  hapticType?: 'light' | 'medium' | 'heavy' | 'selection' | 'none';
-  animationType?: 'spring' | 'timing';
+  style?: StyleProp<ViewStyle>
+  scaleOnPress?: number
+  opacityOnPress?: number
+  hapticType?: 'light' | 'medium' | 'heavy' | 'selection' | 'none'
+  animationType?: 'spring' | 'timing'
 }
 
 export default function AnimatedPressable({
@@ -34,74 +34,72 @@ export default function AnimatedPressable({
   disabled,
   ...props
 }: AnimatedPressableProps) {
-  const pressed = useSharedValue(0);
-  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
+  const pressed = useSharedValue(0)
+  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback)
 
   const triggerHaptic = useCallback(() => {
-    if (!hapticFeedback || hapticType === 'none' || disabled) return;
+    if (!hapticFeedback || hapticType === 'none' || disabled) return
 
     switch (hapticType) {
       case 'light':
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        break;
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+        break
       case 'medium':
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        break;
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+        break
       case 'heavy':
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-        break;
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
+        break
       case 'selection':
-        Haptics.selectionAsync();
-        break;
+        Haptics.selectionAsync()
+        break
     }
-  }, [hapticFeedback, hapticType, disabled]);
+  }, [hapticFeedback, hapticType, disabled])
 
   const handlePressIn = useCallback(
     (e: any) => {
-      const animConfig = animationType === 'spring'
-        ? { damping: animation.spring.damping, stiffness: animation.spring.stiffness }
-        : { duration: animation.fast };
+      const animConfig =
+        animationType === 'spring'
+          ? { damping: animation.spring.damping, stiffness: animation.spring.stiffness }
+          : { duration: animation.fast }
 
-      pressed.value = animationType === 'spring'
-        ? withSpring(1, animConfig)
-        : withTiming(1, animConfig);
+      pressed.value =
+        animationType === 'spring' ? withSpring(1, animConfig) : withTiming(1, animConfig)
 
-      onPressIn?.(e);
+      onPressIn?.(e)
     },
     [onPressIn, animationType]
-  );
+  )
 
   const handlePressOut = useCallback(
     (e: any) => {
-      const animConfig = animationType === 'spring'
-        ? { damping: animation.spring.damping, stiffness: animation.spring.stiffness }
-        : { duration: animation.fast };
+      const animConfig =
+        animationType === 'spring'
+          ? { damping: animation.spring.damping, stiffness: animation.spring.stiffness }
+          : { duration: animation.fast }
 
-      pressed.value = animationType === 'spring'
-        ? withSpring(0, animConfig)
-        : withTiming(0, animConfig);
+      pressed.value =
+        animationType === 'spring' ? withSpring(0, animConfig) : withTiming(0, animConfig)
 
-      onPressOut?.(e);
+      onPressOut?.(e)
     },
     [onPressOut, animationType]
-  );
+  )
 
   const handlePress = useCallback(
     (e: any) => {
-      triggerHaptic();
-      onPress?.(e);
+      triggerHaptic()
+      onPress?.(e)
     },
     [onPress, triggerHaptic]
-  );
+  )
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
-      transform: [
-        { scale: interpolate(pressed.value, [0, 1], [1, scaleOnPress]) },
-      ],
+      transform: [{ scale: interpolate(pressed.value, [0, 1], [1, scaleOnPress]) }],
       opacity: interpolate(pressed.value, [0, 1], [1, opacityOnPress]),
-    };
-  });
+    }
+  })
 
   return (
     <AnimatedPressableComponent
@@ -114,5 +112,5 @@ export default function AnimatedPressable({
     >
       {children}
     </AnimatedPressableComponent>
-  );
+  )
 }

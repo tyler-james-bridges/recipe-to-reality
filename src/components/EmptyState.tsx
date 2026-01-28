@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, useColorScheme } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect } from 'react'
+import { StyleSheet, useColorScheme } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -8,21 +8,21 @@ import Animated, {
   withDelay,
   interpolate,
   Extrapolation,
-} from 'react-native-reanimated';
-import { ThemedText, ThemedView } from '@/components/Themed';
-import Colors, { radius, spacing, typography } from '@/constants/Colors';
-import ModernButton from './ui/ModernButton';
-import { Icon, IconProps } from './ui/Icon';
+} from 'react-native-reanimated'
+import { ThemedText, ThemedView } from '@/components/Themed'
+import Colors, { radius, spacing, typography } from '@/constants/Colors'
+import ModernButton from './ui/ModernButton'
+import { Icon, IconProps } from './ui/Icon'
 
-type IconName = IconProps['name'];
+type IconName = IconProps['name']
 
 interface EmptyStateProps {
-  icon: IconName;
-  title: string;
-  message: string;
-  actionLabel?: string;
-  onAction?: () => void;
-  secondaryMessage?: string;
+  icon: IconName
+  title: string
+  message: string
+  actionLabel?: string
+  onAction?: () => void
+  secondaryMessage?: string
 }
 
 export default function EmptyState({
@@ -33,39 +33,37 @@ export default function EmptyState({
   onAction,
   secondaryMessage,
 }: EmptyStateProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
 
-  const iconProgress = useSharedValue(0);
-  const contentProgress = useSharedValue(0);
-  const buttonProgress = useSharedValue(0);
+  const iconProgress = useSharedValue(0)
+  const contentProgress = useSharedValue(0)
+  const buttonProgress = useSharedValue(0)
 
   useEffect(() => {
-    iconProgress.value = withSpring(1, { damping: 12, stiffness: 80 });
-    contentProgress.value = withDelay(150, withSpring(1, { damping: 15, stiffness: 100 }));
-    buttonProgress.value = withDelay(300, withSpring(1, { damping: 15, stiffness: 100 }));
-  }, []);
+    iconProgress.value = withSpring(1, { damping: 12, stiffness: 80 })
+    contentProgress.value = withDelay(150, withSpring(1, { damping: 15, stiffness: 100 }))
+    buttonProgress.value = withDelay(300, withSpring(1, { damping: 15, stiffness: 100 }))
+  }, [])
 
   const iconAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { scale: interpolate(iconProgress.value, [0, 1], [0.5, 1], Extrapolation.CLAMP) },
-    ],
+    transform: [{ scale: interpolate(iconProgress.value, [0, 1], [0.5, 1], Extrapolation.CLAMP) }],
     opacity: interpolate(iconProgress.value, [0, 1], [0, 1], Extrapolation.CLAMP),
-  }));
+  }))
 
   const contentAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       { translateY: interpolate(contentProgress.value, [0, 1], [20, 0], Extrapolation.CLAMP) },
     ],
     opacity: interpolate(contentProgress.value, [0, 1], [0, 1], Extrapolation.CLAMP),
-  }));
+  }))
 
   const buttonAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       { translateY: interpolate(buttonProgress.value, [0, 1], [20, 0], Extrapolation.CLAMP) },
     ],
     opacity: interpolate(buttonProgress.value, [0, 1], [0, 1], Extrapolation.CLAMP),
-  }));
+  }))
 
   return (
     <ThemedView style={styles.container}>
@@ -84,9 +82,7 @@ export default function EmptyState({
       {/* Text Content */}
       <Animated.View style={[styles.textContent, contentAnimatedStyle]}>
         <ThemedText style={styles.title}>{title}</ThemedText>
-        <ThemedText style={[styles.message, { color: colors.textTertiary }]}>
-          {message}
-        </ThemedText>
+        <ThemedText style={[styles.message, { color: colors.textTertiary }]}>{message}</ThemedText>
         {secondaryMessage && (
           <ThemedText style={[styles.secondaryMessage, { color: colors.tint }]}>
             {secondaryMessage}
@@ -107,7 +103,7 @@ export default function EmptyState({
         </Animated.View>
       )}
     </ThemedView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -149,4 +145,4 @@ const styles = StyleSheet.create({
   buttonWrapper: {
     marginTop: spacing['2xl'],
   },
-});
+})

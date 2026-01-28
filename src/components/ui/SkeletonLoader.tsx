@@ -1,5 +1,12 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, ViewStyle, StyleProp, useColorScheme, View, DimensionValue } from 'react-native';
+import React, { useEffect } from 'react'
+import {
+  StyleSheet,
+  ViewStyle,
+  StyleProp,
+  useColorScheme,
+  View,
+  DimensionValue,
+} from 'react-native'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -7,15 +14,15 @@ import Animated, {
   withTiming,
   interpolate,
   Easing,
-} from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
-import Colors, { radius, spacing } from '@/constants/Colors';
+} from 'react-native-reanimated'
+import { LinearGradient } from 'expo-linear-gradient'
+import Colors, { radius, spacing } from '@/constants/Colors'
 
 interface SkeletonLoaderProps {
-  width?: DimensionValue;
-  height?: number;
-  borderRadius?: number;
-  style?: StyleProp<ViewStyle>;
+  width?: DimensionValue
+  height?: number
+  borderRadius?: number
+  style?: StyleProp<ViewStyle>
 }
 
 export default function SkeletonLoader({
@@ -24,17 +31,17 @@ export default function SkeletonLoader({
   borderRadius = radius.md,
   style,
 }: SkeletonLoaderProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const shimmer = useSharedValue(0);
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const shimmer = useSharedValue(0)
 
   useEffect(() => {
     shimmer.value = withRepeat(
       withTiming(1, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
       -1,
       false
-    );
-  }, []);
+    )
+  }, [])
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -42,7 +49,7 @@ export default function SkeletonLoader({
         translateX: interpolate(shimmer.value, [0, 1], [-200, 200]),
       },
     ],
-  }));
+  }))
 
   return (
     <View
@@ -59,22 +66,24 @@ export default function SkeletonLoader({
     >
       <Animated.View style={[StyleSheet.absoluteFillObject, animatedStyle]}>
         <LinearGradient
-          colors={[
-            'transparent',
-            colors.skeletonHighlight,
-            'transparent',
-          ]}
+          colors={['transparent', colors.skeletonHighlight, 'transparent']}
           start={{ x: 0, y: 0.5 }}
           end={{ x: 1, y: 0.5 }}
           style={styles.shimmer}
         />
       </Animated.View>
     </View>
-  );
+  )
 }
 
 // Preset skeleton components for common use cases
-export function SkeletonText({ lines = 3, style }: { lines?: number; style?: StyleProp<ViewStyle> }) {
+export function SkeletonText({
+  lines = 3,
+  style,
+}: {
+  lines?: number
+  style?: StyleProp<ViewStyle>
+}) {
   return (
     <View style={[styles.textContainer, style]}>
       {Array.from({ length: lines }).map((_, index) => (
@@ -86,12 +95,12 @@ export function SkeletonText({ lines = 3, style }: { lines?: number; style?: Sty
         />
       ))}
     </View>
-  );
+  )
 }
 
 export function SkeletonCard({ style }: { style?: StyleProp<ViewStyle> }) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
 
   return (
     <View style={[styles.card, { backgroundColor: colors.card }, style]}>
@@ -103,7 +112,7 @@ export function SkeletonCard({ style }: { style?: StyleProp<ViewStyle> }) {
         </View>
       </View>
     </View>
-  );
+  )
 }
 
 export function SkeletonRecipeList({ count = 5 }: { count?: number }) {
@@ -113,7 +122,7 @@ export function SkeletonRecipeList({ count = 5 }: { count?: number }) {
         <SkeletonCard key={index} style={styles.recipeItem} />
       ))}
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -153,4 +162,4 @@ const styles = StyleSheet.create({
   recipeItem: {
     marginBottom: spacing.sm,
   },
-});
+})

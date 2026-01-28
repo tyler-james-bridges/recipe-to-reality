@@ -1,18 +1,18 @@
-import React from 'react';
-import { StyleSheet, ViewStyle, StyleProp, useColorScheme, View, Pressable } from 'react-native';
-import Colors, { typography, spacing } from '@/constants/Colors';
-import { ThemedText } from '@/components/Themed';
-import { Icon, IconProps } from './Icon';
+import React from 'react'
+import { StyleSheet, ViewStyle, StyleProp, useColorScheme, View, Pressable } from 'react-native'
+import Colors, { typography, spacing } from '@/constants/Colors'
+import { ThemedText } from '@/components/Themed'
+import { Icon, IconProps } from './Icon'
 
-type IconName = IconProps['name'];
+type IconName = IconProps['name']
 
 interface SectionHeaderProps {
-  title: string;
-  subtitle?: string;
-  icon?: IconName;
-  actionLabel?: string;
-  onAction?: () => void;
-  style?: StyleProp<ViewStyle>;
+  title: string
+  subtitle?: string
+  icon?: IconName
+  actionLabel?: string
+  onAction?: () => void
+  style?: StyleProp<ViewStyle>
 }
 
 export default function SectionHeader({
@@ -23,8 +23,8 @@ export default function SectionHeader({
   onAction,
   style,
 }: SectionHeaderProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
 
   return (
     <View style={[styles.container, style]}>
@@ -45,14 +45,12 @@ export default function SectionHeader({
       </View>
       {actionLabel && onAction && (
         <Pressable onPress={onAction} style={styles.action}>
-          <ThemedText style={[styles.actionText, { color: colors.tint }]}>
-            {actionLabel}
-          </ThemedText>
+          <ThemedText style={[styles.actionText, { color: colors.tint }]}>{actionLabel}</ThemedText>
           <Icon name="chevron-forward" size={16} color={colors.tint} />
         </Pressable>
       )}
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -94,4 +92,4 @@ const styles = StyleSheet.create({
   actionText: {
     ...typography.labelMedium,
   },
-});
+})

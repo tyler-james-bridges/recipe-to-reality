@@ -3,7 +3,7 @@
  * Ported from PantryItem.swift
  */
 
-import { PantryItem, Ingredient, RecipeWithIngredients } from '../types';
+import { PantryItem, Ingredient, RecipeWithIngredients } from '../types'
 
 // Common modifiers to ignore when matching
 const COMMON_MODIFIERS = new Set([
@@ -37,41 +37,41 @@ const COMMON_MODIFIERS = new Set([
   'flavored',
   'ripe',
   'unripe',
-]);
+])
 
 /**
  * Check if a pantry item matches an ingredient
  */
 export function matchesIngredient(pantryName: string, ingredientName: string): boolean {
-  const p = pantryName.toLowerCase().trim();
-  const i = ingredientName.toLowerCase().trim();
+  const p = pantryName.toLowerCase().trim()
+  const i = ingredientName.toLowerCase().trim()
 
   // Level 1: Exact match
   if (p === i) {
-    return true;
+    return true
   }
 
   // Level 2: Substring match
   if (i.includes(p) || p.includes(i)) {
-    return true;
+    return true
   }
 
   // Level 3: Word intersection (ignoring modifiers)
   const pantryWords = new Set(
     p.split(/\s+/).filter((word) => !COMMON_MODIFIERS.has(word) && word.length > 2)
-  );
+  )
   const ingredientWords = new Set(
     i.split(/\s+/).filter((word) => !COMMON_MODIFIERS.has(word) && word.length > 2)
-  );
+  )
 
   // Check for any common keywords
   for (const word of pantryWords) {
     if (ingredientWords.has(word)) {
-      return true;
+      return true
     }
   }
 
-  return false;
+  return false
 }
 
 /**
@@ -79,9 +79,9 @@ export function matchesIngredient(pantryName: string, ingredientName: string): b
  */
 export function isExpired(item: PantryItem): boolean {
   if (!item.expirationDate) {
-    return false;
+    return false
   }
-  return item.expirationDate < Date.now();
+  return item.expirationDate < Date.now()
 }
 
 /**
@@ -89,10 +89,10 @@ export function isExpired(item: PantryItem): boolean {
  */
 export function isExpiringSoon(item: PantryItem): boolean {
   if (!item.expirationDate) {
-    return false;
+    return false
   }
-  const threeDaysFromNow = Date.now() + 3 * 24 * 60 * 60 * 1000;
-  return item.expirationDate <= threeDaysFromNow && !isExpired(item);
+  const threeDaysFromNow = Date.now() + 3 * 24 * 60 * 60 * 1000
+  return item.expirationDate <= threeDaysFromNow && !isExpired(item)
 }
 
 /**
@@ -103,19 +103,19 @@ export function calculateRecipeMatch(
   pantryItems: PantryItem[]
 ): number {
   if (recipe.ingredients.length === 0) {
-    return 0;
+    return 0
   }
 
-  const requiredIngredients = recipe.ingredients.filter((i) => !i.isOptional);
+  const requiredIngredients = recipe.ingredients.filter((i) => !i.isOptional)
   if (requiredIngredients.length === 0) {
-    return 100;
+    return 100
   }
 
   const matchedCount = requiredIngredients.filter((ingredient) =>
     pantryItems.some((pantryItem) => matchesIngredient(pantryItem.name, ingredient.name))
-  ).length;
+  ).length
 
-  return Math.round((matchedCount / requiredIngredients.length) * 100);
+  return Math.round((matchedCount / requiredIngredients.length) * 100)
 }
 
 /**
@@ -129,7 +129,7 @@ export function getMissingIngredients(
     (ingredient) =>
       !ingredient.isOptional &&
       !pantryItems.some((pantryItem) => matchesIngredient(pantryItem.name, ingredient.name))
-  );
+  )
 }
 
 /**
@@ -141,7 +141,7 @@ export function getMatchedIngredients(
 ): Ingredient[] {
   return recipe.ingredients.filter((ingredient) =>
     pantryItems.some((pantryItem) => matchesIngredient(pantryItem.name, ingredient.name))
-  );
+  )
 }
 
 /**
@@ -160,8 +160,8 @@ export function rankRecipesByPantry(
     .sort((a, b) => {
       // Sort by match percentage descending, then by missing count ascending
       if (b.matchPercentage !== a.matchPercentage) {
-        return b.matchPercentage - a.matchPercentage;
+        return b.matchPercentage - a.matchPercentage
       }
-      return a.missingCount - b.missingCount;
-    });
+      return a.missingCount - b.missingCount
+    })
 }

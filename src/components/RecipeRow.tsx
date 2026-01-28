@@ -1,7 +1,7 @@
-import React, { useRef, useCallback } from 'react';
-import { StyleSheet, View, useColorScheme, Share, Pressable } from 'react-native';
-import { Image } from 'expo-image';
-import { Link } from 'expo-router';
+import React, { useRef, useCallback } from 'react'
+import { StyleSheet, View, useColorScheme, Share, Pressable } from 'react-native'
+import { Image } from 'expo-image'
+import { Link } from 'expo-router'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -9,28 +9,28 @@ import Animated, {
   withDelay,
   interpolate,
   Extrapolation,
-} from 'react-native-reanimated';
-import { Swipeable } from 'react-native-gesture-handler';
-import { LinearGradient } from 'expo-linear-gradient';
-import { ThemedText } from '@/components/Themed';
-import { RecipeWithIngredients } from '../types';
-import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors';
-import AnimatedPressable from './ui/AnimatedPressable';
-import Badge from './ui/Badge';
-import { Icon } from './ui/Icon';
-import { HapticManager } from '../services/haptics';
+} from 'react-native-reanimated'
+import { Swipeable } from 'react-native-gesture-handler'
+import { LinearGradient } from 'expo-linear-gradient'
+import { ThemedText } from '@/components/Themed'
+import { RecipeWithIngredients } from '../types'
+import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors'
+import AnimatedPressable from './ui/AnimatedPressable'
+import Badge from './ui/Badge'
+import { Icon } from './ui/Icon'
+import { HapticManager } from '../services/haptics'
 
 interface RecipeRowProps {
-  recipe: RecipeWithIngredients;
-  onPress?: () => void;
-  pantryMatchPercentage?: number;
-  index?: number;
-  onShare?: () => void;
-  onAddToQueue?: () => void;
-  onMarkAsCooked?: () => void;
-  onDelete?: () => void;
-  onAddToGroceryList?: () => void;
-  enableLinkPreview?: boolean;
+  recipe: RecipeWithIngredients
+  onPress?: () => void
+  pantryMatchPercentage?: number
+  index?: number
+  onShare?: () => void
+  onAddToQueue?: () => void
+  onMarkAsCooked?: () => void
+  onDelete?: () => void
+  onAddToGroceryList?: () => void
+  enableLinkPreview?: boolean
 }
 
 export default function RecipeRow({
@@ -45,10 +45,10 @@ export default function RecipeRow({
   onAddToGroceryList,
   enableLinkPreview = true,
 }: RecipeRowProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const progress = useSharedValue(0);
-  const swipeableRef = useRef<Swipeable>(null);
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const progress = useSharedValue(0)
+  const swipeableRef = useRef<Swipeable>(null)
 
   React.useEffect(() => {
     progress.value = withDelay(
@@ -57,86 +57,83 @@ export default function RecipeRow({
         damping: 18,
         stiffness: 100,
       })
-    );
-  }, [index, progress]);
+    )
+  }, [index, progress])
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: interpolate(progress.value, [0, 1], [0, 1], Extrapolation.CLAMP),
-    transform: [
-      { translateY: interpolate(progress.value, [0, 1], [12, 0], Extrapolation.CLAMP) },
-    ],
-  }));
+    transform: [{ translateY: interpolate(progress.value, [0, 1], [12, 0], Extrapolation.CLAMP) }],
+  }))
 
   // Handle swipe action for queue toggle
   const handleSwipeAction = useCallback(() => {
-    HapticManager.success();
-    onAddToQueue?.();
-    swipeableRef.current?.close();
-  }, [onAddToQueue]);
+    HapticManager.success()
+    onAddToQueue?.()
+    swipeableRef.current?.close()
+  }, [onAddToQueue])
 
   // Render the left swipe action (revealed when swiping right)
   const renderLeftActions = useCallback(() => {
-    const isInQueue = recipe.isInQueue;
-    const backgroundColor = isInQueue ? '#FF3B30' : '#34C759';
-    const iconName = isInQueue ? 'remove-circle-outline' : 'add-circle-outline';
-    const actionText = isInQueue ? 'Remove' : 'Add';
+    const isInQueue = recipe.isInQueue
+    const backgroundColor = isInQueue ? '#FF3B30' : '#34C759'
+    const iconName = isInQueue ? 'remove-circle-outline' : 'add-circle-outline'
+    const actionText = isInQueue ? 'Remove' : 'Add'
 
     return (
       <Pressable
         onPress={handleSwipeAction}
-        style={[
-          styles.swipeAction,
-          styles.swipeActionLeft,
-          { backgroundColor },
-        ]}
+        style={[styles.swipeAction, styles.swipeActionLeft, { backgroundColor }]}
       >
         <Icon name={iconName} size={24} color="#FFFFFF" />
         <ThemedText style={styles.swipeActionText}>{actionText}</ThemedText>
       </Pressable>
-    );
-  }, [recipe.isInQueue, handleSwipeAction]);
+    )
+  }, [recipe.isInQueue, handleSwipeAction])
 
   const sourceIcon = React.useMemo(() => {
     switch (recipe.sourceType) {
       case 'youtube':
-        return { name: 'play-circle' as const, color: '#FF0000' };
+        return { name: 'play-circle' as const, color: '#FF0000' }
       case 'tiktok':
-        return { name: 'musical-notes' as const, color: colors.text };
+        return { name: 'musical-notes' as const, color: colors.text }
       case 'instagram':
-        return { name: 'camera' as const, color: '#833AB4' };
+        return { name: 'camera' as const, color: '#833AB4' }
       case 'url':
-        return { name: 'link' as const, color: '#007AFF' };
+        return { name: 'link' as const, color: '#007AFF' }
       case 'video':
-        return { name: 'videocam' as const, color: '#007AFF' };
+        return { name: 'videocam' as const, color: '#007AFF' }
       default:
-        return { name: 'pencil' as const, color: colors.textTertiary };
+        return { name: 'pencil' as const, color: colors.textTertiary }
     }
-  }, [recipe.sourceType, colors.text, colors.textTertiary]);
+  }, [recipe.sourceType, colors.text, colors.textTertiary])
 
   const getPantryMatchVariant = (percentage: number) => {
-    if (percentage >= 70) return 'success';
-    if (percentage >= 40) return 'warning';
-    return 'neutral';
-  };
+    if (percentage >= 70) return 'success'
+    if (percentage >= 40) return 'warning'
+    return 'neutral'
+  }
 
   const handleShare = async () => {
     if (onShare) {
-      onShare();
+      onShare()
     } else {
       try {
-        const shareMessage = 'Check out this recipe: ' + recipe.title + (recipe.sourceURL ? '\n' + recipe.sourceURL : '');
-        await Share.share({ message: shareMessage });
+        const shareMessage =
+          'Check out this recipe: ' +
+          recipe.title +
+          (recipe.sourceURL ? '\n' + recipe.sourceURL : '')
+        await Share.share({ message: shareMessage })
       } catch {
         // Ignore share errors
       }
     }
-  };
+  }
 
   const handleDelete = () => {
     if (onDelete) {
-      onDelete();
+      onDelete()
     }
-  };
+  }
 
   const CardContent = () => (
     <View
@@ -218,7 +215,7 @@ export default function RecipeRow({
         <Icon name="chevron-forward" size={18} color={colors.textTertiary} />
       </View>
     </View>
-  );
+  )
 
   // If Link.Preview is not enabled, use the original behavior with swipe
   if (!enableLinkPreview) {
@@ -232,7 +229,7 @@ export default function RecipeRow({
           friction={2}
           onSwipeableOpen={(direction) => {
             if (direction === 'left') {
-              handleSwipeAction();
+              handleSwipeAction()
             }
           }}
         >
@@ -246,11 +243,11 @@ export default function RecipeRow({
           </AnimatedPressable>
         </Swipeable>
       </Animated.View>
-    );
+    )
   }
 
   // Enhanced navigation with Link.Preview, context menu, and swipe gesture
-  const recipeHref = `/recipe/${recipe.id}` as const;
+  const recipeHref = `/recipe/${recipe.id}` as const
   return (
     <Animated.View style={animatedStyle}>
       <Swipeable
@@ -261,7 +258,7 @@ export default function RecipeRow({
         friction={2}
         onSwipeableOpen={(direction) => {
           if (direction === 'left') {
-            handleSwipeAction();
+            handleSwipeAction()
           }
         }}
       >
@@ -289,23 +286,14 @@ export default function RecipeRow({
                 icon="checkmark.circle"
                 onPress={() => onMarkAsCooked?.()}
               />
-              <Link.MenuAction
-                title="Share"
-                icon="square.and.arrow.up"
-                onPress={handleShare}
-              />
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={handleDelete}
-              />
+              <Link.MenuAction title="Share" icon="square.and.arrow.up" onPress={handleShare} />
+              <Link.MenuAction title="Delete" icon="trash" destructive onPress={handleDelete} />
             </Link.Menu>
           </Link>
         </View>
       </Swipeable>
     </Animated.View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -393,4 +381,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 4,
   },
-});
+})

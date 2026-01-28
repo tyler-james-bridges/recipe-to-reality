@@ -1,32 +1,29 @@
-import React from 'react';
-import { StyleSheet, View, TextInput, Pressable, useColorScheme } from 'react-native';
-import Colors from '@/constants/Colors';
-import { Icon } from './ui/Icon';
+import React from 'react'
+import { StyleSheet, View, TextInput, Pressable, useColorScheme } from 'react-native'
+import Colors from '@/constants/Colors'
+import { Icon } from './ui/Icon'
 
 interface SearchBarProps {
-  value: string;
-  onChangeText: (text: string) => void;
-  placeholder?: string;
+  value: string
+  onChangeText: (text: string) => void
+  placeholder?: string
 }
 
 /**
  * iOS-style search bar matching UISearchBar appearance
  */
 export default function SearchBar({ value, onChangeText, placeholder = 'Search' }: SearchBarProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
 
   return (
-    <View style={[
-      styles.container,
-      { backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#E5E5EA' },
-    ]}>
-      <Icon
-        name="search"
-        size={18}
-        color="#8E8E93"
-        style={styles.icon}
-      />
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#E5E5EA' },
+      ]}
+    >
+      <Icon name="search" size={18} color="#8E8E93" style={styles.icon} />
       <TextInput
         style={[styles.input, { color: colors.text }]}
         value={value}
@@ -44,7 +41,7 @@ export default function SearchBar({ value, onChangeText, placeholder = 'Search' 
         </Pressable>
       )}
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -70,4 +67,4 @@ const styles = StyleSheet.create({
     padding: 4,
     marginLeft: 4,
   },
-});
+})

@@ -1,8 +1,8 @@
 // Modern 2026 Design System Colors
 // Inspired by iOS 18+ with enhanced depth and vibrancy
 
-const tintColorLight = '#FF9500';
-const tintColorDark = '#FF9F0A';
+const tintColorLight = '#FF9500'
+const tintColorDark = '#FF9F0A'
 
 // Subtle gradient backgrounds for glassmorphism effects
 export const gradients = {
@@ -20,10 +20,10 @@ export const gradients = {
     card: ['#2C2C2E', '#242426'] as const,
     hero: ['#2A2015', '#1F1810'] as const,
   },
-};
+}
 
 // Shadow presets for elevation system - React Native compatible
-import { Platform } from 'react-native';
+import { Platform } from 'react-native'
 export const shadows = {
   small: Platform.select({
     ios: {
@@ -61,7 +61,7 @@ export const shadows = {
     },
     default: {},
   }),
-};
+}
 
 // Modern spacing scale (4px base)
 export const spacing = {
@@ -74,7 +74,7 @@ export const spacing = {
   '3xl': 32,
   '4xl': 40,
   '5xl': 48,
-} as const;
+} as const
 
 // Typography scale with modern font weights
 export const typography = {
@@ -155,7 +155,7 @@ export const typography = {
     letterSpacing: 0.2,
     lineHeight: 16,
   },
-} as const;
+} as const
 
 // Border radius scale
 export const radius = {
@@ -165,7 +165,7 @@ export const radius = {
   xl: 18,
   '2xl': 24,
   full: 9999,
-} as const;
+} as const
 
 // Border radius with continuous curve (iOS squircle) for native feel
 export const borderRadius = {
@@ -175,7 +175,7 @@ export const borderRadius = {
   xl: { borderRadius: radius.xl, borderCurve: 'continuous' as const },
   '2xl': { borderRadius: radius['2xl'], borderCurve: 'continuous' as const },
   full: { borderRadius: radius.full, borderCurve: 'continuous' as const },
-};
+}
 
 // Animation durations
 export const animation = {
@@ -187,7 +187,7 @@ export const animation = {
     stiffness: 150,
     mass: 1,
   },
-} as const;
+} as const
 
 export default {
   light: {
@@ -258,8 +258,8 @@ export default {
     skeleton: '#2C2C2E',
     skeletonHighlight: '#3A3A3C',
   },
-};
+}
 
 // Named exports for direct access
-export const orange = tintColorLight;
-export const orangeDark = tintColorDark;
+export const orange = tintColorLight
+export const orangeDark = tintColorDark

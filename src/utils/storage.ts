@@ -3,50 +3,50 @@
  * Uses expo-sqlite/localStorage instead of deprecated AsyncStorage
  */
 
-import 'expo-sqlite/localStorage/install';
+import 'expo-sqlite/localStorage/install'
 
 export function getItem(key: string): string | null {
   try {
-    return localStorage.getItem(key);
+    return localStorage.getItem(key)
   } catch (error) {
-    console.error(`Failed to get item ${key}:`, error);
-    return null;
+    console.error(`Failed to get item ${key}:`, error)
+    return null
   }
 }
 
 export async function getItemAsync(key: string): Promise<string | null> {
-  return getItem(key);
+  return getItem(key)
 }
 
 export function setItem(key: string, value: string): void {
   try {
-    localStorage.setItem(key, value);
+    localStorage.setItem(key, value)
   } catch (error) {
-    console.error(`Failed to set item ${key}:`, error);
+    console.error(`Failed to set item ${key}:`, error)
   }
 }
 
 export async function setItemAsync(key: string, value: string): Promise<void> {
-  setItem(key, value);
+  setItem(key, value)
 }
 
 export function removeItem(key: string): void {
   try {
-    localStorage.removeItem(key);
+    localStorage.removeItem(key)
   } catch (error) {
-    console.error(`Failed to remove item ${key}:`, error);
+    console.error(`Failed to remove item ${key}:`, error)
   }
 }
 
 export async function removeItemAsync(key: string): Promise<void> {
-  removeItem(key);
+  removeItem(key)
 }
 
 export function clear(): void {
   try {
-    localStorage.clear();
+    localStorage.clear()
   } catch (error) {
-    console.error('Failed to clear storage:', error);
+    console.error('Failed to clear storage:', error)
   }
 }
 
@@ -58,6 +58,6 @@ const storage = {
   removeItem,
   removeItemAsync,
   clear,
-};
+}
 
-export default storage;
+export default storage

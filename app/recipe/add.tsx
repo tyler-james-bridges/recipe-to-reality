@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react'
 import {
   StyleSheet,
   ScrollView,
@@ -9,109 +9,109 @@ import {
   KeyboardAvoidingView,
   ActivityIndicator,
   useColorScheme,
-} from 'react-native';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { Icon } from '@/src/components/ui/Icon';
-import * as Haptics from 'expo-haptics';
+} from 'react-native'
+import { router, Stack, useLocalSearchParams } from 'expo-router'
+import { Icon } from '@/src/components/ui/Icon'
+import * as Haptics from 'expo-haptics'
 
-import { ThemedView, ThemedText } from '@/components/Themed';
-import { useRecipeStore } from '@/src/stores/recipeStore';
-import { usePurchaseStore } from '@/src/stores/purchaseStore';
-import { useSettingsStore } from '@/src/stores/settingsStore';
-import { extractRecipe } from '@/src/services/extraction/recipeExtraction';
-import { ExtractedRecipe, Ingredient, IngredientCategory } from '@/src/types';
-import Colors, { spacing, radius } from '@/constants/Colors';
+import { ThemedView, ThemedText } from '@/components/Themed'
+import { useRecipeStore } from '@/src/stores/recipeStore'
+import { usePurchaseStore } from '@/src/stores/purchaseStore'
+import { useSettingsStore } from '@/src/stores/settingsStore'
+import { extractRecipe } from '@/src/services/extraction/recipeExtraction'
+import { ExtractedRecipe, Ingredient, IngredientCategory } from '@/src/types'
+import Colors, { spacing, radius } from '@/constants/Colors'
 
-type InputMode = 'url' | 'manual';
+type InputMode = 'url' | 'manual'
 
 export default function AddRecipeScreen() {
   // Get deep link parameters if navigated from a deep link
   const { deepLinkUrl, autoExtract } = useLocalSearchParams<{
-    deepLinkUrl?: string;
-    autoExtract?: string;
-  }>();
+    deepLinkUrl?: string
+    autoExtract?: string
+  }>()
 
   // Track if auto-extraction has been triggered to prevent multiple extractions
-  const hasAutoExtracted = useRef(false);
+  const hasAutoExtracted = useRef(false)
 
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const { addRecipe } = useRecipeStore();
-  const { canExtract, recordExtraction, isPremium, remainingFreeExtractions } = usePurchaseStore();
-  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const { addRecipe } = useRecipeStore()
+  const { canExtract, recordExtraction, isPremium, remainingFreeExtractions } = usePurchaseStore()
+  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback)
 
-  const [mode, setMode] = useState<InputMode>('url');
+  const [mode, setMode] = useState<InputMode>('url')
   // Initialize URL state with deep link URL if provided
-  const [url, setUrl] = useState(deepLinkUrl || '');
-  const [isExtracting, setIsExtracting] = useState(false);
+  const [url, setUrl] = useState(deepLinkUrl || '')
+  const [isExtracting, setIsExtracting] = useState(false)
 
   // Manual input fields
-  const [title, setTitle] = useState('');
-  const [servings, setServings] = useState('');
-  const [prepTime, setPrepTime] = useState('');
-  const [cookTime, setCookTime] = useState('');
-  const [ingredientText, setIngredientText] = useState('');
-  const [instructionText, setInstructionText] = useState('');
-  const [notes, setNotes] = useState('');
+  const [title, setTitle] = useState('')
+  const [servings, setServings] = useState('')
+  const [prepTime, setPrepTime] = useState('')
+  const [cookTime, setCookTime] = useState('')
+  const [ingredientText, setIngredientText] = useState('')
+  const [instructionText, setInstructionText] = useState('')
+  const [notes, setNotes] = useState('')
 
   const triggerHaptic = (type: 'light' | 'success' | 'error' | 'selection') => {
-    if (!hapticFeedback) return;
+    if (!hapticFeedback) return
     switch (type) {
       case 'light':
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        break;
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+        break
       case 'success':
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        break;
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+        break
       case 'error':
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        break;
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
+        break
       case 'selection':
-        Haptics.selectionAsync();
-        break;
+        Haptics.selectionAsync()
+        break
     }
-  };
+  }
 
   const handleExtractFromURL = async () => {
     if (!url.trim()) {
-      Alert.alert('Error', 'Please enter a URL');
-      return;
+      Alert.alert('Error', 'Please enter a URL')
+      return
     }
 
     // Check extraction limit
     if (!canExtract) {
-      router.push('/paywall');
-      return;
+      router.push('/paywall')
+      return
     }
 
-    triggerHaptic('light');
-    setIsExtracting(true);
+    triggerHaptic('light')
+    setIsExtracting(true)
 
     try {
-      const extracted = await extractRecipe(url.trim());
-      await recordExtraction();
-      await saveExtractedRecipe(extracted);
-      triggerHaptic('success');
-      router.back();
+      const extracted = await extractRecipe(url.trim())
+      await recordExtraction()
+      await saveExtractedRecipe(extracted)
+      triggerHaptic('success')
+      router.back()
     } catch (error) {
-      triggerHaptic('error');
-      Alert.alert('Extraction Failed', (error as Error).message);
+      triggerHaptic('error')
+      Alert.alert('Extraction Failed', (error as Error).message)
     } finally {
-      setIsExtracting(false);
+      setIsExtracting(false)
     }
-  };
+  }
 
   // Auto-extract when navigated from deep link
   useEffect(() => {
     if (deepLinkUrl && autoExtract === 'true' && !hasAutoExtracted.current && !isExtracting) {
-      hasAutoExtracted.current = true;
+      hasAutoExtracted.current = true
       // Small delay to ensure UI is ready
       const timer = setTimeout(() => {
-        handleExtractFromURL();
-      }, 300);
-      return () => clearTimeout(timer);
+        handleExtractFromURL()
+      }, 300)
+      return () => clearTimeout(timer)
     }
-  }, [deepLinkUrl, autoExtract]);
+  }, [deepLinkUrl, autoExtract])
 
   const saveExtractedRecipe = async (extracted: ExtractedRecipe) => {
     const ingredients: Ingredient[] = extracted.ingredients.map((ing, index) => ({
@@ -122,7 +122,7 @@ export default function AddRecipeScreen() {
       unit: ing.unit,
       category: ing.category,
       isOptional: false,
-    }));
+    }))
 
     await addRecipe({
       title: extracted.title,
@@ -137,22 +137,22 @@ export default function AddRecipeScreen() {
       isInQueue: false,
       dateCooked: null,
       ingredients,
-    });
-  };
+    })
+  }
 
   const handleSaveManual = async () => {
     if (!title.trim()) {
-      Alert.alert('Error', 'Please enter a recipe title');
-      return;
+      Alert.alert('Error', 'Please enter a recipe title')
+      return
     }
 
-    triggerHaptic('light');
+    triggerHaptic('light')
 
     // Parse ingredients from text (one per line)
     const ingredientLines = ingredientText
       .split('\n')
       .map((line) => line.trim())
-      .filter((line) => line.length > 0);
+      .filter((line) => line.length > 0)
 
     const ingredients: Ingredient[] = ingredientLines.map((line, index) => ({
       id: `temp-${index}`,
@@ -162,13 +162,13 @@ export default function AddRecipeScreen() {
       unit: null,
       category: 'Other' as IngredientCategory,
       isOptional: false,
-    }));
+    }))
 
     // Parse instructions from text (one per line)
     const instructions = instructionText
       .split('\n')
       .map((line) => line.trim())
-      .filter((line) => line.length > 0);
+      .filter((line) => line.length > 0)
 
     try {
       await addRecipe({
@@ -184,14 +184,14 @@ export default function AddRecipeScreen() {
         isInQueue: false,
         dateCooked: null,
         ingredients,
-      });
-      triggerHaptic('success');
-      router.back();
+      })
+      triggerHaptic('success')
+      router.back()
     } catch (error) {
-      triggerHaptic('error');
-      Alert.alert('Error', 'Failed to save recipe');
+      triggerHaptic('error')
+      Alert.alert('Error', 'Failed to save recipe')
     }
-  };
+  }
 
   return (
     <>
@@ -208,7 +208,9 @@ export default function AddRecipeScreen() {
           headerRight: () =>
             mode === 'manual' ? (
               <Pressable onPress={handleSaveManual} style={styles.headerButton}>
-                <ThemedText style={[styles.headerButtonText, styles.headerButtonBold, { color: colors.tint }]}>
+                <ThemedText
+                  style={[styles.headerButtonText, styles.headerButtonBold, { color: colors.tint }]}
+                >
                   Save
                 </ThemedText>
               </Pressable>
@@ -283,13 +285,11 @@ export default function AddRecipeScreen() {
               <Pressable
                 style={styles.manualEntryLink}
                 onPress={() => {
-                  triggerHaptic('selection');
-                  setMode('manual');
+                  triggerHaptic('selection')
+                  setMode('manual')
                 }}
               >
-                <ThemedText style={styles.manualEntryLinkText}>
-                  Enter manually instead
-                </ThemedText>
+                <ThemedText style={styles.manualEntryLinkText}>Enter manually instead</ThemedText>
               </Pressable>
             </View>
           ) : (
@@ -298,8 +298,8 @@ export default function AddRecipeScreen() {
               <Pressable
                 style={styles.backToUrlLink}
                 onPress={() => {
-                  triggerHaptic('selection');
-                  setMode('url');
+                  triggerHaptic('selection')
+                  setMode('url')
                 }}
               >
                 <Icon name="arrow-back" size={16} color={colors.tint} />
@@ -322,7 +322,9 @@ export default function AddRecipeScreen() {
 
               {/* Servings & Time Row */}
               <View style={styles.row}>
-                <View style={[styles.inputGroup, styles.halfWidth, { backgroundColor: colors.card }]}>
+                <View
+                  style={[styles.inputGroup, styles.halfWidth, { backgroundColor: colors.card }]}
+                >
                   <ThemedText style={styles.inputLabel}>Servings</ThemedText>
                   <TextInput
                     style={[styles.input, { color: colors.text }]}
@@ -333,7 +335,9 @@ export default function AddRecipeScreen() {
                     keyboardType="number-pad"
                   />
                 </View>
-                <View style={[styles.inputGroup, styles.halfWidth, { backgroundColor: colors.card }]}>
+                <View
+                  style={[styles.inputGroup, styles.halfWidth, { backgroundColor: colors.card }]}
+                >
                   <ThemedText style={styles.inputLabel}>Prep Time</ThemedText>
                   <TextInput
                     style={[styles.input, { color: colors.text }]}
@@ -406,7 +410,7 @@ export default function AddRecipeScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
     </>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -514,4 +518,4 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
   },
-});
+})

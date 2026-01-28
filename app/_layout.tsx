@@ -1,34 +1,32 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack, router, useSegments, useRootNavigationState } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { View, ActivityIndicator } from 'react-native';
-import 'react-native-reanimated';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import * as Linking from 'expo-linking';
+import FontAwesome from '@expo/vector-icons/FontAwesome'
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native'
+import { useFonts } from 'expo-font'
+import { Stack, router, useSegments, useRootNavigationState } from 'expo-router'
+import * as SplashScreen from 'expo-splash-screen'
+import { useEffect, useState, useCallback, useRef } from 'react'
+import { View, ActivityIndicator } from 'react-native'
+import 'react-native-reanimated'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import * as Linking from 'expo-linking'
 
-import { useColorScheme } from '@/components/useColorScheme';
-import { useSettingsStore } from '@/src/stores/settingsStore';
-import { usePurchaseStore } from '@/src/stores/purchaseStore';
-import { setupNetworkListener } from '@/src/hooks/useNetwork';
+import { useColorScheme } from '@/components/useColorScheme'
+import { useSettingsStore } from '@/src/stores/settingsStore'
+import { usePurchaseStore } from '@/src/stores/purchaseStore'
+import { setupNetworkListener } from '@/src/hooks/useNetwork'
 import {
   setupNotificationResponseListener,
   registerForPushNotificationsAsync,
-} from '@/src/services/notifications';
-import Colors from '@/constants/Colors';
+} from '@/src/services/notifications'
+import Colors from '@/constants/Colors'
 
-export {
-  ErrorBoundary,
-} from 'expo-router';
+export { ErrorBoundary } from 'expo-router'
 
 export const unstable_settings = {
   initialRouteName: '(tabs)',
-};
+}
 
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync()
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,9 +41,9 @@ const queryClient = new QueryClient({
       retry: 2,
     },
   },
-});
+})
 
-setupNetworkListener();
+setupNetworkListener()
 
 /**
  * Parse deep link URL and extract recipe URL parameter.
@@ -53,16 +51,16 @@ setupNetworkListener();
  */
 function parseDeepLink(url: string): { recipeUrl: string | null } {
   try {
-    const parsed = Linking.parse(url);
+    const parsed = Linking.parse(url)
     if (parsed.path === 'add-recipe' && parsed.queryParams?.url) {
-      const recipeUrl = parsed.queryParams.url;
+      const recipeUrl = parsed.queryParams.url
       // Ensure we return a string, not an array
-      return { recipeUrl: Array.isArray(recipeUrl) ? recipeUrl[0] : recipeUrl };
+      return { recipeUrl: Array.isArray(recipeUrl) ? recipeUrl[0] : recipeUrl }
     }
-    return { recipeUrl: null };
+    return { recipeUrl: null }
   } catch (error) {
-    console.error('Failed to parse deep link:', error);
-    return { recipeUrl: null };
+    console.error('Failed to parse deep link:', error)
+    return { recipeUrl: null }
   }
 }
 
@@ -75,7 +73,7 @@ const LightTheme = {
     card: Colors.light.card,
     border: Colors.light.border,
   },
-};
+}
 
 const DarkThemeCustom = {
   ...DarkTheme,
@@ -86,23 +84,23 @@ const DarkThemeCustom = {
     card: Colors.dark.card,
     border: Colors.dark.border,
   },
-};
+}
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     ...FontAwesome.font,
-  });
-  const [appReady, setAppReady] = useState(false);
-  const initializeApp = useSettingsStore((state) => state.initializeApp);
-  const initializePurchases = usePurchaseStore((state) => state.initialize);
+  })
+  const [appReady, setAppReady] = useState(false)
+  const initializeApp = useSettingsStore((state) => state.initializeApp)
+  const initializePurchases = usePurchaseStore((state) => state.initialize)
 
   // Track pending deep link URL to handle after navigation is ready
-  const pendingDeepLink = useRef<string | null>(null);
+  const pendingDeepLink = useRef<string | null>(null)
 
   // Handle deep link navigation
   const handleDeepLink = useCallback((url: string) => {
-    const { recipeUrl } = parseDeepLink(url);
+    const { recipeUrl } = parseDeepLink(url)
     if (recipeUrl) {
       // Navigate to add recipe screen with the URL and auto-extract flag
       router.push({
@@ -111,55 +109,55 @@ export default function RootLayout() {
           deepLinkUrl: recipeUrl,
           autoExtract: 'true',
         },
-      });
+      })
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
-    if (error) throw error;
-  }, [error]);
+    if (error) throw error
+  }, [error])
 
   useEffect(() => {
     async function initialize() {
       try {
-        await initializeApp();
-        await initializePurchases();
+        await initializeApp()
+        await initializePurchases()
         // Register for push notifications (sets up Android channel)
-        await registerForPushNotificationsAsync();
-        setAppReady(true);
+        await registerForPushNotificationsAsync()
+        setAppReady(true)
       } catch (err) {
-        console.error('Failed to initialize app:', err);
-        setAppReady(true);
+        console.error('Failed to initialize app:', err)
+        setAppReady(true)
       }
     }
-    initialize();
-  }, [initializeApp, initializePurchases]);
+    initialize()
+  }, [initializeApp, initializePurchases])
 
   // Handle cold start deep links (app was not running)
   useEffect(() => {
     async function handleInitialURL() {
-      const initialUrl = await Linking.getInitialURL();
+      const initialUrl = await Linking.getInitialURL()
       if (initialUrl) {
         // Store for later processing when navigation is ready
-        pendingDeepLink.current = initialUrl;
+        pendingDeepLink.current = initialUrl
       }
     }
-    handleInitialURL();
-  }, []);
+    handleInitialURL()
+  }, [])
 
   // Handle warm start deep links (app is in background)
   useEffect(() => {
     const subscription = Linking.addEventListener('url', (event) => {
       if (appReady) {
-        handleDeepLink(event.url);
+        handleDeepLink(event.url)
       } else {
         // Store for later if app is not ready
-        pendingDeepLink.current = event.url;
+        pendingDeepLink.current = event.url
       }
-    });
+    })
 
-    return () => subscription.remove();
-  }, [appReady, handleDeepLink]);
+    return () => subscription.remove()
+  }, [appReady, handleDeepLink])
 
   // Process pending deep link once app is ready
   useEffect(() => {
@@ -167,31 +165,31 @@ export default function RootLayout() {
       // Small delay to ensure navigation is fully ready
       const timer = setTimeout(() => {
         if (pendingDeepLink.current) {
-          handleDeepLink(pendingDeepLink.current);
-          pendingDeepLink.current = null;
+          handleDeepLink(pendingDeepLink.current)
+          pendingDeepLink.current = null
         }
-      }, 100);
-      return () => clearTimeout(timer);
+      }, 100)
+      return () => clearTimeout(timer)
     }
-  }, [appReady, handleDeepLink]);
+  }, [appReady, handleDeepLink])
 
   // Set up notification response listener
   useEffect(() => {
-    const cleanup = setupNotificationResponseListener();
-    return cleanup;
-  }, []);
+    const cleanup = setupNotificationResponseListener()
+    return cleanup
+  }, [])
   useEffect(() => {
     if (loaded && appReady) {
-      SplashScreen.hideAsync();
+      SplashScreen.hideAsync()
     }
-  }, [loaded, appReady]);
+  }, [loaded, appReady])
 
   if (!loaded || !appReady) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color={Colors.light.tint} />
       </View>
-    );
+    )
   }
 
   return (
@@ -200,27 +198,27 @@ export default function RootLayout() {
         <RootLayoutNav />
       </QueryClientProvider>
     </GestureHandlerRootView>
-  );
+  )
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
-  const segments = useSegments();
-  const navigationState = useRootNavigationState();
-  const hasCompletedOnboarding = useSettingsStore((state) => state.hasCompletedOnboarding);
+  const colorScheme = useColorScheme()
+  const segments = useSegments()
+  const navigationState = useRootNavigationState()
+  const hasCompletedOnboarding = useSettingsStore((state) => state.hasCompletedOnboarding)
 
   useEffect(() => {
-    if (!navigationState?.key) return;
+    if (!navigationState?.key) return
 
-    const firstSegment = segments[0] as string;
-    const inOnboarding = firstSegment === 'onboarding';
+    const firstSegment = segments[0] as string
+    const inOnboarding = firstSegment === 'onboarding'
 
     if (!hasCompletedOnboarding && !inOnboarding) {
-      router.replace('/onboarding' as any);
+      router.replace('/onboarding' as any)
     } else if (hasCompletedOnboarding && inOnboarding) {
-      router.replace('/(tabs)');
+      router.replace('/(tabs)')
     }
-  }, [hasCompletedOnboarding, segments, navigationState?.key]);
+  }, [hasCompletedOnboarding, segments, navigationState?.key])
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkThemeCustom : LightTheme}>
@@ -297,5 +295,5 @@ function RootLayoutNav() {
         />
       </Stack>
     </ThemeProvider>
-  );
+  )
 }

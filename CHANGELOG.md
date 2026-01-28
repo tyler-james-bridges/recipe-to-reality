@@ -5,6 +5,7 @@ All notable changes to Recipe to Reality will be documented in this file.
 ## [2.0.0-beta.1] - 2026-01-24
 
 ### Added
+
 - **Expo Migration**: Complete rewrite from SwiftUI to React Native with Expo SDK 54
 - **Cross-Platform Support**: Now available for both iOS and Android
 - **Recipe Extraction**: AI-powered recipe extraction from URLs and videos
@@ -35,6 +36,7 @@ All notable changes to Recipe to Reality will be documented in this file.
   - Haptic feedback throughout
 
 ### Technical
+
 - Expo SDK 54 with Expo Router v6
 - Drizzle ORM with Expo SQLite for local persistence
 - Zustand for state management
@@ -42,6 +44,7 @@ All notable changes to Recipe to Reality will be documented in this file.
 - Jest testing infrastructure
 
 ### Known Issues
+
 - Video transcript extraction requires network connectivity
 - Some recipe websites with aggressive anti-scraping may fail extraction
 

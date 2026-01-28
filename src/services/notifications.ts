@@ -1,6 +1,6 @@
-import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
-import { router } from 'expo-router';
+import * as Notifications from 'expo-notifications'
+import { Platform } from 'react-native'
+import { router } from 'expo-router'
 
 // Configure how notifications are handled when app is in foreground
 Notifications.setNotificationHandler({
@@ -11,14 +11,14 @@ Notifications.setNotificationHandler({
     shouldShowBanner: true,
     shouldShowList: true,
   }),
-});
+})
 
 export interface ScheduleReminderParams {
-  id: string;
-  title: string;
-  body: string;
-  triggerTime: Date;
-  data?: Record<string, unknown>;
+  id: string
+  title: string
+  body: string
+  triggerTime: Date
+  data?: Record<string, unknown>
 }
 
 /**
@@ -26,42 +26,40 @@ export interface ScheduleReminderParams {
  * Returns true if permissions were granted.
  */
 export async function requestPermissions(): Promise<boolean> {
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  const { status: existingStatus } = await Notifications.getPermissionsAsync()
 
   if (existingStatus === 'granted') {
-    return true;
+    return true
   }
 
-  const { status } = await Notifications.requestPermissionsAsync();
-  return status === 'granted';
+  const { status } = await Notifications.requestPermissionsAsync()
+  return status === 'granted'
 }
 
 /**
  * Check if notification permissions are currently granted.
  */
 export async function checkPermissions(): Promise<boolean> {
-  const { status } = await Notifications.getPermissionsAsync();
-  return status === 'granted';
+  const { status } = await Notifications.getPermissionsAsync()
+  return status === 'granted'
 }
 
 /**
  * Schedule a local notification reminder.
  * Returns the notification identifier or null if scheduling failed.
  */
-export async function scheduleReminder(
-  params: ScheduleReminderParams
-): Promise<string | null> {
-  const { id, title, body, triggerTime, data = {} } = params;
+export async function scheduleReminder(params: ScheduleReminderParams): Promise<string | null> {
+  const { id, title, body, triggerTime, data = {} } = params
 
   // Don't schedule if the time is in the past
   if (triggerTime.getTime() <= Date.now()) {
-    console.log('[Notifications] Skipping past reminder for "' + title + '"');
-    return null;
+    console.log('[Notifications] Skipping past reminder for "' + title + '"')
+    return null
   }
 
   try {
     // Cancel any existing notification with this ID first
-    await cancelReminder(id);
+    await cancelReminder(id)
 
     const identifier = await Notifications.scheduleNotificationAsync({
       content: {
@@ -79,15 +77,20 @@ export async function scheduleReminder(
         date: triggerTime,
       },
       identifier: id,
-    });
+    })
 
     console.log(
-      '[Notifications] Scheduled reminder "' + title + '" for ' + triggerTime.toLocaleString() + ' with ID: ' + identifier
-    );
-    return identifier;
+      '[Notifications] Scheduled reminder "' +
+        title +
+        '" for ' +
+        triggerTime.toLocaleString() +
+        ' with ID: ' +
+        identifier
+    )
+    return identifier
   } catch (error) {
-    console.error('[Notifications] Failed to schedule reminder:', error);
-    return null;
+    console.error('[Notifications] Failed to schedule reminder:', error)
+    return null
   }
 }
 
@@ -96,11 +99,11 @@ export async function scheduleReminder(
  */
 export async function cancelReminder(id: string): Promise<void> {
   try {
-    await Notifications.cancelScheduledNotificationAsync(id);
-    console.log('[Notifications] Cancelled reminder with ID: ' + id);
+    await Notifications.cancelScheduledNotificationAsync(id)
+    console.log('[Notifications] Cancelled reminder with ID: ' + id)
   } catch (error) {
     // Ignore errors when cancelling non-existent notifications
-    console.log('[Notifications] No notification found to cancel with ID: ' + id);
+    console.log('[Notifications] No notification found to cancel with ID: ' + id)
   }
 }
 
@@ -109,20 +112,18 @@ export async function cancelReminder(id: string): Promise<void> {
  */
 export async function cancelAllReminders(): Promise<void> {
   try {
-    await Notifications.cancelAllScheduledNotificationsAsync();
-    console.log('[Notifications] Cancelled all scheduled reminders');
+    await Notifications.cancelAllScheduledNotificationsAsync()
+    console.log('[Notifications] Cancelled all scheduled reminders')
   } catch (error) {
-    console.error('[Notifications] Failed to cancel all reminders:', error);
+    console.error('[Notifications] Failed to cancel all reminders:', error)
   }
 }
 
 /**
  * Get all currently scheduled notifications.
  */
-export async function getScheduledReminders(): Promise<
-  Notifications.NotificationRequest[]
-> {
-  return Notifications.getAllScheduledNotificationsAsync();
+export async function getScheduledReminders(): Promise<Notifications.NotificationRequest[]> {
+  return Notifications.getAllScheduledNotificationsAsync()
 }
 
 /**
@@ -132,22 +133,20 @@ export async function getScheduledReminders(): Promise<
 export function setupNotificationResponseListener(
   callback?: (response: Notifications.NotificationResponse) => void
 ): () => void {
-  const subscription = Notifications.addNotificationResponseReceivedListener(
-    (response) => {
-      const data = response.notification.request.content.data;
+  const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+    const data = response.notification.request.content.data
 
-      // Handle meal plan reminder taps
-      if (data?.type === 'meal-plan-reminder' && data?.mealPlanId) {
-        // Navigate to meal plan screen
-        router.push('/(tabs)/meal-plan');
-      }
-
-      // Call custom callback if provided
-      callback?.(response);
+    // Handle meal plan reminder taps
+    if (data?.type === 'meal-plan-reminder' && data?.mealPlanId) {
+      // Navigate to meal plan screen
+      router.push('/(tabs)/meal-plan')
     }
-  );
 
-  return () => subscription.remove();
+    // Call custom callback if provided
+    callback?.(response)
+  })
+
+  return () => subscription.remove()
 }
 
 /**
@@ -157,24 +156,19 @@ export function setupNotificationResponseListener(
 export function setupNotificationReceivedListener(
   callback?: (notification: Notifications.Notification) => void
 ): () => void {
-  const subscription = Notifications.addNotificationReceivedListener(
-    (notification) => {
-      console.log('[Notifications] Received notification:', notification);
-      callback?.(notification);
-    }
-  );
+  const subscription = Notifications.addNotificationReceivedListener((notification) => {
+    console.log('[Notifications] Received notification:', notification)
+    callback?.(notification)
+  })
 
-  return () => subscription.remove();
+  return () => subscription.remove()
 }
 
 /**
  * Helper to format meal plan reminder body text.
  */
-export function formatMealReminderBody(
-  recipeName: string,
-  mealType: string
-): string {
-  return 'Time to prepare ' + recipeName + ' for ' + mealType.toLowerCase() + '!';
+export function formatMealReminderBody(recipeName: string, mealType: string): string {
+  return 'Time to prepare ' + recipeName + ' for ' + mealType.toLowerCase() + '!'
 }
 
 /**
@@ -188,15 +182,15 @@ export async function registerForPushNotificationsAsync(): Promise<string | null
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#FF6B35',
-    });
+    })
   }
 
-  const hasPermission = await requestPermissions();
+  const hasPermission = await requestPermissions()
   if (!hasPermission) {
-    return null;
+    return null
   }
 
   // For local notifications, we don't need a push token
   // But return a placeholder to indicate success
-  return 'local-notifications-enabled';
+  return 'local-notifications-enabled'
 }

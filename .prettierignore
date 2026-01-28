@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+web-build/
+.expo/
+
+# Generated native folders
+ios/
+android/
+*.xcodeproj/
+*.xcworkspace/
+
+# Package manager
+package-lock.json
+
+# Coverage
+coverage/

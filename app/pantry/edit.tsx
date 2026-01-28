@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react'
 import {
   StyleSheet,
   ScrollView,
@@ -9,21 +9,21 @@ import {
   Platform,
   useColorScheme,
   Alert,
-} from 'react-native';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { Icon } from '@/src/components/ui/Icon';
-import * as Haptics from 'expo-haptics';
-import Animated, { FadeIn, FadeInDown, FadeOut, Layout } from 'react-native-reanimated';
-import DateTimePicker from '@react-native-community/datetimepicker';
+} from 'react-native'
+import { router, Stack, useLocalSearchParams } from 'expo-router'
+import { Icon } from '@/src/components/ui/Icon'
+import * as Haptics from 'expo-haptics'
+import Animated, { FadeIn, FadeInDown, FadeOut, Layout } from 'react-native-reanimated'
+import DateTimePicker from '@react-native-community/datetimepicker'
 
-import { ThemedView, ThemedText } from '@/components/Themed';
-import { usePantryStore } from '@/src/stores/pantryStore';
-import { useSettingsStore } from '@/src/stores/settingsStore';
-import { IngredientCategory, PantryItem } from '@/src/types';
-import AnimatedPressable from '@/src/components/ui/AnimatedPressable';
-import ModernButton from '@/src/components/ui/ModernButton';
-import SectionHeader from '@/src/components/ui/SectionHeader';
-import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors';
+import { ThemedView, ThemedText } from '@/components/Themed'
+import { usePantryStore } from '@/src/stores/pantryStore'
+import { useSettingsStore } from '@/src/stores/settingsStore'
+import { IngredientCategory, PantryItem } from '@/src/types'
+import AnimatedPressable from '@/src/components/ui/AnimatedPressable'
+import ModernButton from '@/src/components/ui/ModernButton'
+import SectionHeader from '@/src/components/ui/SectionHeader'
+import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors'
 
 // Simplified categories for the picker (matching iOS)
 const SIMPLE_CATEGORIES: IngredientCategory[] = [
@@ -33,58 +33,58 @@ const SIMPLE_CATEGORIES: IngredientCategory[] = [
   'Pantry',
   'Spices & Seasonings',
   'Other',
-];
+]
 
 export default function EditPantryItemScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const { id } = useLocalSearchParams<{ id: string }>()
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
 
-  const { items, updateItem, deleteItem } = usePantryStore();
-  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback);
+  const { items, updateItem, deleteItem } = usePantryStore()
+  const hapticFeedback = useSettingsStore((state) => state.hapticFeedback)
 
   // Find the item to edit
-  const item = items.find((i) => i.id === id);
+  const item = items.find((i) => i.id === id)
 
   // Form state - initialized from the item
-  const [name, setName] = useState('');
-  const [quantity, setQuantity] = useState('');
-  const [unit, setUnit] = useState('');
-  const [category, setCategory] = useState<IngredientCategory>('Other');
-  const [hasExpiration, setHasExpiration] = useState(false);
+  const [name, setName] = useState('')
+  const [quantity, setQuantity] = useState('')
+  const [unit, setUnit] = useState('')
+  const [category, setCategory] = useState<IngredientCategory>('Other')
+  const [hasExpiration, setHasExpiration] = useState(false)
   const [expirationDate, setExpirationDate] = useState(() => {
-    const date = new Date();
-    date.setDate(date.getDate() + 7);
-    return date;
-  });
-  const [notes, setNotes] = useState('');
-  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+    const date = new Date()
+    date.setDate(date.getDate() + 7)
+    return date
+  })
+  const [notes, setNotes] = useState('')
+  const [showCategoryPicker, setShowCategoryPicker] = useState(false)
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isLoaded, setIsLoaded] = useState(false)
 
   // Initialize form with item data
   useEffect(() => {
     if (item && !isLoaded) {
-      setName(item.name);
-      setQuantity(item.quantity || '');
-      setUnit(item.unit || '');
-      setCategory(item.category);
-      setHasExpiration(!!item.expirationDate);
+      setName(item.name)
+      setQuantity(item.quantity || '')
+      setUnit(item.unit || '')
+      setCategory(item.category)
+      setHasExpiration(!!item.expirationDate)
       if (item.expirationDate) {
-        setExpirationDate(new Date(item.expirationDate));
+        setExpirationDate(new Date(item.expirationDate))
       }
-      setNotes(item.notes || '');
-      setIsLoaded(true);
+      setNotes(item.notes || '')
+      setIsLoaded(true)
     }
-  }, [item, isLoaded]);
+  }, [item, isLoaded])
 
-  const isValid = name.trim().length > 0;
+  const isValid = name.trim().length > 0
 
   // Check if any changes were made
   const hasChanges = useCallback(() => {
-    if (!item) return false;
+    if (!item) return false
     return (
       name.trim() !== item.name ||
       (quantity.trim() || null) !== item.quantity ||
@@ -92,47 +92,47 @@ export default function EditPantryItemScreen() {
       category !== item.category ||
       (hasExpiration ? expirationDate.getTime() : null) !== item.expirationDate ||
       (notes.trim() || null) !== item.notes
-    );
-  }, [item, name, quantity, unit, category, hasExpiration, expirationDate, notes]);
+    )
+  }, [item, name, quantity, unit, category, hasExpiration, expirationDate, notes])
 
   const triggerHaptic = useCallback(
     (type: 'light' | 'medium' | 'success' | 'error' | 'selection') => {
-      if (!hapticFeedback) return;
+      if (!hapticFeedback) return
       switch (type) {
         case 'light':
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          break;
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+          break
         case 'medium':
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          break;
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+          break
         case 'success':
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          break;
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+          break
         case 'error':
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-          break;
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
+          break
         case 'selection':
-          Haptics.selectionAsync();
-          break;
+          Haptics.selectionAsync()
+          break
       }
     },
     [hapticFeedback]
-  );
+  )
 
   const handleSave = async () => {
     if (!isValid || !id) {
-      triggerHaptic('error');
-      Alert.alert('Error', 'Please enter an item name');
-      return;
+      triggerHaptic('error')
+      Alert.alert('Error', 'Please enter an item name')
+      return
     }
 
     if (!hasChanges()) {
-      router.back();
-      return;
+      router.back()
+      return
     }
 
-    setIsSaving(true);
-    triggerHaptic('light');
+    setIsSaving(true)
+    triggerHaptic('light')
 
     try {
       await updateItem(id, {
@@ -142,55 +142,51 @@ export default function EditPantryItemScreen() {
         unit: unit.trim() || null,
         expirationDate: hasExpiration ? expirationDate.getTime() : null,
         notes: notes.trim() || null,
-      });
+      })
 
-      triggerHaptic('success');
-      router.back();
+      triggerHaptic('success')
+      router.back()
     } catch (error) {
-      triggerHaptic('error');
-      Alert.alert('Error', 'Failed to update item');
+      triggerHaptic('error')
+      Alert.alert('Error', 'Failed to update item')
     } finally {
-      setIsSaving(false);
+      setIsSaving(false)
     }
-  };
+  }
 
   const handleDelete = () => {
-    triggerHaptic('medium');
-    Alert.alert(
-      'Delete Item',
-      `Are you sure you want to delete "${name}" from your pantry?`,
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-          onPress: () => triggerHaptic('light'),
+    triggerHaptic('medium')
+    Alert.alert('Delete Item', `Are you sure you want to delete "${name}" from your pantry?`, [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+        onPress: () => triggerHaptic('light'),
+      },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          if (!id) return
+          setIsDeleting(true)
+          try {
+            await deleteItem(id)
+            triggerHaptic('success')
+            router.back()
+          } catch (error) {
+            triggerHaptic('error')
+            Alert.alert('Error', 'Failed to delete item')
+            setIsDeleting(false)
+          }
         },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            if (!id) return;
-            setIsDeleting(true);
-            try {
-              await deleteItem(id);
-              triggerHaptic('success');
-              router.back();
-            } catch (error) {
-              triggerHaptic('error');
-              Alert.alert('Error', 'Failed to delete item');
-              setIsDeleting(false);
-            }
-          },
-        },
-      ]
-    );
-  };
+      },
+    ])
+  }
 
   const selectCategory = (cat: IngredientCategory) => {
-    triggerHaptic('selection');
-    setCategory(cat);
-    setShowCategoryPicker(false);
-  };
+    triggerHaptic('selection')
+    setCategory(cat)
+    setShowCategoryPicker(false)
+  }
 
   // Handle case where item is not found
   if (!item) {
@@ -221,7 +217,7 @@ export default function EditPantryItemScreen() {
           />
         </ThemedView>
       </>
-    );
+    )
   }
 
   return (
@@ -288,8 +284,8 @@ export default function EditPantryItemScreen() {
 
                 <AnimatedPressable
                   onPress={() => {
-                    triggerHaptic('selection');
-                    setShowCategoryPicker(!showCategoryPicker);
+                    triggerHaptic('selection')
+                    setShowCategoryPicker(!showCategoryPicker)
                   }}
                   hapticType="none"
                   style={styles.inputRow}
@@ -362,7 +358,9 @@ export default function EditPantryItemScreen() {
                       keyboardType="decimal-pad"
                     />
                   </View>
-                  <View style={[styles.quantityDivider, { backgroundColor: colors.borderSubtle }]} />
+                  <View
+                    style={[styles.quantityDivider, { backgroundColor: colors.borderSubtle }]}
+                  />
                   <View style={[styles.quantityInputContainer, styles.unitInput]}>
                     <ThemedText style={[styles.inputLabel, { color: colors.textTertiary }]}>
                       Unit
@@ -394,8 +392,8 @@ export default function EditPantryItemScreen() {
                   <Switch
                     value={hasExpiration}
                     onValueChange={(value) => {
-                      triggerHaptic('selection');
-                      setHasExpiration(value);
+                      triggerHaptic('selection')
+                      setHasExpiration(value)
                     }}
                     trackColor={{ false: colors.borderSubtle, true: colors.tint + '60' }}
                     thumbColor={hasExpiration ? colors.tint : colors.card}
@@ -412,8 +410,8 @@ export default function EditPantryItemScreen() {
                     <View style={[styles.divider, { backgroundColor: colors.borderSubtle }]} />
                     <AnimatedPressable
                       onPress={() => {
-                        triggerHaptic('selection');
-                        setShowDatePicker(true);
+                        triggerHaptic('selection')
+                        setShowDatePicker(true)
                       }}
                       hapticType="none"
                       style={styles.datePickerRow}
@@ -428,8 +426,8 @@ export default function EditPantryItemScreen() {
                           display="default"
                           onChange={(event, date) => {
                             if (date) {
-                              triggerHaptic('selection');
-                              setExpirationDate(date);
+                              triggerHaptic('selection')
+                              setExpirationDate(date)
                             }
                           }}
                           minimumDate={new Date()}
@@ -450,10 +448,10 @@ export default function EditPantryItemScreen() {
                         mode="date"
                         display="default"
                         onChange={(event, date) => {
-                          setShowDatePicker(false);
+                          setShowDatePicker(false)
                           if (event.type === 'set' && date) {
-                            triggerHaptic('selection');
-                            setExpirationDate(date);
+                            triggerHaptic('selection')
+                            setExpirationDate(date)
                           }
                         }}
                         minimumDate={new Date()}
@@ -504,7 +502,7 @@ export default function EditPantryItemScreen() {
         </ThemedView>
       </KeyboardAvoidingView>
     </>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -650,4 +648,4 @@ const styles = StyleSheet.create({
   bottomSpacer: {
     height: 100,
   },
-});
+})

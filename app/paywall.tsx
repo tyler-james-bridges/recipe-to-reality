@@ -1,23 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import {
-  StyleSheet,
-  ScrollView,
-  View,
-  Pressable,
-  ActivityIndicator,
-  Alert,
-} from 'react-native';
-import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react'
+import { StyleSheet, ScrollView, View, Pressable, ActivityIndicator, Alert } from 'react-native'
+import { router } from 'expo-router'
 
-import { ThemedView, ThemedText } from '@/components/Themed';
-import { usePurchaseStore } from '@/src/stores/purchaseStore';
-import { HapticManager } from '@/src/services/haptics';
-import { MaterialIcon, MaterialIconProps } from '@/src/components/ui/Icon';
+import { ThemedView, ThemedText } from '@/components/Themed'
+import { usePurchaseStore } from '@/src/stores/purchaseStore'
+import { HapticManager } from '@/src/services/haptics'
+import { MaterialIcon, MaterialIconProps } from '@/src/components/ui/Icon'
 
 interface FeatureRowProps {
-  icon: MaterialIconProps['name'];
-  title: string;
-  description: string;
+  icon: MaterialIconProps['name']
+  title: string
+  description: string
 }
 
 function FeatureRow({ icon, title, description }: FeatureRowProps) {
@@ -31,7 +24,7 @@ function FeatureRow({ icon, title, description }: FeatureRowProps) {
         <ThemedText style={styles.featureDescription}>{description}</ThemedText>
       </View>
     </View>
-  );
+  )
 }
 
 export default function PaywallScreen() {
@@ -43,22 +36,22 @@ export default function PaywallScreen() {
     fetchOfferings,
     isPremium,
     isRevenueCatAvailable,
-  } = usePurchaseStore();
-  const [selectedPackageIndex, setSelectedPackageIndex] = useState(0);
-  const [isPurchasing, setIsPurchasing] = useState(false);
+  } = usePurchaseStore()
+  const [selectedPackageIndex, setSelectedPackageIndex] = useState(0)
+  const [isPurchasing, setIsPurchasing] = useState(false)
 
   useEffect(() => {
-    fetchOfferings();
-  }, [fetchOfferings]);
+    fetchOfferings()
+  }, [fetchOfferings])
 
   useEffect(() => {
     if (isPremium) {
-      router.back();
+      router.back()
     }
-  }, [isPremium]);
+  }, [isPremium])
 
-  const currentOffering = offerings?.current;
-  const packages = currentOffering?.availablePackages || [];
+  const currentOffering = offerings?.current
+  const packages = currentOffering?.availablePackages || []
 
   // Show message when running in Expo Go
   if (!isRevenueCatAvailable) {
@@ -69,9 +62,7 @@ export default function PaywallScreen() {
             <MaterialIcon name="crown" size={48} color="#FF6B35" />
           </View>
           <ThemedText style={styles.title}>Unlock Premium</ThemedText>
-          <ThemedText style={styles.subtitle}>
-            Get unlimited recipe extractions and more
-          </ThemedText>
+          <ThemedText style={styles.subtitle}>Get unlimited recipe extractions and more</ThemedText>
         </View>
 
         <View style={styles.features}>
@@ -109,51 +100,51 @@ export default function PaywallScreen() {
           <ThemedText style={styles.restoreButtonText}>Go Back</ThemedText>
         </Pressable>
       </ScrollView>
-    );
+    )
   }
 
   const handlePurchase = async () => {
-    if (packages.length === 0) return;
+    if (packages.length === 0) return
 
-    const selectedPackage = packages[selectedPackageIndex];
-    HapticManager.lightImpact();
-    setIsPurchasing(true);
+    const selectedPackage = packages[selectedPackageIndex]
+    HapticManager.lightImpact()
+    setIsPurchasing(true)
 
     try {
-      await purchase(selectedPackage);
-      HapticManager.success();
-      router.back();
+      await purchase(selectedPackage)
+      HapticManager.success()
+      router.back()
     } catch (error) {
-      HapticManager.error();
-      Alert.alert('Purchase Failed', (error as Error).message);
+      HapticManager.error()
+      Alert.alert('Purchase Failed', (error as Error).message)
     } finally {
-      setIsPurchasing(false);
+      setIsPurchasing(false)
     }
-  };
+  }
 
   const handleRestore = async () => {
-    HapticManager.lightImpact();
-    setIsPurchasing(true);
+    HapticManager.lightImpact()
+    setIsPurchasing(true)
 
     try {
-      await restorePurchases();
-      Alert.alert('Success', 'Purchases restored successfully.');
+      await restorePurchases()
+      Alert.alert('Success', 'Purchases restored successfully.')
     } catch (error) {
-      Alert.alert('Restore Failed', (error as Error).message);
+      Alert.alert('Restore Failed', (error as Error).message)
     } finally {
-      setIsPurchasing(false);
+      setIsPurchasing(false)
     }
-  };
+  }
 
   const formatPrice = (priceString: string, period?: string): string => {
-    if (!period) return priceString;
+    if (!period) return priceString
     const periodMap: Record<string, string> = {
       P1M: '/month',
       P1Y: '/year',
       P1W: '/week',
-    };
-    return `${priceString}${periodMap[period] || ''}`;
-  };
+    }
+    return `${priceString}${periodMap[period] || ''}`
+  }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -163,9 +154,7 @@ export default function PaywallScreen() {
           <MaterialIcon name="crown" size={48} color="#FF6B35" />
         </View>
         <ThemedText style={styles.title}>Unlock Premium</ThemedText>
-        <ThemedText style={styles.subtitle}>
-          Get unlimited recipe extractions and more
-        </ThemedText>
+        <ThemedText style={styles.subtitle}>Get unlimited recipe extractions and more</ThemedText>
       </View>
 
       {/* Features */}
@@ -200,16 +189,16 @@ export default function PaywallScreen() {
       ) : packages.length > 0 ? (
         <View style={styles.packages}>
           {packages.map((pkg, index) => {
-            const isSelected = index === selectedPackageIndex;
-            const product = pkg.product;
+            const isSelected = index === selectedPackageIndex
+            const product = pkg.product
 
             return (
               <Pressable
                 key={pkg.identifier}
                 style={[styles.packageCard, isSelected && styles.packageCardSelected]}
                 onPress={() => {
-                  HapticManager.lightImpact();
-                  setSelectedPackageIndex(index);
+                  HapticManager.lightImpact()
+                  setSelectedPackageIndex(index)
                 }}
               >
                 {isSelected && (
@@ -224,15 +213,15 @@ export default function PaywallScreen() {
                     pkg.packageType === 'ANNUAL'
                       ? 'P1Y'
                       : pkg.packageType === 'MONTHLY'
-                      ? 'P1M'
-                      : undefined
+                        ? 'P1M'
+                        : undefined
                   )}
                 </ThemedText>
                 {pkg.packageType === 'ANNUAL' && (
                   <ThemedText style={styles.packageSavings}>Best Value</ThemedText>
                 )}
               </Pressable>
-            );
+            )
           })}
         </View>
       ) : (
@@ -263,12 +252,12 @@ export default function PaywallScreen() {
 
       {/* Terms */}
       <ThemedText style={styles.terms}>
-        Subscription automatically renews unless auto-renew is turned off at least 24 hours
-        before the end of the current period. You can manage and cancel your subscriptions
-        in your App Store account settings.
+        Subscription automatically renews unless auto-renew is turned off at least 24 hours before
+        the end of the current period. You can manage and cancel your subscriptions in your App
+        Store account settings.
       </ThemedText>
     </ScrollView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -435,4 +424,4 @@ const styles = StyleSheet.create({
     color: '#92400e',
     lineHeight: 20,
   },
-});
+})

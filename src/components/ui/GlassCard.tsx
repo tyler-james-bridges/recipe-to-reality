@@ -1,20 +1,20 @@
-import React from 'react';
-import { StyleSheet, ViewStyle, StyleProp, useColorScheme, View, Platform } from 'react-native';
-import { BlurView } from 'expo-blur';
+import React from 'react'
+import { StyleSheet, ViewStyle, StyleProp, useColorScheme, View, Platform } from 'react-native'
+import { BlurView } from 'expo-blur'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   interpolate,
-} from 'react-native-reanimated';
-import Colors, { shadows, radius, spacing } from '@/constants/Colors';
+} from 'react-native-reanimated'
+import Colors, { shadows, radius, spacing } from '@/constants/Colors'
 
 interface GlassCardProps {
-  children: React.ReactNode;
-  style?: StyleProp<ViewStyle>;
-  intensity?: number;
-  tint?: 'light' | 'dark' | 'default';
-  bordered?: boolean;
+  children: React.ReactNode
+  style?: StyleProp<ViewStyle>
+  intensity?: number
+  tint?: 'light' | 'dark' | 'default'
+  bordered?: boolean
 }
 
 export default function GlassCard({
@@ -24,18 +24,18 @@ export default function GlassCard({
   tint = 'default',
   bordered = true,
 }: GlassCardProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const pressed = useSharedValue(0);
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const pressed = useSharedValue(0)
 
-  const blurTint = tint === 'default' ? (colorScheme === 'dark' ? 'dark' : 'light') : tint;
+  const blurTint = tint === 'default' ? (colorScheme === 'dark' ? 'dark' : 'light') : tint
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: interpolate(pressed.value, [0, 1], [1, 0.98]) }],
-  }));
+  }))
 
   // Fallback for platforms that don't support blur well
-  const useBlur = process.env.EXPO_OS === 'ios';
+  const useBlur = process.env.EXPO_OS === 'ios'
 
   if (useBlur) {
     return (
@@ -51,14 +51,10 @@ export default function GlassCard({
           style,
         ]}
       >
-        <BlurView
-          intensity={intensity}
-          tint={blurTint}
-          style={StyleSheet.absoluteFillObject}
-        />
+        <BlurView intensity={intensity} tint={blurTint} style={StyleSheet.absoluteFillObject} />
         <View style={styles.content}>{children}</View>
       </Animated.View>
-    );
+    )
   }
 
   // Fallback for non-iOS platforms
@@ -80,7 +76,7 @@ export default function GlassCard({
     >
       <View style={styles.content}>{children}</View>
     </Animated.View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -91,4 +87,4 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.lg,
   },
-});
+})

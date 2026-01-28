@@ -1,19 +1,19 @@
-import React from 'react';
-import { StyleSheet, ViewStyle, StyleProp, useColorScheme, View } from 'react-native';
-import Colors, { radius, typography, spacing } from '@/constants/Colors';
-import { ThemedText } from '@/components/Themed';
-import { Icon, IconProps } from './Icon';
+import React from 'react'
+import { StyleSheet, ViewStyle, StyleProp, useColorScheme, View } from 'react-native'
+import Colors, { radius, typography, spacing } from '@/constants/Colors'
+import { ThemedText } from '@/components/Themed'
+import { Icon, IconProps } from './Icon'
 
-type BadgeVariant = 'primary' | 'success' | 'warning' | 'error' | 'info' | 'neutral';
-type BadgeSize = 'small' | 'medium';
-type IconName = IconProps['name'];
+type BadgeVariant = 'primary' | 'success' | 'warning' | 'error' | 'info' | 'neutral'
+type BadgeSize = 'small' | 'medium'
+type IconName = IconProps['name']
 
 interface BadgeProps {
-  label: string;
-  variant?: BadgeVariant;
-  size?: BadgeSize;
-  icon?: IconName;
-  style?: StyleProp<ViewStyle>;
+  label: string
+  variant?: BadgeVariant
+  size?: BadgeSize
+  icon?: IconName
+  style?: StyleProp<ViewStyle>
 }
 
 export default function Badge({
@@ -23,29 +23,29 @@ export default function Badge({
   icon,
   style,
 }: BadgeProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
 
   const getColors = (): { background: string; text: string } => {
     switch (variant) {
       case 'success':
-        return { background: colors.successBackground, text: colors.success };
+        return { background: colors.successBackground, text: colors.success }
       case 'warning':
-        return { background: colors.warningBackground, text: colors.warning };
+        return { background: colors.warningBackground, text: colors.warning }
       case 'error':
-        return { background: colors.errorBackground, text: colors.error };
+        return { background: colors.errorBackground, text: colors.error }
       case 'info':
-        return { background: colors.infoBackground, text: colors.info };
+        return { background: colors.infoBackground, text: colors.info }
       case 'neutral':
         return {
           background: colorScheme === 'dark' ? colors.cardElevated : colors.skeleton,
           text: colors.textTertiary,
-        };
+        }
       case 'primary':
       default:
-        return { background: colors.accentSubtle, text: colors.accent };
+        return { background: colors.accentSubtle, text: colors.accent }
     }
-  };
+  }
 
   const getSizeStyles = () => {
     switch (size) {
@@ -54,19 +54,19 @@ export default function Badge({
           container: { paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
           text: typography.labelSmall,
           icon: 10,
-        };
+        }
       case 'medium':
       default:
         return {
           container: { paddingHorizontal: spacing.md, paddingVertical: spacing.xs + 2 },
           text: typography.labelMedium,
           icon: 12,
-        };
+        }
     }
-  };
+  }
 
-  const variantColors = getColors();
-  const sizeStyles = getSizeStyles();
+  const variantColors = getColors()
+  const sizeStyles = getSizeStyles()
 
   return (
     <View
@@ -78,18 +78,11 @@ export default function Badge({
       ]}
     >
       {icon && (
-        <Icon
-          name={icon}
-          size={sizeStyles.icon}
-          color={variantColors.text}
-          style={styles.icon}
-        />
+        <Icon name={icon} size={sizeStyles.icon} color={variantColors.text} style={styles.icon} />
       )}
-      <ThemedText style={[sizeStyles.text, { color: variantColors.text }]}>
-        {label}
-      </ThemedText>
+      <ThemedText style={[sizeStyles.text, { color: variantColors.text }]}>{label}</ThemedText>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -102,4 +95,4 @@ const styles = StyleSheet.create({
   icon: {
     marginRight: spacing.xs,
   },
-});
+})

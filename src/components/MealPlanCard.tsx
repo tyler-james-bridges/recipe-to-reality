@@ -1,6 +1,6 @@
-import React from 'react';
-import { StyleSheet, View, useColorScheme } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React from 'react'
+import { StyleSheet, View, useColorScheme } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -8,27 +8,27 @@ import Animated, {
   withDelay,
   interpolate,
   Extrapolation,
-} from 'react-native-reanimated';
-import { ThemedText } from '@/components/Themed';
-import { MealPlan, MealType } from '../types';
-import Colors, { gradients, shadows, radius, spacing, typography } from '@/constants/Colors';
-import AnimatedPressable from './ui/AnimatedPressable';
-import Badge from './ui/Badge';
-import { Icon } from './ui/Icon';
+} from 'react-native-reanimated'
+import { ThemedText } from '@/components/Themed'
+import { MealPlan, MealType } from '../types'
+import Colors, { gradients, shadows, radius, spacing, typography } from '@/constants/Colors'
+import AnimatedPressable from './ui/AnimatedPressable'
+import Badge from './ui/Badge'
+import { Icon } from './ui/Icon'
 
 const MEAL_TYPE_ICONS: Record<MealType, { icon: string; gradient: readonly [string, string] }> = {
   Breakfast: { icon: 'sunny', gradient: ['#FFD700', '#FFA500'] },
   Lunch: { icon: 'restaurant', gradient: ['#34C759', '#30B350'] },
   Dinner: { icon: 'moon', gradient: ['#5856D6', '#4B48C9'] },
   Snack: { icon: 'cafe', gradient: ['#FF9500', '#FF7A00'] },
-};
+}
 
 interface MealPlanCardProps {
-  mealPlan: MealPlan;
-  onToggleComplete: () => void;
-  onDelete: () => void;
-  onPress?: () => void;
-  index?: number;
+  mealPlan: MealPlan
+  onToggleComplete: () => void
+  onDelete: () => void
+  onPress?: () => void
+  index?: number
 }
 
 export default function MealPlanCard({
@@ -38,24 +38,21 @@ export default function MealPlanCard({
   onPress,
   index = 0,
 }: MealPlanCardProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const progress = useSharedValue(0);
-  const checkScale = useSharedValue(mealPlan.isCompleted ? 1 : 0);
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const progress = useSharedValue(0)
+  const checkScale = useSharedValue(mealPlan.isCompleted ? 1 : 0)
 
   React.useEffect(() => {
-    progress.value = withDelay(
-      index * 80,
-      withSpring(1, { damping: 18, stiffness: 100 })
-    );
-  }, [index]);
+    progress.value = withDelay(index * 80, withSpring(1, { damping: 18, stiffness: 100 }))
+  }, [index])
 
   React.useEffect(() => {
     checkScale.value = withSpring(mealPlan.isCompleted ? 1 : 0, {
       damping: 12,
       stiffness: 200,
-    });
-  }, [mealPlan.isCompleted]);
+    })
+  }, [mealPlan.isCompleted])
 
   const cardAnimatedStyle = useAnimatedStyle(() => ({
     opacity: interpolate(progress.value, [0, 1], [0, 1], Extrapolation.CLAMP),
@@ -63,15 +60,15 @@ export default function MealPlanCard({
       { translateY: interpolate(progress.value, [0, 1], [20, 0], Extrapolation.CLAMP) },
       { scale: interpolate(progress.value, [0, 1], [0.95, 1], Extrapolation.CLAMP) },
     ],
-  }));
+  }))
 
   const checkAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       { scale: interpolate(checkScale.value, [0, 0.5, 1], [1, 1.3, 1], Extrapolation.CLAMP) },
     ],
-  }));
+  }))
 
-  const mealConfig = MEAL_TYPE_ICONS[mealPlan.mealType as MealType] || MEAL_TYPE_ICONS.Dinner;
+  const mealConfig = MEAL_TYPE_ICONS[mealPlan.mealType as MealType] || MEAL_TYPE_ICONS.Dinner
 
   return (
     <Animated.View style={cardAnimatedStyle}>
@@ -80,11 +77,7 @@ export default function MealPlanCard({
         hapticType="light"
         scaleOnPress={0.98}
         disabled={!onPress}
-        style={[
-          styles.container,
-          { backgroundColor: colors.card },
-          shadows.medium,
-        ]}
+        style={[styles.container, { backgroundColor: colors.card }, shadows.medium]}
       >
         {/* Left: Meal Type Icon with Gradient */}
         <View style={styles.iconWrapper}>
@@ -102,11 +95,7 @@ export default function MealPlanCard({
         <View style={styles.content}>
           {/* Header with meal type badge */}
           <View style={styles.header}>
-            <Badge
-              label={mealPlan.mealType}
-              variant="neutral"
-              size="small"
-            />
+            <Badge label={mealPlan.mealType} variant="neutral" size="small" />
             {mealPlan.reminder && (
               <View style={styles.reminderIcon}>
                 <Icon name="notifications" size={14} color={colors.warning} />
@@ -127,10 +116,7 @@ export default function MealPlanCard({
 
           {/* Notes */}
           {mealPlan.notes && (
-            <ThemedText
-              style={[styles.notes, { color: colors.textTertiary }]}
-              numberOfLines={1}
-            >
+            <ThemedText style={[styles.notes, { color: colors.textTertiary }]} numberOfLines={1}>
               {mealPlan.notes}
             </ThemedText>
           )}
@@ -152,15 +138,13 @@ export default function MealPlanCard({
                 },
               ]}
             >
-              {mealPlan.isCompleted && (
-                <Icon name="checkmark" size={18} color="#FFFFFF" />
-              )}
+              {mealPlan.isCompleted && <Icon name="checkmark" size={18} color="#FFFFFF" />}
             </View>
           </Animated.View>
         </AnimatedPressable>
       </AnimatedPressable>
     </Animated.View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -216,4 +200,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+})

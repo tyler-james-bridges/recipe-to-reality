@@ -10,11 +10,7 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testMatch: ['**/__tests__/**/*.test.ts', '**/__tests__/**/*.test.tsx'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
-  collectCoverageFrom: [
-    'src/**/*.{ts,tsx}',
-    '!src/**/*.d.ts',
-    '!src/db/**',
-  ],
+  collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts', '!src/db/**'],
   // Coverage thresholds disabled until more tests are added
   // coverageThreshold: {
   //   global: {
@@ -24,4 +20,4 @@ module.exports = {
   //     statements: 50,
   //   },
   // },
-};
+}
