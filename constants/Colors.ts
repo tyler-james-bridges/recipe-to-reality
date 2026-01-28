@@ -1,6 +1,9 @@
 // Modern 2026 Design System Colors
 // Inspired by iOS 18+ with enhanced depth and vibrancy
 
+// Shadow presets for elevation system - React Native compatible
+import { Platform } from 'react-native'
+
 const tintColorLight = '#FF9500'
 const tintColorDark = '#FF9F0A'
 
@@ -21,9 +24,6 @@ export const gradients = {
     hero: ['#2A2015', '#1F1810'] as const,
   },
 }
-
-// Shadow presets for elevation system - React Native compatible
-import { Platform } from 'react-native'
 export const shadows = {
   small: Platform.select({
     ios: {

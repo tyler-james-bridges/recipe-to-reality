@@ -40,6 +40,7 @@ export default function Chip({
       damping: animation.spring.damping,
       stiffness: animation.spring.stiffness,
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected])
 
   const animatedContainerStyle = useAnimatedStyle(() => {

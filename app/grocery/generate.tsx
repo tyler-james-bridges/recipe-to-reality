@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
-import { StyleSheet, View, ScrollView, useColorScheme, Platform } from 'react-native'
+import { StyleSheet, View, ScrollView, useColorScheme } from 'react-native'
 import { router, Stack } from 'expo-router'
 import { Icon } from '@/src/components/ui/Icon'
 import * as Haptics from 'expo-haptics'
@@ -11,8 +11,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
-  withTiming,
-  interpolateColor,
 } from 'react-native-reanimated'
 import DateTimePicker from '@react-native-community/datetimepicker'
 
@@ -21,10 +19,9 @@ import { useGroceryStore } from '@/src/stores/groceryStore'
 import { useRecipeStore } from '@/src/stores/recipeStore'
 import { useMealPlanStore } from '@/src/stores/mealPlanStore'
 import { useSettingsStore } from '@/src/stores/settingsStore'
-import { RecipeWithIngredients, MealPlan, MEAL_TYPES } from '@/src/types'
+import { RecipeWithIngredients, MealPlan } from '@/src/types'
 import AnimatedPressable from '@/src/components/ui/AnimatedPressable'
 import ModernButton from '@/src/components/ui/ModernButton'
-import Badge from '@/src/components/ui/Badge'
 import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors'
 
 type GenerateMode = 'recipes' | 'mealPlan'
@@ -50,7 +47,7 @@ function SegmentedControl({
       damping: 20,
       stiffness: 200,
     })
-  }, [selectedIndex])
+  }, [selectedIndex, selectedPosition])
 
   const handlePress = (index: number) => {
     if (hapticFeedback) {
@@ -124,7 +121,7 @@ function RecipeSelectItem({
       damping: 15,
       stiffness: 200,
     })
-  }, [isSelected])
+  }, [isSelected, selectedValue])
 
   const animatedCheckStyle = useAnimatedStyle(() => ({
     transform: [{ scale: selectedValue.value }],

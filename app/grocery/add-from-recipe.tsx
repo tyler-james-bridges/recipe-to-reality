@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { StyleSheet, View, ScrollView, useColorScheme } from 'react-native'
 import { router, Stack, useLocalSearchParams } from 'expo-router'
 import { Icon } from '@/src/components/ui/Icon'
@@ -45,7 +45,7 @@ function IngredientSelectItem({
       damping: 15,
       stiffness: 200,
     })
-  }, [isSelected])
+  }, [isSelected, selectedValue])
 
   const animatedCheckStyle = useAnimatedStyle(() => ({
     transform: [{ scale: selectedValue.value }],
@@ -119,7 +119,7 @@ export default function AddFromRecipeScreen() {
   const hapticFeedback = useSettingsStore((state) => state.hapticFeedback)
 
   // Stores
-  const { recipes, loadRecipes, getRecipe } = useRecipeStore()
+  const { loadRecipes, getRecipe } = useRecipeStore()
   const { currentList, loadCurrentList, createList, addItem } = useGroceryStore()
 
   // State
@@ -225,15 +225,11 @@ export default function AddFromRecipeScreen() {
       // Add selected ingredients
       const selectedIngredients = recipe.ingredients.filter((i) => selectedIngredientIds.has(i.id))
 
-      let addedCount = 0
-      let skippedCount = 0
-
       for (const ingredient of selectedIngredients) {
         const normalizedName = ingredient.name.toLowerCase().trim()
 
         // Check for duplicates
         if (existingItemNames.has(normalizedName)) {
-          skippedCount++
           continue
         }
 
@@ -245,7 +241,6 @@ export default function AddFromRecipeScreen() {
         })
 
         existingItemNames.add(normalizedName)
-        addedCount++
       }
 
       router.back()

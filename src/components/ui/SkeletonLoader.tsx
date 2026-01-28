@@ -41,7 +41,7 @@ export default function SkeletonLoader({
       -1,
       false
     )
-  }, [])
+  }, [shimmer])
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [

@@ -3,15 +3,13 @@ import {
   StyleSheet,
   ScrollView,
   View,
-  Pressable,
   Share,
   Alert,
   Linking,
   useColorScheme,
   Dimensions,
-  Platform,
 } from 'react-native'
-import { useLocalSearchParams, router, Stack, Href } from 'expo-router'
+import { useLocalSearchParams, router, Stack } from 'expo-router'
 import { Image } from 'expo-image'
 import { Icon } from '@/src/components/ui/Icon'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -73,6 +71,7 @@ export default function RecipeDetailScreen() {
       setIsLoading(false)
       headerOpacity.value = withDelay(200, withSpring(1))
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, getRecipe, loadRecipes])
 
   const scrollHandler = useAnimatedScrollHandler({
@@ -81,14 +80,15 @@ export default function RecipeDetailScreen() {
     },
   })
 
-  const headerAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(
-      scrollY.value,
-      [0, HEADER_IMAGE_HEIGHT - 100],
-      [0, 1],
-      Extrapolation.CLAMP
-    ),
-  }))
+  // Animated style for header opacity based on scroll - kept for potential future use
+  // const headerAnimatedStyle = useAnimatedStyle(() => ({
+  //   opacity: interpolate(
+  //     scrollY.value,
+  //     [0, HEADER_IMAGE_HEIGHT - 100],
+  //     [0, 1],
+  //     Extrapolation.CLAMP
+  //   ),
+  // }))
 
   const imageAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -129,6 +129,21 @@ export default function RecipeDetailScreen() {
     },
     [hapticFeedback]
   )
+
+  // Memoize source icon - must be called before any conditional returns
+  const sourceIcon = React.useMemo(() => {
+    if (!recipe) return 'link'
+    switch (recipe.sourceType) {
+      case 'youtube':
+        return 'play-circle'
+      case 'tiktok':
+        return 'musical-notes'
+      case 'instagram':
+        return 'camera'
+      default:
+        return 'link'
+    }
+  }, [recipe])
 
   if (isLoading || !recipe) {
     return (
@@ -220,19 +235,6 @@ export default function RecipeDetailScreen() {
 
     return formatIngredient(ingredient.name, scaledQuantity, ingredient.unit)
   }
-
-  const sourceIcon = React.useMemo(() => {
-    switch (recipe.sourceType) {
-      case 'youtube':
-        return 'play-circle'
-      case 'tiktok':
-        return 'musical-notes'
-      case 'instagram':
-        return 'camera'
-      default:
-        return 'link'
-    }
-  }, [recipe.sourceType])
 
   return (
     <>

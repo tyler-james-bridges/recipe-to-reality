@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { StyleSheet, ScrollView, View, Pressable, ActivityIndicator, Alert } from 'react-native'
 import { router } from 'expo-router'
 
-import { ThemedView, ThemedText } from '@/components/Themed'
+import { ThemedText } from '@/components/Themed'
 import { usePurchaseStore } from '@/src/stores/purchaseStore'
 import { HapticManager } from '@/src/services/haptics'
 import { MaterialIcon, MaterialIconProps } from '@/src/components/ui/Icon'

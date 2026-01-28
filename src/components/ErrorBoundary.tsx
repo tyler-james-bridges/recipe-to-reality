@@ -10,7 +10,7 @@ import {
 import { router } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import Colors, { spacing, typography, radius, shadows } from '../../constants/Colors'
-import { getErrorInfo, AppError } from '../services/errors'
+import { getErrorInfo } from '../services/errors'
 
 interface ErrorBoundaryProps {
   children: ReactNode

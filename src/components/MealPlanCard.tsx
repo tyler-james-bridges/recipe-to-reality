@@ -11,7 +11,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { ThemedText } from '@/components/Themed'
 import { MealPlan, MealType } from '../types'
-import Colors, { gradients, shadows, radius, spacing, typography } from '@/constants/Colors'
+import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors'
 import AnimatedPressable from './ui/AnimatedPressable'
 import Badge from './ui/Badge'
 import { Icon } from './ui/Icon'
@@ -45,6 +45,7 @@ export default function MealPlanCard({
 
   React.useEffect(() => {
     progress.value = withDelay(index * 80, withSpring(1, { damping: 18, stiffness: 100 }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index])
 
   React.useEffect(() => {
@@ -52,6 +53,7 @@ export default function MealPlanCard({
       damping: 12,
       stiffness: 200,
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mealPlan.isCompleted])
 
   const cardAnimatedStyle = useAnimatedStyle(() => ({

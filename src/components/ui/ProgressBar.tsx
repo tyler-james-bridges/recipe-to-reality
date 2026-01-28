@@ -4,11 +4,10 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
-  withTiming,
   interpolate,
 } from 'react-native-reanimated'
 import { LinearGradient } from 'expo-linear-gradient'
-import Colors, { gradients, radius, spacing, animation } from '@/constants/Colors'
+import Colors, { gradients, animation } from '@/constants/Colors'
 
 interface ProgressBarProps {
   progress: number // 0-1
@@ -42,7 +41,7 @@ export default function ProgressBar({
     } else {
       progressValue.value = progress
     }
-  }, [progress, animated])
+  }, [progress, animated, progressValue])
 
   const animatedWidth = useAnimatedStyle(() => ({
     width: `${progressValue.value * 100}%`,

@@ -5,7 +5,7 @@
  */
 
 import * as SecureStore from 'expo-secure-store'
-import { VideoPlatform, TranscriptSegment } from '../../types'
+import { VideoPlatform } from '../../types'
 
 // Secure storage keys
 const SUPADATA_API_KEY = 'supadata_api_key'

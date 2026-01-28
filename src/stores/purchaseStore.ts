@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-as-default-member */
 import { create } from 'zustand'
 
 import storage from '../utils/storage'
@@ -15,10 +16,11 @@ let isRevenueCatAvailable = false
 
 try {
   // Dynamic require to avoid crash if native module isn't available
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const RNPurchases = require('react-native-purchases')
   Purchases = RNPurchases.default
   isRevenueCatAvailable = true
-} catch (e) {
+} catch {
   console.log('RevenueCat not available (running in Expo Go). Purchases disabled.')
   isRevenueCatAvailable = false
 }

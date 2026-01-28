@@ -1,3 +1,4 @@
+/* global jest */
 // Mock expo-secure-store
 jest.mock('expo-secure-store', () => ({
   getItemAsync: jest.fn(() => Promise.resolve(null)),

@@ -150,7 +150,7 @@ export function getMatchedIngredients(
 export function rankRecipesByPantry(
   recipes: RecipeWithIngredients[],
   pantryItems: PantryItem[]
-): Array<{ recipe: RecipeWithIngredients; matchPercentage: number; missingCount: number }> {
+): { recipe: RecipeWithIngredients; matchPercentage: number; missingCount: number }[] {
   return recipes
     .map((recipe) => ({
       recipe,

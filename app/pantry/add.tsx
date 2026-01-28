@@ -124,7 +124,7 @@ export default function AddPantryItemScreen() {
 
       triggerHaptic('success')
       router.back()
-    } catch (error) {
+    } catch {
       triggerHaptic('error')
       Alert.alert('Error', 'Failed to add item to pantry')
     } finally {
@@ -146,7 +146,7 @@ export default function AddPantryItemScreen() {
       })
 
       triggerHaptic('success')
-    } catch (error) {
+    } catch {
       triggerHaptic('error')
       Alert.alert('Error', 'Failed to add item')
     }

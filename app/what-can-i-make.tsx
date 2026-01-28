@@ -26,6 +26,7 @@ export default function WhatCanIMakeScreen() {
       const ranked = rankRecipesByPantry(recipes, items)
       setRankedRecipes(ranked)
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {

@@ -1,12 +1,7 @@
 import React from 'react'
-import { StyleSheet, ViewStyle, StyleProp, useColorScheme, View, Platform } from 'react-native'
+import { StyleSheet, ViewStyle, StyleProp, useColorScheme, View } from 'react-native'
 import { BlurView } from 'expo-blur'
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  interpolate,
-} from 'react-native-reanimated'
+import Animated, { useAnimatedStyle, useSharedValue, interpolate } from 'react-native-reanimated'
 import Colors, { shadows, radius, spacing } from '@/constants/Colors'
 
 interface GlassCardProps {

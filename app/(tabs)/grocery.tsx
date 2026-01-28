@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react'
-import { StyleSheet, View, Pressable, SectionList, useColorScheme, Alert } from 'react-native'
+import { StyleSheet, View, SectionList, useColorScheme, Alert } from 'react-native'
 import { router, Stack, Href } from 'expo-router'
 import { Icon } from '@/src/components/ui/Icon'
 import { useFocusEffect } from '@react-navigation/native'
 import * as Haptics from 'expo-haptics'
-import Animated, { FadeInDown, Layout } from 'react-native-reanimated'
+import Animated, { FadeInDown } from 'react-native-reanimated'
 
 import { ThemedView, ThemedText } from '@/components/Themed'
 import { useGroceryStore } from '@/src/stores/groceryStore'
@@ -48,7 +48,7 @@ export default function GroceryScreen() {
     }
   }
 
-  const items = currentList?.items || []
+  const items = React.useMemo(() => currentList?.items || [], [currentList?.items])
   const checkedCount = items.filter((i) => i.isChecked).length
   const totalCount = items.length
   const progress = totalCount > 0 ? checkedCount / totalCount : 0

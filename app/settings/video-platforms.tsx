@@ -8,7 +8,6 @@ import {
   Alert,
   useColorScheme,
   KeyboardAvoidingView,
-  Platform,
   ActivityIndicator,
 } from 'react-native'
 import { Stack, router } from 'expo-router'
@@ -16,7 +15,7 @@ import { Icon } from '@/src/components/ui/Icon'
 import Animated, { FadeIn, FadeInDown, SlideInRight } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
 
-import { ThemedView, ThemedText } from '@/components/Themed'
+import { ThemedText } from '@/components/Themed'
 import { useSettingsStore } from '@/src/stores/settingsStore'
 import {
   saveSupadataAPIKey,
@@ -208,7 +207,7 @@ export default function VideoPlatformsSettingsScreen() {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
         }
       }
-    } catch (error) {
+    } catch {
       setValidationStatus('invalid')
       setValidationError('Could not validate key. Check your connection.')
       if (hapticFeedback) {
@@ -276,7 +275,7 @@ export default function VideoPlatformsSettingsScreen() {
               }
 
               Alert.alert('Success', 'API key deleted successfully.')
-            } catch (error) {
+            } catch {
               if (hapticFeedback) {
                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
               }

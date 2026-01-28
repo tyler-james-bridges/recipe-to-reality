@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { db } from '../db/client'
 import { recipes, ingredients } from '../db/schema'
 import { eq } from 'drizzle-orm'
-import { RecipeWithIngredients, Ingredient, SourceType, IngredientCategory } from '../types'
+import { RecipeWithIngredients, SourceType, IngredientCategory } from '../types'
 import * as crypto from 'expo-crypto'
 
 interface RecipeState {
