@@ -36,8 +36,9 @@ export default function AddRecipeScreen() {
 
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
-  const { addRecipe } = useRecipeStore()
-  const { canExtract, recordExtraction, isPremium, remainingFreeExtractions } = usePurchaseStore()
+  const { addRecipe, recipes } = useRecipeStore()
+  const { canExtract, recordExtraction, isPremium, remainingFreeExtractions, canSaveRecipe } =
+    usePurchaseStore()
   const hapticFeedback = useSettingsStore((state) => state.hapticFeedback)
 
   const [mode, setMode] = useState<InputMode>('url')
@@ -115,6 +116,11 @@ export default function AddRecipeScreen() {
   }, [deepLinkUrl, autoExtract])
 
   const saveExtractedRecipe = async (extracted: ExtractedRecipe) => {
+    if (!canSaveRecipe(recipes.length)) {
+      router.push('/paywall')
+      return
+    }
+
     const ingredients: Ingredient[] = extracted.ingredients.map((ing, index) => ({
       id: `temp-${index}`,
       recipeId: '',
@@ -142,6 +148,11 @@ export default function AddRecipeScreen() {
   }
 
   const handleSaveManual = async () => {
+    if (!canSaveRecipe(recipes.length)) {
+      router.push('/paywall')
+      return
+    }
+
     if (!title.trim()) {
       Alert.alert('Error', 'Please enter a recipe title')
       return
