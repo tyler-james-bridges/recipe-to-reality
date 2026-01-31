@@ -2,7 +2,12 @@
 import { create } from 'zustand'
 
 import storage from '../utils/storage'
-import { FREE_EXTRACTION_LIMIT, PREMIUM_ENTITLEMENT } from '../types'
+import {
+  FREE_EXTRACTION_LIMIT,
+  FREE_RECIPE_LIMIT,
+  FREE_MEAL_PLAN_LIMIT,
+  PREMIUM_ENTITLEMENT,
+} from '../types'
 
 const EXTRACTIONS_KEY = 'recipe_extractions_count'
 
@@ -59,6 +64,8 @@ interface PurchaseState {
   // Computed
   canExtract: boolean
   remainingFreeExtractions: number
+  canSaveRecipe: (currentRecipeCount: number) => boolean
+  canAddMealPlan: (currentMealPlanCount: number) => boolean
 
   // Actions
   initialize: () => Promise<void>
@@ -87,6 +94,14 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
   get remainingFreeExtractions() {
     const state = get()
     return Math.max(0, FREE_EXTRACTION_LIMIT - state.extractionsUsed)
+  },
+
+  canSaveRecipe: (currentRecipeCount: number) => {
+    return get().isPremium || currentRecipeCount < FREE_RECIPE_LIMIT
+  },
+
+  canAddMealPlan: (currentMealPlanCount: number) => {
+    return get().isPremium || currentMealPlanCount < FREE_MEAL_PLAN_LIMIT
   },
 
   initialize: async () => {

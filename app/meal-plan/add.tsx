@@ -19,6 +19,7 @@ import Animated, { FadeIn, FadeInDown, Layout } from 'react-native-reanimated'
 import { ThemedView, ThemedText } from '@/components/Themed'
 import { useMealPlanStore } from '@/src/stores/mealPlanStore'
 import { useRecipeStore } from '@/src/stores/recipeStore'
+import { usePurchaseStore } from '@/src/stores/purchaseStore'
 import { useSettingsStore } from '@/src/stores/settingsStore'
 import { MealType, MEAL_TYPES, MEAL_TYPE_DEFAULT_TIMES, RecipeWithIngredients } from '@/src/types'
 import AnimatedPressable from '@/src/components/ui/AnimatedPressable'
@@ -41,8 +42,9 @@ export default function AddMealPlanScreen() {
   const colors = Colors[colorScheme ?? 'light']
   const params = useLocalSearchParams<{ date?: string; mealType?: MealType }>()
 
-  const { addMealPlan, requestNotificationPermissions } = useMealPlanStore()
+  const { addMealPlan, mealPlans, requestNotificationPermissions } = useMealPlanStore()
   const { recipes } = useRecipeStore()
+  const { canAddMealPlan } = usePurchaseStore()
   const hapticFeedback = useSettingsStore((state) => state.hapticFeedback)
 
   // Initialize date from params or use today
@@ -130,6 +132,11 @@ export default function AddMealPlanScreen() {
   // Handle save
   const handleSave = async () => {
     if (!isValid) return
+
+    if (!canAddMealPlan(mealPlans.length)) {
+      router.push('/paywall')
+      return
+    }
 
     triggerHaptic('medium')
 

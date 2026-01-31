@@ -165,4 +165,6 @@ export const MEAL_TYPE_DEFAULT_TIMES: Record<MealType, { hour: number; minute: n
 }
 
 export const FREE_EXTRACTION_LIMIT = 5
+export const FREE_RECIPE_LIMIT = 10
+export const FREE_MEAL_PLAN_LIMIT = 7
 export const PREMIUM_ENTITLEMENT = 'premium'
