@@ -121,7 +121,120 @@ async function fetchWebContent(urlString: string): Promise<string> {
   }
 
   const html = await response.text()
+
+  // Try JSON-LD extraction first — structured data is cleaner and more accurate
+  const jsonLdRecipe = extractJsonLd(html)
+  if (jsonLdRecipe) {
+    const ogMeta = extractOgMeta(html)
+    return formatJsonLdForClaude(jsonLdRecipe, ogMeta)
+  }
+
   return stripHTML(html)
+}
+
+function extractJsonLd(html: string): Record<string, unknown> | null {
+  const scriptRegex = /<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
+  let match
+  while ((match = scriptRegex.exec(html)) !== null) {
+    try {
+      const data = JSON.parse(match[1])
+      const recipe = findRecipeInLd(data)
+      if (recipe) return recipe
+    } catch {
+      // Invalid JSON, skip
+    }
+  }
+  return null
+}
+
+function findRecipeInLd(data: unknown): Record<string, unknown> | null {
+  if (!data || typeof data !== 'object') return null
+
+  if (Array.isArray(data)) {
+    for (const item of data) {
+      const found = findRecipeInLd(item)
+      if (found) return found
+    }
+    return null
+  }
+
+  const obj = data as Record<string, unknown>
+
+  // Check @graph pattern
+  if (Array.isArray(obj['@graph'])) {
+    return findRecipeInLd(obj['@graph'])
+  }
+
+  // Check if this object is a Recipe
+  const type = obj['@type']
+  if (type === 'Recipe' || (Array.isArray(type) && type.includes('Recipe'))) {
+    return obj
+  }
+
+  return null
+}
+
+function extractOgMeta(html: string): Record<string, string> {
+  const meta: Record<string, string> = {}
+  const metaRegex = /<meta[^>]*property\s*=\s*["'](og:[^"']+)["'][^>]*content\s*=\s*["']([^"']*)["'][^>]*\/?>/gi
+  const metaRegex2 = /<meta[^>]*content\s*=\s*["']([^"']*)["'][^>]*property\s*=\s*["'](og:[^"']+)["'][^>]*\/?>/gi
+  let m
+  while ((m = metaRegex.exec(html)) !== null) {
+    meta[m[1]] = m[2]
+  }
+  while ((m = metaRegex2.exec(html)) !== null) {
+    meta[m[2]] = m[1]
+  }
+  return meta
+}
+
+function formatJsonLdForClaude(recipe: Record<string, unknown>, ogMeta: Record<string, string>): string {
+  const lines: string[] = []
+
+  const title = (recipe.name as string) || ogMeta['og:title'] || ''
+  if (title) lines.push(`Title: ${title}`)
+
+  if (recipe.recipeYield) lines.push(`Servings: ${Array.isArray(recipe.recipeYield) ? recipe.recipeYield[0] : recipe.recipeYield}`)
+  if (recipe.prepTime) lines.push(`Prep Time: ${formatDuration(recipe.prepTime as string)}`)
+  if (recipe.cookTime) lines.push(`Cook Time: ${formatDuration(recipe.cookTime as string)}`)
+
+  const image = (recipe.image as string) || (Array.isArray(recipe.image) ? (recipe.image as string[])[0] : null) || ogMeta['og:image'] || ''
+  if (image) {
+    const imageUrl = typeof image === 'object' ? (image as Record<string, unknown>).url as string : image
+    if (imageUrl) lines.push(`Image: ${imageUrl}`)
+  }
+
+  if (Array.isArray(recipe.recipeIngredient)) {
+    lines.push('\nIngredients:')
+    for (const ing of recipe.recipeIngredient as string[]) {
+      lines.push(`- ${ing}`)
+    }
+  }
+
+  if (Array.isArray(recipe.recipeInstructions)) {
+    lines.push('\nInstructions:')
+    let step = 1
+    for (const inst of recipe.recipeInstructions as Array<string | Record<string, unknown>>) {
+      if (typeof inst === 'string') {
+        lines.push(`${step++}. ${inst}`)
+      } else if (inst && typeof inst === 'object') {
+        const text = (inst.text as string) || (inst.name as string) || ''
+        if (text) lines.push(`${step++}. ${text}`)
+      }
+    }
+  }
+
+  return lines.join('\n')
+}
+
+function formatDuration(iso: string): string {
+  if (!iso || !iso.startsWith('PT')) return iso
+  const hours = iso.match(/(\d+)H/)?.[1]
+  const minutes = iso.match(/(\d+)M/)?.[1]
+  const parts: string[] = []
+  if (hours) parts.push(`${hours} hour${hours === '1' ? '' : 's'}`)
+  if (minutes) parts.push(`${minutes} minute${minutes === '1' ? '' : 's'}`)
+  return parts.join(' ') || iso
 }
 
 function stripHTML(html: string): string {
