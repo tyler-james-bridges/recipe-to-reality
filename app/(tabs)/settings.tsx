@@ -15,7 +15,7 @@ import { useGroceryStore } from '@/src/stores/groceryStore'
 import { usePantryStore } from '@/src/stores/pantryStore'
 import AnimatedPressable from '@/src/components/ui/AnimatedPressable'
 import { Icon, IconProps } from '@/src/components/ui/Icon'
-import Colors, { shadows, radius, spacing, typography, gradients } from '@/constants/Colors'
+import Colors, { shadows, radius, spacing, typography, gradients, TAB_SCROLL_PADDING } from '@/constants/Colors'
 
 type IconName = IconProps['name']
 
@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingBottom: 120,
+    paddingBottom: TAB_SCROLL_PADDING,
   },
   headerCard: {
     marginHorizontal: spacing.lg,

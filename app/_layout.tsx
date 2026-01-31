@@ -136,10 +136,14 @@ export default function RootLayout() {
   // Handle cold start deep links (app was not running)
   useEffect(() => {
     async function handleInitialURL() {
-      const initialUrl = await Linking.getInitialURL()
-      if (initialUrl) {
-        // Store for later processing when navigation is ready
-        pendingDeepLink.current = initialUrl
+      try {
+        const initialUrl = await Linking.getInitialURL()
+        if (initialUrl) {
+          // Store for later processing when navigation is ready
+          pendingDeepLink.current = initialUrl
+        }
+      } catch (error) {
+        console.error('Failed to get initial URL:', error)
       }
     }
     handleInitialURL()
@@ -180,7 +184,9 @@ export default function RootLayout() {
   }, [])
   useEffect(() => {
     if (loaded && appReady) {
-      SplashScreen.hideAsync()
+      SplashScreen.hideAsync().catch((error) => {
+        console.error('Failed to hide splash screen:', error)
+      })
     }
   }, [loaded, appReady])
 
@@ -214,7 +220,7 @@ function RootLayoutNav() {
     const inOnboarding = firstSegment === 'onboarding'
 
     if (!hasCompletedOnboarding && !inOnboarding) {
-      router.replace('/onboarding' as any)
+      router.replace('/onboarding')
     } else if (hasCompletedOnboarding && inOnboarding) {
       router.replace('/(tabs)')
     }

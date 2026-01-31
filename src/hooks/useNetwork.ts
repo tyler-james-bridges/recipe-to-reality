@@ -22,10 +22,16 @@ export function useNetworkStatus() {
     })
 
     // Get initial state
-    NetInfo.fetch().then((state) => {
-      setNetworkState(state)
-      setIsOnline(state.isConnected ?? true)
-    })
+    NetInfo.fetch()
+      .then((state) => {
+        setNetworkState(state)
+        setIsOnline(state.isConnected ?? true)
+      })
+      .catch((error) => {
+        console.error('Failed to fetch network state:', error)
+        // Default to online to avoid blocking the app
+        setIsOnline(true)
+      })
 
     return () => {
       unsubscribe()

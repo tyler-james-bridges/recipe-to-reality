@@ -76,6 +76,9 @@ export const spacing = {
   '5xl': 48,
 } as const
 
+/** Bottom padding for scrollable content in tab screens to clear the tab bar */
+export const TAB_SCROLL_PADDING = 120
+
 // Typography scale with modern font weights
 export const typography = {
   // Display - for hero sections

@@ -2,7 +2,7 @@ import React from 'react'
 import { Platform, useColorScheme } from 'react-native'
 import { Tabs } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
-import { SymbolView } from 'expo-symbols'
+import { SymbolView, type SFSymbol } from 'expo-symbols'
 import Colors from '@/constants/Colors'
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name']
@@ -12,12 +12,12 @@ interface TabBarIconProps {
   color: string
   size: number
   ionIcon: IoniconsName
-  sfSymbol: string
+  sfSymbol: SFSymbol
 }
 
 function TabBarIcon({ focused, color, size, ionIcon, sfSymbol }: TabBarIconProps) {
   if (Platform.OS === 'ios') {
-    return <SymbolView name={sfSymbol as any} size={size} tintColor={color} />
+    return <SymbolView name={sfSymbol} size={size} tintColor={color} />
   }
   return <Ionicons name={ionIcon} size={size} color={color} />
 }

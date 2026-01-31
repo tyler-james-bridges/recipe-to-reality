@@ -13,8 +13,8 @@ import RecipeRow from '@/src/components/RecipeRow'
 import EmptyState from '@/src/components/EmptyState'
 import { SkeletonRecipeList } from '@/src/components/ui/SkeletonLoader'
 import AnimatedPressable from '@/src/components/ui/AnimatedPressable'
-import { Icon } from '@/src/components/ui/Icon'
-import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors'
+import { Icon, type IconProps } from '@/src/components/ui/Icon'
+import Colors, { shadows, radius, spacing, typography, TAB_SCROLL_PADDING } from '@/constants/Colors'
 
 type SortOption = 'dateAdded' | 'name' | 'cookTime'
 type FilterOption = 'all' | 'queue' | 'cooked'
@@ -25,7 +25,7 @@ const FILTER_OPTIONS: { key: FilterOption; label: string }[] = [
   { key: 'cooked', label: 'Cooked' },
 ]
 
-const SORT_OPTIONS: { key: SortOption; label: string; icon: string }[] = [
+const SORT_OPTIONS: { key: SortOption; label: string; icon: IconProps['name'] }[] = [
   { key: 'dateAdded', label: 'Recently Added', icon: 'calendar' },
   { key: 'name', label: 'Name', icon: 'text' },
   { key: 'cookTime', label: 'Cook Time', icon: 'time' },
@@ -173,15 +173,19 @@ export default function RecipesScreen() {
   }
 
   const handleMarkAsCooked = async (recipe: RecipeWithIngredients) => {
-    if (hapticFeedback) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+    try {
+      if (hapticFeedback) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      }
+      await markAsCooked(recipe.id)
+      loadRecipes()
+    } catch (error) {
+      console.error('Failed to mark recipe as cooked:', error)
     }
-    await markAsCooked(recipe.id)
-    loadRecipes()
   }
 
   const handleAddToGroceryList = (recipe: RecipeWithIngredients) => {
-    router.push({ pathname: '/grocery/add-from-recipe', params: { recipeId: recipe.id } } as any)
+    router.push({ pathname: '/grocery/add-from-recipe', params: { recipeId: recipe.id } })
   }
 
   const handleDelete = (recipe: RecipeWithIngredients) => {
@@ -191,8 +195,12 @@ export default function RecipesScreen() {
         text: 'Delete',
         style: 'destructive',
         onPress: async () => {
-          await deleteRecipe(recipe.id)
-          loadRecipes()
+          try {
+            await deleteRecipe(recipe.id)
+            loadRecipes()
+          } catch (error) {
+            console.error('Failed to delete recipe:', error)
+          }
         },
       },
     ])
@@ -239,7 +247,7 @@ export default function RecipesScreen() {
                 style={styles.sortMenuItem}
               >
                 <Icon
-                  name={option.icon as any}
+                  name={option.icon}
                   size={18}
                   color={sortBy === option.key ? colors.tint : colors.textTertiary}
                 />
@@ -399,6 +407,6 @@ const styles = StyleSheet.create({
   },
   list: {
     paddingTop: spacing.sm,
-    paddingBottom: 120,
+    paddingBottom: TAB_SCROLL_PADDING,
   },
 })

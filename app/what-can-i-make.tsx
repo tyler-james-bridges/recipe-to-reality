@@ -22,10 +22,14 @@ export default function WhatCanIMakeScreen() {
   const [rankedRecipes, setRankedRecipes] = useState<RankedRecipe[]>([])
 
   useEffect(() => {
-    Promise.all([loadRecipes(), loadItems()]).then(() => {
-      const ranked = rankRecipesByPantry(recipes, items)
-      setRankedRecipes(ranked)
-    })
+    Promise.all([loadRecipes(), loadItems()])
+      .then(() => {
+        const ranked = rankRecipesByPantry(recipes, items)
+        setRankedRecipes(ranked)
+      })
+      .catch((error) => {
+        console.error('Failed to load recipes and pantry items:', error)
+      })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

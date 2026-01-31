@@ -14,7 +14,7 @@ import { MealPlan, MealType } from '@/src/types'
 import MealPlanCard from '@/src/components/MealPlanCard'
 import EmptyState from '@/src/components/EmptyState'
 import AnimatedPressable from '@/src/components/ui/AnimatedPressable'
-import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors'
+import Colors, { shadows, radius, spacing, typography, TAB_SCROLL_PADDING } from '@/constants/Colors'
 
 const MEAL_ORDER: MealType[] = ['Breakfast', 'Lunch', 'Dinner', 'Snack']
 const WEEKDAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
@@ -199,7 +199,7 @@ export default function MealPlanScreen() {
         hapticType="none"
       >
         <ThemedText
-          style={[styles.segmentedText, viewMode === 'week' && styles.segmentedTextActive]}
+          style={[styles.segmentedText, { color: colors.textTertiary }, viewMode === 'week' && styles.segmentedTextActive]}
         >
           Week
         </ThemedText>
@@ -216,7 +216,7 @@ export default function MealPlanScreen() {
         hapticType="none"
       >
         <ThemedText
-          style={[styles.segmentedText, viewMode === 'month' && styles.segmentedTextActive]}
+          style={[styles.segmentedText, { color: colors.textTertiary }, viewMode === 'month' && styles.segmentedTextActive]}
         >
           Month
         </ThemedText>
@@ -641,7 +641,6 @@ const styles = StyleSheet.create({
   segmentedText: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#8E8E93',
   },
   segmentedTextActive: {
     fontWeight: '600',
@@ -708,7 +707,7 @@ const styles = StyleSheet.create({
   },
   list: {
     paddingHorizontal: spacing.lg,
-    paddingBottom: 120,
+    paddingBottom: TAB_SCROLL_PADDING,
   },
   // Month View Styles
   monthViewContainer: {
@@ -807,6 +806,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   monthMealsListContent: {
-    paddingBottom: 120,
+    paddingBottom: TAB_SCROLL_PADDING,
   },
 })
