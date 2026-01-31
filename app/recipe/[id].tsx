@@ -62,15 +62,20 @@ export default function RecipeDetailScreen() {
 
   useEffect(() => {
     setIsLoading(true)
-    loadRecipes().then(() => {
-      const found = getRecipe(id)
-      setRecipe(found)
-      if (found?.servings) {
-        setSelectedServings(found.servings)
-      }
-      setIsLoading(false)
-      headerOpacity.value = withDelay(200, withSpring(1))
-    })
+    loadRecipes()
+      .then(() => {
+        const found = getRecipe(id)
+        setRecipe(found)
+        if (found?.servings) {
+          setSelectedServings(found.servings)
+        }
+        setIsLoading(false)
+        headerOpacity.value = withDelay(200, withSpring(1))
+      })
+      .catch((error) => {
+        console.error('Failed to load recipes:', error)
+        setIsLoading(false)
+      })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, getRecipe, loadRecipes])
 
@@ -170,18 +175,26 @@ export default function RecipeDetailScreen() {
   })()
 
   const handleToggleQueue = async () => {
-    triggerHaptic('medium')
-    await toggleQueue(recipe.id)
-    setRecipe({ ...recipe, isInQueue: !recipe.isInQueue })
-    if (!recipe.isInQueue) {
-      triggerHaptic('success')
+    try {
+      triggerHaptic('medium')
+      await toggleQueue(recipe.id)
+      setRecipe({ ...recipe, isInQueue: !recipe.isInQueue })
+      if (!recipe.isInQueue) {
+        triggerHaptic('success')
+      }
+    } catch (error) {
+      console.error('Failed to toggle queue:', error)
     }
   }
 
   const handleMarkAsCooked = async () => {
-    triggerHaptic('success')
-    await markAsCooked(recipe.id)
-    setRecipe({ ...recipe, dateCooked: Date.now() })
+    try {
+      triggerHaptic('success')
+      await markAsCooked(recipe.id)
+      setRecipe({ ...recipe, dateCooked: Date.now() })
+    } catch (error) {
+      console.error('Failed to mark as cooked:', error)
+    }
   }
 
   const handleDelete = () => {
@@ -191,8 +204,12 @@ export default function RecipeDetailScreen() {
         text: 'Delete',
         style: 'destructive',
         onPress: async () => {
-          await deleteRecipe(recipe.id)
-          router.back()
+          try {
+            await deleteRecipe(recipe.id)
+            router.back()
+          } catch (error) {
+            console.error('Failed to delete recipe:', error)
+          }
         },
       },
     ])

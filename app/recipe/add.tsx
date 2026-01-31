@@ -33,6 +33,8 @@ export default function AddRecipeScreen() {
 
   // Track if auto-extraction has been triggered to prevent multiple extractions
   const hasAutoExtracted = useRef(false)
+  // Ref-based guard to prevent concurrent extractions from double-taps
+  const isExtractionInProgress = useRef(false)
 
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
@@ -74,17 +76,24 @@ export default function AddRecipeScreen() {
   }
 
   const handleExtractFromURL = async () => {
-    if (!url.trim()) {
-      Alert.alert('Error', 'Please enter a URL')
+    // Ref-based guard: prevent concurrent extractions from double-taps
+    if (isExtractionInProgress.current) {
       return
     }
 
-    // Check extraction limit
+    // Check extraction limit FIRST, before any other processing
     if (!canExtract) {
       router.push('/paywall')
       return
     }
 
+    if (!url.trim()) {
+      Alert.alert('Error', 'Please enter a URL')
+      return
+    }
+
+    // Set ref guard immediately (synchronous)
+    isExtractionInProgress.current = true
     triggerHaptic('light')
     setIsExtracting(true)
 
@@ -98,6 +107,7 @@ export default function AddRecipeScreen() {
       triggerHaptic('error')
       Alert.alert('Extraction Failed', (error as Error).message)
     } finally {
+      isExtractionInProgress.current = false
       setIsExtracting(false)
     }
   }
@@ -256,20 +266,20 @@ export default function AddRecipeScreen() {
 
               {/* URL Input - grouped style */}
               <View style={[styles.inputGroup, { backgroundColor: colors.card }]}>
-                <ThemedText style={styles.inputLabel}>Recipe URL</ThemedText>
+                <ThemedText style={[styles.inputLabel, { color: colors.textTertiary }]}>Recipe URL</ThemedText>
                 <TextInput
                   style={[styles.input, { color: colors.text }]}
                   value={url}
                   onChangeText={setUrl}
                   placeholder="https://example.com/recipe"
-                  placeholderTextColor="#8E8E93"
+                  placeholderTextColor={colors.textTertiary}
                   autoCapitalize="none"
                   autoCorrect={false}
                   keyboardType="url"
                 />
               </View>
 
-              <ThemedText style={styles.hint}>
+              <ThemedText style={[styles.hint, { color: colors.textTertiary }]}>
                 Works with recipe websites, YouTube, TikTok, and Instagram videos.
               </ThemedText>
 
@@ -301,7 +311,7 @@ export default function AddRecipeScreen() {
                   setMode('manual')
                 }}
               >
-                <ThemedText style={styles.manualEntryLinkText}>Enter manually instead</ThemedText>
+                <ThemedText style={[styles.manualEntryLinkText, { color: colors.textTertiary }]}>Enter manually instead</ThemedText>
               </Pressable>
             </View>
           ) : (
@@ -322,13 +332,13 @@ export default function AddRecipeScreen() {
 
               {/* Title */}
               <View style={[styles.inputGroup, { backgroundColor: colors.card }]}>
-                <ThemedText style={styles.inputLabel}>Recipe Title</ThemedText>
+                <ThemedText style={[styles.inputLabel, { color: colors.textTertiary }]}>Recipe Title</ThemedText>
                 <TextInput
                   style={[styles.input, { color: colors.text }]}
                   value={title}
                   onChangeText={setTitle}
                   placeholder="Enter recipe title"
-                  placeholderTextColor="#8E8E93"
+                  placeholderTextColor={colors.textTertiary}
                 />
               </View>
 
@@ -337,51 +347,51 @@ export default function AddRecipeScreen() {
                 <View
                   style={[styles.inputGroup, styles.halfWidth, { backgroundColor: colors.card }]}
                 >
-                  <ThemedText style={styles.inputLabel}>Servings</ThemedText>
+                  <ThemedText style={[styles.inputLabel, { color: colors.textTertiary }]}>Servings</ThemedText>
                   <TextInput
                     style={[styles.input, { color: colors.text }]}
                     value={servings}
                     onChangeText={setServings}
                     placeholder="4"
-                    placeholderTextColor="#8E8E93"
+                    placeholderTextColor={colors.textTertiary}
                     keyboardType="number-pad"
                   />
                 </View>
                 <View
                   style={[styles.inputGroup, styles.halfWidth, { backgroundColor: colors.card }]}
                 >
-                  <ThemedText style={styles.inputLabel}>Prep Time</ThemedText>
+                  <ThemedText style={[styles.inputLabel, { color: colors.textTertiary }]}>Prep Time</ThemedText>
                   <TextInput
                     style={[styles.input, { color: colors.text }]}
                     value={prepTime}
                     onChangeText={setPrepTime}
                     placeholder="15 min"
-                    placeholderTextColor="#8E8E93"
+                    placeholderTextColor={colors.textTertiary}
                   />
                 </View>
               </View>
 
               {/* Cook Time */}
               <View style={[styles.inputGroup, { backgroundColor: colors.card }]}>
-                <ThemedText style={styles.inputLabel}>Cook Time</ThemedText>
+                <ThemedText style={[styles.inputLabel, { color: colors.textTertiary }]}>Cook Time</ThemedText>
                 <TextInput
                   style={[styles.input, { color: colors.text }]}
                   value={cookTime}
                   onChangeText={setCookTime}
                   placeholder="30 min"
-                  placeholderTextColor="#8E8E93"
+                  placeholderTextColor={colors.textTertiary}
                 />
               </View>
 
               {/* Ingredients */}
               <View style={[styles.inputGroup, { backgroundColor: colors.card }]}>
-                <ThemedText style={styles.inputLabel}>Ingredients (one per line)</ThemedText>
+                <ThemedText style={[styles.inputLabel, { color: colors.textTertiary }]}>Ingredients (one per line)</ThemedText>
                 <TextInput
                   style={[styles.input, styles.textArea, { color: colors.text }]}
                   value={ingredientText}
                   onChangeText={setIngredientText}
                   placeholder={'2 cups flour\n1 tsp salt\n1/2 cup butter'}
-                  placeholderTextColor="#8E8E93"
+                  placeholderTextColor={colors.textTertiary}
                   multiline
                   numberOfLines={6}
                   textAlignVertical="top"
@@ -390,13 +400,13 @@ export default function AddRecipeScreen() {
 
               {/* Instructions */}
               <View style={[styles.inputGroup, { backgroundColor: colors.card }]}>
-                <ThemedText style={styles.inputLabel}>Instructions (one step per line)</ThemedText>
+                <ThemedText style={[styles.inputLabel, { color: colors.textTertiary }]}>Instructions (one step per line)</ThemedText>
                 <TextInput
                   style={[styles.input, styles.textArea, { color: colors.text }]}
                   value={instructionText}
                   onChangeText={setInstructionText}
                   placeholder={'Preheat oven to 350F\nMix dry ingredients\nAdd wet ingredients'}
-                  placeholderTextColor="#8E8E93"
+                  placeholderTextColor={colors.textTertiary}
                   multiline
                   numberOfLines={6}
                   textAlignVertical="top"
@@ -405,13 +415,13 @@ export default function AddRecipeScreen() {
 
               {/* Notes */}
               <View style={[styles.inputGroup, { backgroundColor: colors.card }]}>
-                <ThemedText style={styles.inputLabel}>Notes (optional)</ThemedText>
+                <ThemedText style={[styles.inputLabel, { color: colors.textTertiary }]}>Notes (optional)</ThemedText>
                 <TextInput
                   style={[styles.input, styles.textAreaSmall, { color: colors.text }]}
                   value={notes}
                   onChangeText={setNotes}
                   placeholder="Any additional notes..."
-                  placeholderTextColor="#8E8E93"
+                  placeholderTextColor={colors.textTertiary}
                   multiline
                   numberOfLines={3}
                   textAlignVertical="top"
@@ -467,7 +477,6 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 13,
-    color: '#8E8E93',
     marginBottom: 6,
   },
   input: {
@@ -483,7 +492,6 @@ const styles = StyleSheet.create({
   },
   hint: {
     fontSize: 13,
-    color: '#8E8E93',
     marginBottom: 24,
     textAlign: 'center',
   },
@@ -518,7 +526,6 @@ const styles = StyleSheet.create({
   },
   manualEntryLinkText: {
     fontSize: 15,
-    color: '#8E8E93',
   },
   backToUrlLink: {
     flexDirection: 'row',

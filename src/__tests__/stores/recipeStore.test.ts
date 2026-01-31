@@ -63,35 +63,40 @@ describe('recipeStore', () => {
 
   describe('loadRecipes', () => {
     it('loads recipes from database successfully', async () => {
-      const mockDbRecipes = [
+      const mockDbRecipe = {
+        id: mockRecipe.id,
+        title: mockRecipe.title,
+        sourceURL: mockRecipe.sourceURL,
+        sourceType: mockRecipe.sourceType,
+        imageURL: mockRecipe.imageURL,
+        servings: mockRecipe.servings,
+        prepTime: mockRecipe.prepTime,
+        cookTime: mockRecipe.cookTime,
+        instructions: mockRecipe.instructions,
+        notes: mockRecipe.notes,
+        isInQueue: mockRecipe.isInQueue,
+        dateAdded: mockRecipe.dateAdded,
+        dateCooked: mockRecipe.dateCooked,
+      }
+
+      // Mock joined rows format: { recipe: {...}, ingredient: {...} }
+      const mockJoinedRows = [
         {
-          id: mockRecipe.id,
-          title: mockRecipe.title,
-          sourceURL: mockRecipe.sourceURL,
-          sourceType: mockRecipe.sourceType,
-          imageURL: mockRecipe.imageURL,
-          servings: mockRecipe.servings,
-          prepTime: mockRecipe.prepTime,
-          cookTime: mockRecipe.cookTime,
-          instructions: mockRecipe.instructions,
-          notes: mockRecipe.notes,
-          isInQueue: mockRecipe.isInQueue,
-          dateAdded: mockRecipe.dateAdded,
-          dateCooked: mockRecipe.dateCooked,
+          recipe: mockDbRecipe,
+          ingredient: mockRecipe.ingredients[0],
+        },
+        {
+          recipe: mockDbRecipe,
+          ingredient: mockRecipe.ingredients[1],
         },
       ]
 
-      const mockDbIngredients = mockRecipe.ingredients.map((ing) => ({
-        ...ing,
-      }))
-
       ;(db.select as jest.Mock).mockReturnValueOnce({
         from: jest.fn().mockReturnValue({
-          orderBy: jest.fn().mockResolvedValue(mockDbRecipes),
+          leftJoin: jest.fn().mockReturnValue({
+            orderBy: jest.fn().mockResolvedValue(mockJoinedRows),
+          }),
         }),
-      })
-      ;(db.select as jest.Mock).mockReturnValueOnce({
-        from: jest.fn().mockResolvedValue(mockDbIngredients),
       })
 
       await useRecipeStore.getState().loadRecipes()
@@ -108,7 +113,9 @@ describe('recipeStore', () => {
       const errorMessage = 'Database connection failed'
       ;(db.select as jest.Mock).mockReturnValue({
         from: jest.fn().mockReturnValue({
-          orderBy: jest.fn().mockRejectedValue(new Error(errorMessage)),
+          leftJoin: jest.fn().mockReturnValue({
+            orderBy: jest.fn().mockRejectedValue(new Error(errorMessage)),
+          }),
         }),
       })
 
@@ -122,18 +129,17 @@ describe('recipeStore', () => {
     it('sets loading state during operation', async () => {
       ;(db.select as jest.Mock).mockReturnValue({
         from: jest.fn().mockReturnValue({
-          orderBy: jest.fn().mockImplementation(
-            () =>
-              new Promise((resolve) => {
-                const state = useRecipeStore.getState()
-                expect(state.isLoading).toBe(true)
-                resolve([])
-              })
-          ),
+          leftJoin: jest.fn().mockReturnValue({
+            orderBy: jest.fn().mockImplementation(
+              () =>
+                new Promise((resolve) => {
+                  const state = useRecipeStore.getState()
+                  expect(state.isLoading).toBe(true)
+                  resolve([])
+                })
+            ),
+          }),
         }),
-      })
-      ;(db.select as jest.Mock).mockReturnValueOnce({
-        from: jest.fn().mockResolvedValue([]),
       })
 
       await useRecipeStore.getState().loadRecipes()

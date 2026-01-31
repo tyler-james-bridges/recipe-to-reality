@@ -81,17 +81,23 @@ export const useGroceryStore = create<GroceryState>((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const allLists = await db.select().from(groceryLists).orderBy(desc(groceryLists.dateCreated))
-      const allItems = await db.select().from(groceryItems)
 
-      const listsWithItems: GroceryListWithItems[] = allLists.map((list) => ({
-        ...list,
-        items: allItems
-          .filter((item) => item.groceryListId === list.id)
-          .map((item) => ({
-            ...item,
-            category: item.category as IngredientCategory,
-          })),
-      }))
+      const listsWithItems: GroceryListWithItems[] = await Promise.all(
+        allLists.map(async (list) => {
+          const items = await db
+            .select()
+            .from(groceryItems)
+            .where(eq(groceryItems.groceryListId, list.id))
+
+          return {
+            ...list,
+            items: items.map((item) => ({
+              ...item,
+              category: item.category as IngredientCategory,
+            })),
+          }
+        })
+      )
 
       set({ lists: listsWithItems, isLoading: false })
     } catch (error) {

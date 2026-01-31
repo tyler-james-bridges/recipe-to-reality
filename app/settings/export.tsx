@@ -22,6 +22,7 @@ import { File, Paths } from 'expo-file-system'
 import { shareAsync, isAvailableAsync } from 'expo-sharing'
 import * as Haptics from 'expo-haptics'
 
+import type { IconProps } from '@/src/components/ui/Icon'
 import { ThemedView, ThemedText } from '@/components/Themed'
 import { useRecipeStore } from '@/src/stores/recipeStore'
 import { useMealPlanStore } from '@/src/stores/mealPlanStore'
@@ -38,7 +39,7 @@ interface ExportOption {
   type: ExportType
   title: string
   description: string
-  icon: string
+  icon: IconProps['name']
   iconColor: string
 }
 
@@ -133,7 +134,7 @@ function ExportRow({ option, count, isLoading, isSuccess, onExport, index }: Exp
         ]}
       >
         <View style={[styles.iconContainer, { backgroundColor: option.iconColor + '20' }]}>
-          <Icon name={option.icon as any} size={24} color={option.iconColor} />
+          <Icon name={option.icon} size={24} color={option.iconColor} />
         </View>
 
         <View style={styles.rowContent}>

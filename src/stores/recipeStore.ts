@@ -29,21 +29,34 @@ export const useRecipeStore = create<RecipeState>((set, get) => ({
   loadRecipes: async () => {
     set({ isLoading: true, error: null })
     try {
-      const allRecipes = await db.select().from(recipes).orderBy(recipes.dateAdded)
-      const allIngredients = await db.select().from(ingredients)
+      const rows = await db
+        .select({
+          recipe: recipes,
+          ingredient: ingredients,
+        })
+        .from(recipes)
+        .leftJoin(ingredients, eq(recipes.id, ingredients.recipeId))
+        .orderBy(recipes.dateAdded)
 
-      const recipesWithIngredients: RecipeWithIngredients[] = allRecipes.map((recipe) => ({
-        ...recipe,
-        sourceType: recipe.sourceType as SourceType,
-        ingredients: allIngredients
-          .filter((i) => i.recipeId === recipe.id)
-          .map((i) => ({
-            ...i,
-            category: i.category as IngredientCategory,
-          })),
-      }))
+      // Group joined rows by recipe
+      const recipeMap = new Map<string, RecipeWithIngredients>()
+      for (const row of rows) {
+        if (!recipeMap.has(row.recipe.id)) {
+          recipeMap.set(row.recipe.id, {
+            ...row.recipe,
+            sourceType: row.recipe.sourceType as SourceType,
+            ingredients: [],
+          })
+        }
+        if (row.ingredient) {
+          recipeMap.get(row.recipe.id)!.ingredients.push({
+            ...row.ingredient,
+            category: row.ingredient.category as IngredientCategory,
+          })
+        }
+      }
 
-      set({ recipes: recipesWithIngredients, isLoading: false })
+      set({ recipes: Array.from(recipeMap.values()), isLoading: false })
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false })
     }

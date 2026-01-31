@@ -15,7 +15,7 @@ import GroceryItemRow from '@/src/components/GroceryItemRow'
 import EmptyState from '@/src/components/EmptyState'
 import ProgressBar from '@/src/components/ui/ProgressBar'
 import AnimatedPressable from '@/src/components/ui/AnimatedPressable'
-import Colors, { shadows, radius, spacing, typography } from '@/constants/Colors'
+import Colors, { shadows, radius, spacing, typography, TAB_SCROLL_PADDING } from '@/constants/Colors'
 
 export default function GroceryScreen() {
   const colorScheme = useColorScheme()
@@ -258,6 +258,6 @@ const styles = StyleSheet.create({
     height: spacing.md,
   },
   list: {
-    paddingBottom: 120,
+    paddingBottom: TAB_SCROLL_PADDING,
   },
 })

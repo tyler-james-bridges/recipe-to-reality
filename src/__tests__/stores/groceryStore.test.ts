@@ -182,7 +182,7 @@ describe('groceryStore', () => {
         },
       ]
 
-      const mockItems = [
+      const mockItems1 = [
         {
           id: 'item-1',
           groceryListId: 'list-1',
@@ -195,13 +195,25 @@ describe('groceryStore', () => {
         },
       ]
 
+      const mockItems2 = []
+
+      // First call for the lists
       ;(db.select as jest.Mock).mockReturnValueOnce({
         from: jest.fn().mockReturnValue({
           orderBy: jest.fn().mockResolvedValue(mockLists),
         }),
       })
+      // Second call for list-1 items
       ;(db.select as jest.Mock).mockReturnValueOnce({
-        from: jest.fn().mockResolvedValue(mockItems),
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue(mockItems1),
+        }),
+      })
+      // Third call for list-2 items
+      ;(db.select as jest.Mock).mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue(mockItems2),
+        }),
       })
 
       await useGroceryStore.getState().loadAllLists()

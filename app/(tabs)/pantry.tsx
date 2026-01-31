@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react'
 import { StyleSheet, View, ScrollView, SectionList, useColorScheme } from 'react-native'
 import { router, Stack, Href } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Icon } from '@/src/components/ui/Icon'
+import { Icon, type IconProps } from '@/src/components/ui/Icon'
 import { useFocusEffect } from '@react-navigation/native'
 import * as Haptics from 'expo-haptics'
 
@@ -13,7 +13,7 @@ import { PantryItem, INGREDIENT_CATEGORIES, IngredientCategory } from '@/src/typ
 import PantryItemRow from '@/src/components/PantryItemRow'
 import EmptyState from '@/src/components/EmptyState'
 import AnimatedPressable from '@/src/components/ui/AnimatedPressable'
-import Colors, { radius, spacing, typography } from '@/constants/Colors'
+import Colors, { radius, spacing, typography, TAB_SCROLL_PADDING } from '@/constants/Colors'
 
 type FilterOption = 'all' | 'expiring' | IngredientCategory
 
@@ -84,7 +84,7 @@ export default function PantryScreen() {
     }))
   }, [filteredItems, selectedFilter])
 
-  const filterOptions: { key: string; label: string; icon?: any }[] = [
+  const filterOptions: { key: string; label: string; icon?: IconProps['name'] }[] = [
     { key: 'all', label: 'All' },
     { key: 'expiring', label: 'Expiring Soon', icon: 'time-outline' },
   ]
@@ -93,7 +93,7 @@ export default function PantryScreen() {
     <PantryItemRow
       item={item}
       onDelete={() => deleteItem(item.id)}
-      onPress={() => router.push({ pathname: '/pantry/edit', params: { id: item.id } } as any)}
+      onPress={() => router.push({ pathname: '/pantry/edit', params: { id: item.id } })}
       index={index}
     />
   )
@@ -262,6 +262,6 @@ const styles = StyleSheet.create({
     height: spacing.md,
   },
   list: {
-    paddingBottom: 120,
+    paddingBottom: TAB_SCROLL_PADDING,
   },
 })
