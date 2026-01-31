@@ -195,7 +195,7 @@ describe('groceryStore', () => {
         },
       ]
 
-      const mockItems2 = []
+      const mockItems2: typeof mockItems1 = []
 
       // First call for the lists
       ;(db.select as jest.Mock).mockReturnValueOnce({
